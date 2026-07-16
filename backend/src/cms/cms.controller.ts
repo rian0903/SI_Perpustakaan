@@ -1,0 +1,269 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Patch,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
+import { CmsService } from './cms.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '@prisma/client';
+
+@Controller('cms')
+export class CmsController {
+  constructor(private cmsService: CmsService) {}
+
+  // ==========================================
+  // USERS MANAGEMENT (SUPER_ADMIN ONLY)
+  // ==========================================
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @Get('users')
+  async listUsers() {
+    return this.cmsService.listUsers();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @Post('users')
+  async createUser(@Body() dto: Record<string, unknown>) {
+    return this.cmsService.createUser(dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @Delete('users/:id')
+  async deleteUser(
+    @Param('id') id: string,
+    @Request() req: Record<string, any>,
+  ) {
+    const user = req.user as { id: string };
+    return this.cmsService.deleteUser(id, user.id);
+  }
+
+  // ==========================================
+  // NEWS CRUD (ADMIN / SUPER_ADMIN)
+  // ==========================================
+  @Get('news')
+  async listNews(@Query('all') all?: string) {
+    return this.cmsService.listNews(all !== 'false');
+  }
+
+  @Get('news/:id')
+  async getNewsById(@Param('id') id: string) {
+    return this.cmsService.getNewsById(id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Post('news')
+  async createNews(
+    @Body() dto: Record<string, unknown>,
+    @Request() req: Record<string, any>,
+  ) {
+    const user = req.user as { id: string };
+    return this.cmsService.createNews(dto, user.id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Put('news/:id')
+  async updateNews(
+    @Param('id') id: string,
+    @Body() dto: Record<string, unknown>,
+  ) {
+    return this.cmsService.updateNews(id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Delete('news/:id')
+  async deleteNews(@Param('id') id: string) {
+    return this.cmsService.deleteNews(id);
+  }
+
+  // ==========================================
+  // EVENTS CRUD (ADMIN / SUPER_ADMIN)
+  // ==========================================
+  @Get('events')
+  async listEvents() {
+    return this.cmsService.listEvents();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Post('events')
+  async createEvent(@Body() dto: Record<string, unknown>) {
+    return this.cmsService.createEvent(dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Put('events/:id')
+  async updateEvent(
+    @Param('id') id: string,
+    @Body() dto: Record<string, unknown>,
+  ) {
+    return this.cmsService.updateEvent(id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Delete('events/:id')
+  async deleteEvent(@Param('id') id: string) {
+    return this.cmsService.deleteEvent(id);
+  }
+
+  // ==========================================
+  // GALLERY CRUD (ADMIN / SUPER_ADMIN)
+  // ==========================================
+  @Get('gallery')
+  async listGalleries() {
+    return this.cmsService.listGalleries();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Post('gallery')
+  async createGallery(@Body() dto: Record<string, unknown>) {
+    return this.cmsService.createGallery(dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Delete('gallery/:id')
+  async deleteGallery(@Param('id') id: string) {
+    return this.cmsService.deleteGallery(id);
+  }
+
+  // ==========================================
+  // BANNERS CRUD (ADMIN / SUPER_ADMIN)
+  // ==========================================
+  @Get('banners')
+  async listBanners() {
+    return this.cmsService.listBanners();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Post('banners')
+  async createBanner(@Body() dto: Record<string, unknown>) {
+    return this.cmsService.createBanner(dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Put('banners/:id')
+  async updateBanner(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: Record<string, unknown>,
+  ) {
+    return this.cmsService.updateBanner(id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Delete('banners/:id')
+  async deleteBanner(@Param('id', ParseIntPipe) id: number) {
+    return this.cmsService.deleteBanner(id);
+  }
+
+  // ==========================================
+  // FAQ CRUD (ADMIN / SUPER_ADMIN)
+  // ==========================================
+  @Get('faq')
+  async listFaq() {
+    return this.cmsService.listFaq();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Post('faq')
+  async createFaq(@Body() dto: Record<string, unknown>) {
+    return this.cmsService.createFaq(dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Put('faq/:id')
+  async updateFaq(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: Record<string, unknown>,
+  ) {
+    return this.cmsService.updateFaq(id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Delete('faq/:id')
+  async deleteFaq(@Param('id', ParseIntPipe) id: number) {
+    return this.cmsService.deleteFaq(id);
+  }
+
+  // ==========================================
+  // CONTACT SUBMISSIONS (VISITOR FORM & ADMIN LIST)
+  // ==========================================
+  @Post('contacts/public')
+  async createContact(@Body() dto: Record<string, unknown>) {
+    return this.cmsService.createContact(dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Get('contacts')
+  async listContacts() {
+    return this.cmsService.listContacts();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Patch('contacts/:id/read')
+  async markContactRead(@Param('id') id: string) {
+    return this.cmsService.markContactRead(id);
+  }
+
+  // ==========================================
+  // CONFIG SETTINGS (SUPER_ADMIN ONLY EDIT)
+  // ==========================================
+  @Get('settings')
+  async listSettings() {
+    return this.cmsService.listSettings();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @Post('settings')
+  async updateSetting(
+    @Body() body: { key: string; value: string; description?: string },
+  ) {
+    return this.cmsService.updateSetting(
+      body.key,
+      body.value,
+      body.description,
+    );
+  }
+
+  // ==========================================
+  // SOCIAL MEDIA (ADMIN / SUPER_ADMIN)
+  // ==========================================
+  @Get('social-media')
+  async listSocialMedia() {
+    return this.cmsService.listSocialMedia();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Post('social-media')
+  async updateSocialMedia(@Body() dto: Record<string, unknown>) {
+    return this.cmsService.updateSocialMedia(dto);
+  }
+}
