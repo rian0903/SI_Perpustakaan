@@ -6,7 +6,8 @@ import {
   BookOpen, LayoutDashboard, FileText, Calendar, Image as ImageIcon, 
   Settings, Users, HelpCircle, LogOut, Plus, Trash2, Edit, CheckCircle, 
   X, AlertCircle, Eye, EyeOff, User as UserIcon, ShieldAlert, Sliders,
-  Mail, MapPin, Phone, MessageSquare, Clock, Globe, ShieldCheck, Loader2
+  Mail, MapPin, Phone, MessageSquare, Clock, Globe, ShieldCheck, Loader2,
+  Navigation, Link2, Send, ArrowUp, ArrowDown, ToggleLeft, ToggleRight
 } from "lucide-react";
 import axios from "axios";
 
@@ -72,6 +73,27 @@ export default function AdminDashboard() {
     { platform: "instagram", url: "https://instagram.com" }
   ]);
 
+  // Navbar CMS States
+  const [navMenuItems, setNavMenuItems] = useState([
+    { id: 1, label: "Tentang", target: "#about", order: 1, active: true },
+    { id: 2, label: "Statistik", target: "#stats", order: 2, active: true },
+    { id: 3, label: "Berita", target: "#news", order: 3, active: true },
+    { id: 4, label: "Kegiatan", target: "#events", order: 4, active: true },
+    { id: 5, label: "Galeri", target: "#gallery", order: 5, active: true },
+    { id: 6, label: "FAQ", target: "#faq", order: 6, active: true }
+  ]);
+  const [contactButtons, setContactButtons] = useState([
+    { id: 1, label: "Hubungi Kami", platform: "whatsapp", value: "6281234567890", active: true }
+  ]);
+  const [navMenuForm, setNavMenuForm] = useState({ label: "", target: "", order: 1, active: true });
+  const [contactBtnForm, setContactBtnForm] = useState({ label: "", platform: "whatsapp", value: "", active: true });
+  const [editingNavMenu, setEditingNavMenu] = useState(null);
+  const [editingContactBtn, setEditingContactBtn] = useState(null);
+  const [showNavMenuModal, setShowNavMenuModal] = useState(false);
+  const [showContactBtnModal, setShowContactBtnModal] = useState(false);
+  const [logoText, setLogoText] = useState("Digital Book Experience");
+  const [logoUrl, setLogoUrl] = useState("");
+
   // Form Modals / Input States
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -96,16 +118,18 @@ export default function AdminDashboard() {
     const headers = { Authorization: `Bearer ${token}` };
 
     try {
-      const [resNews, resEvents, resFaq, resBanners, resGallery, resContacts, resUsers, resSettings, resSocials] = await Promise.all([
+      const [resNews, resEvents, resFaq, resBanners, resGallery, resContacts, resUsers, resSettings, resSocials, resNavMenu, resContactBtns] = await Promise.all([
         axios.get(`${apiUrl}/cms/news`),
         axios.get(`${apiUrl}/cms/events`),
         axios.get(`${apiUrl}/cms/faq`),
         axios.get(`${apiUrl}/cms/banners`),
         axios.get(`${apiUrl}/cms/gallery`),
         axios.get(`${apiUrl}/cms/contacts`, { headers }),
-        axios.get(`${apiUrl}/cms/users`, { headers }).catch(() => ({ data: INITIAL_USERS })), // Super Admin only failover
+        axios.get(`${apiUrl}/cms/users`, { headers }).catch(() => ({ data: INITIAL_USERS })),
         axios.get(`${apiUrl}/cms/settings`),
-        axios.get(`${apiUrl}/cms/social-media`)
+        axios.get(`${apiUrl}/cms/social-media`),
+        axios.get(`${apiUrl}/cms/nav-menu`),
+        axios.get(`${apiUrl}/cms/contact-buttons`)
       ]);
 
       if (resNews.data) setNews(resNews.data);
@@ -115,8 +139,16 @@ export default function AdminDashboard() {
       if (resGallery.data) setGallery(resGallery.data);
       if (resContacts.data) setContacts(resContacts.data);
       if (resUsers.data) setUsers(resUsers.data);
-      if (resSettings.data && resSettings.data.length > 0) setSettings(resSettings.data);
+      if (resSettings.data && resSettings.data.length > 0) {
+        setSettings(resSettings.data);
+        const lt = resSettings.data.find(s => s.key === "navbar_logo_text");
+        const lu = resSettings.data.find(s => s.key === "navbar_logo_url");
+        if (lt) setLogoText(lt.value);
+        if (lu) setLogoUrl(lu.value);
+      }
       if (resSocials.data && resSocials.data.length > 0) setSocials(resSocials.data);
+      if (resNavMenu.data && resNavMenu.data.length > 0) setNavMenuItems(resNavMenu.data);
+      if (resContactBtns.data && resContactBtns.data.length > 0) setContactButtons(resContactBtns.data);
     } catch (err) {
       console.error("Failed to load real backend data, continuing in offline simulator mode:", err.message);
       setOffline(true);
@@ -404,6 +436,7 @@ export default function AdminDashboard() {
               { id: "banner", label: "Kelola Banner", icon: <Sliders size={14} />, role: "ADMIN" },
               { id: "faq", label: "Kelola FAQ", icon: <HelpCircle size={14} />, role: "ADMIN" },
               { id: "user", label: "Kelola User", icon: <Users size={14} />, role: "SUPER_ADMIN" },
+              { id: "navbar", label: "Pengaturan Navbar", icon: <Navigation size={14} />, role: "SUPER_ADMIN" },
               { id: "settings", label: "Pengaturan & Medsos", icon: <Settings size={14} />, role: "ADMIN" }
             ].map((menu) => {
               const isLocked = menu.role === "SUPER_ADMIN" && user.role !== "SUPER_ADMIN";
@@ -459,6 +492,7 @@ export default function AdminDashboard() {
               {activeTab === "banner" && "Slider Banner Landing"}
               {activeTab === "faq" && "Kelola Tanya Jawab (FAQ)"}
               {activeTab === "user" && "Manajemen Akun Administrator"}
+              {activeTab === "navbar" && "Pengaturan Navbar Landing Page"}
               {activeTab === "settings" && "Konfigurasi Kesekretariatan"}
             </h2>
             <p className="text-[10px] text-gray-400 font-sans">Mengatur konten website utama Perpustakaan Kota Buku</p>
@@ -933,6 +967,512 @@ export default function AdminDashboard() {
                 ))}
               </div>
 
+            </div>
+          )}
+
+          {/* ==========================================
+              TAB VIEW: NAVBAR SETTINGS (SUPER_ADMIN ONLY)
+              ========================================== */}
+          {activeTab === "navbar" && (
+            <div className="space-y-8">
+
+              {/* SECTION 1: Logo Configuration */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200/50 shadow-soft space-y-6">
+                <h3 className="text-sm font-bold text-gray-900 font-navigation border-b border-gray-100 pb-3 flex items-center gap-1.5">
+                  <BookOpen size={16} className="text-primary-500" />
+                  <span>Pengaturan Logo Navbar</span>
+                </h3>
+                <p className="text-[10px] text-gray-400">Mengatur teks brand dan gambar logo yang ditampilkan di navbar landing page.</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (offline) {
+                      showNotification("Logo teks disimpan (Offline)");
+                      return;
+                    }
+                    const token = localStorage.getItem("admin_token");
+                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+                    const headers = { Authorization: `Bearer ${token}` };
+                    try {
+                      await axios.post(`${apiUrl}/cms/settings`, { key: "navbar_logo_text", value: logoText }, { headers });
+                      showNotification("Teks logo navbar berhasil disimpan.");
+                    } catch (err) {
+                      showNotification("Gagal menyimpan teks logo: " + err.message, "error");
+                    }
+                  }} className="space-y-2">
+                    <label className="text-[10px] font-navigation text-gray-400 font-bold uppercase block">Teks Brand Logo</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={logoText}
+                        onChange={(e) => setLogoText(e.target.value)}
+                        placeholder="Digital Book Experience"
+                        className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-primary-500 focus:bg-white text-xs font-sans"
+                      />
+                      <button type="submit" className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-bold font-navigation cursor-pointer text-[10px]">
+                        Simpan
+                      </button>
+                    </div>
+                  </form>
+
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (offline) {
+                      showNotification("Logo URL disimpan (Offline)");
+                      return;
+                    }
+                    const token = localStorage.getItem("admin_token");
+                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+                    const headers = { Authorization: `Bearer ${token}` };
+                    try {
+                      await axios.post(`${apiUrl}/cms/settings`, { key: "navbar_logo_url", value: logoUrl }, { headers });
+                      showNotification("URL logo navbar berhasil disimpan.");
+                    } catch (err) {
+                      showNotification("Gagal menyimpan URL logo: " + err.message, "error");
+                    }
+                  }} className="space-y-2">
+                    <label className="text-[10px] font-navigation text-gray-400 font-bold uppercase block">URL Gambar Logo (opsional)</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={logoUrl}
+                        onChange={(e) => setLogoUrl(e.target.value)}
+                        placeholder="https://example.com/logo.png"
+                        className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-primary-500 focus:bg-white text-xs font-sans"
+                      />
+                      <button type="submit" className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-bold font-navigation cursor-pointer text-[10px]">
+                        Simpan
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Preview */}
+                <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200/50">
+                  <span className="text-[10px] text-gray-400 font-navigation font-bold uppercase block mb-2">Preview Logo Navbar</span>
+                  <div className="flex items-center gap-2.5">
+                    {logoUrl ? (
+                      <img src={logoUrl} alt="Logo" className="w-9 h-9 rounded-lg object-cover shadow-soft" />
+                    ) : (
+                      <div className="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center text-white shadow-soft">
+                        <BookOpen size={18} />
+                      </div>
+                    )}
+                    <span className="font-navigation font-bold text-sm tracking-wider text-gray-900 uppercase">
+                      {logoText || "Digital Book Experience"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 2: Navigation Menu Items CRUD */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200/50 shadow-soft space-y-6">
+                <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                  <h3 className="text-sm font-bold text-gray-900 font-navigation flex items-center gap-1.5">
+                    <Link2 size={16} className="text-primary-500" />
+                    <span>Menu Navigasi Landing Page</span>
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setEditingNavMenu(null);
+                      setNavMenuForm({ label: "", target: "", order: navMenuItems.length + 1, active: true });
+                      setShowNavMenuModal(true);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-bold font-navigation text-[10px] cursor-pointer"
+                  >
+                    <Plus size={12} />
+                    <span>Tambah Menu</span>
+                  </button>
+                </div>
+                <p className="text-[10px] text-gray-400">Kelola daftar menu navigasi yang ditampilkan di navbar. Anda dapat menambah, mengubah urutan, menonaktifkan, atau menghapus menu.</p>
+
+                {navMenuItems.length === 0 ? (
+                  <div className="text-center py-10 text-gray-300">
+                    <Navigation size={32} className="mx-auto mb-2" />
+                    <p className="text-xs">Belum ada menu navigasi. Klik tombol di atas untuk menambahkan.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="border-b border-gray-100">
+                          <th className="text-[10px] font-navigation text-gray-400 font-bold uppercase py-3 pr-4">Urutan</th>
+                          <th className="text-[10px] font-navigation text-gray-400 font-bold uppercase py-3 pr-4">Label Menu</th>
+                          <th className="text-[10px] font-navigation text-gray-400 font-bold uppercase py-3 pr-4">Link Tujuan</th>
+                          <th className="text-[10px] font-navigation text-gray-400 font-bold uppercase py-3 pr-4">Status</th>
+                          <th className="text-[10px] font-navigation text-gray-400 font-bold uppercase py-3 text-right">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {navMenuItems.sort((a, b) => a.order - b.order).map((item) => (
+                          <tr key={item.id} className={`border-b border-gray-50 ${!item.active ? 'opacity-40' : ''}`}>
+                            <td className="py-3 pr-4">
+                              <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-gray-600 font-bold text-[10px]">
+                                {item.order}
+                              </span>
+                            </td>
+                            <td className="py-3 pr-4 font-bold text-gray-900">{item.label}</td>
+                            <td className="py-3 pr-4">
+                              <code className="px-2 py-0.5 bg-gray-100 rounded text-[10px] text-gray-600">{item.target}</code>
+                            </td>
+                            <td className="py-3 pr-4">
+                              <button
+                                onClick={async () => {
+                                  const newActive = !item.active;
+                                  if (offline) {
+                                    setNavMenuItems(navMenuItems.map(m => m.id === item.id ? { ...m, active: newActive } : m));
+                                    showNotification(`Menu "${item.label}" ${newActive ? 'diaktifkan' : 'dinonaktifkan'} (Offline)`);
+                                    return;
+                                  }
+                                  const token = localStorage.getItem("admin_token");
+                                  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+                                  const headers = { Authorization: `Bearer ${token}` };
+                                  try {
+                                    await axios.put(`${apiUrl}/cms/nav-menu/${item.id}`, { active: newActive }, { headers });
+                                    showNotification(`Menu "${item.label}" ${newActive ? 'diaktifkan' : 'dinonaktifkan'}.`);
+                                    fetchBackendData(token);
+                                  } catch (err) {
+                                    showNotification("Gagal mengubah status: " + err.message, "error");
+                                  }
+                                }}
+                                className="cursor-pointer"
+                              >
+                                {item.active ? (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-[9px] font-bold uppercase border border-green-200">
+                                    <ToggleRight size={12} /> Aktif
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-gray-400 text-[9px] font-bold uppercase border border-gray-200">
+                                    <ToggleLeft size={12} /> Nonaktif
+                                  </span>
+                                )}
+                              </button>
+                            </td>
+                            <td className="py-3 text-right">
+                              <div className="flex items-center gap-1.5 justify-end">
+                                <button
+                                  onClick={() => {
+                                    setEditingNavMenu(item);
+                                    setNavMenuForm({ label: item.label, target: item.target, order: item.order, active: item.active });
+                                    setShowNavMenuModal(true);
+                                  }}
+                                  className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 cursor-pointer"
+                                >
+                                  <Edit size={13} />
+                                </button>
+                                <button
+                                  onClick={async () => {
+                                    if (!confirm(`Hapus menu "${item.label}"?`)) return;
+                                    if (offline) {
+                                      setNavMenuItems(navMenuItems.filter(m => m.id !== item.id));
+                                      showNotification("Menu berhasil dihapus (Offline)");
+                                      return;
+                                    }
+                                    const token = localStorage.getItem("admin_token");
+                                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+                                    const headers = { Authorization: `Bearer ${token}` };
+                                    try {
+                                      await axios.delete(`${apiUrl}/cms/nav-menu/${item.id}`, { headers });
+                                      showNotification("Menu berhasil dihapus.");
+                                      fetchBackendData(token);
+                                    } catch (err) {
+                                      showNotification("Gagal menghapus menu: " + err.message, "error");
+                                    }
+                                  }}
+                                  className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 cursor-pointer"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* SECTION 3: Contact Button Configuration */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200/50 shadow-soft space-y-6">
+                <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                  <h3 className="text-sm font-bold text-gray-900 font-navigation flex items-center gap-1.5">
+                    <Send size={16} className="text-primary-500" />
+                    <span>Tombol Hubungi Kami</span>
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setEditingContactBtn(null);
+                      setContactBtnForm({ label: "", platform: "whatsapp", value: "", active: true });
+                      setShowContactBtnModal(true);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-bold font-navigation text-[10px] cursor-pointer"
+                  >
+                    <Plus size={12} />
+                    <span>Tambah Tombol</span>
+                  </button>
+                </div>
+                <p className="text-[10px] text-gray-400">Atur tombol kontak yang tampil di navbar. Pengunjung akan diarahkan ke platform komunikasi yang Anda pilih (WhatsApp, Instagram, Email, Telegram, atau link custom).</p>
+
+                {contactButtons.length === 0 ? (
+                  <div className="text-center py-10 text-gray-300">
+                    <Send size={32} className="mx-auto mb-2" />
+                    <p className="text-xs">Belum ada tombol kontak. Klik tombol di atas untuk menambahkan.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {contactButtons.map((btn) => {
+                      const platformColors = {
+                        whatsapp: "bg-green-50 border-green-200 text-green-700",
+                        instagram: "bg-pink-50 border-pink-200 text-pink-700",
+                        email: "bg-blue-50 border-blue-200 text-blue-700",
+                        telegram: "bg-sky-50 border-sky-200 text-sky-700",
+                        custom: "bg-gray-50 border-gray-200 text-gray-700"
+                      };
+                      const platformLabels = {
+                        whatsapp: "WhatsApp",
+                        instagram: "Instagram DM",
+                        email: "Email",
+                        telegram: "Telegram",
+                        custom: "URL Custom"
+                      };
+                      return (
+                        <div key={btn.id} className={`p-4 rounded-xl border flex items-center justify-between ${!btn.active ? 'opacity-40' : ''} ${platformColors[btn.platform] || platformColors.custom}`}>
+                          <div className="flex items-center gap-4">
+                            <div className="space-y-0.5">
+                              <span className="font-bold text-xs">{btn.label}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/80 border border-current/10">
+                                  {platformLabels[btn.platform] || btn.platform}
+                                </span>
+                                <span className="text-[10px] text-gray-500 font-mono">{btn.value}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={async () => {
+                                const newActive = !btn.active;
+                                if (offline) {
+                                  setContactButtons(contactButtons.map(b => b.id === btn.id ? { ...b, active: newActive } : b));
+                                  showNotification(`Tombol "${btn.label}" ${newActive ? 'diaktifkan' : 'dinonaktifkan'} (Offline)`);
+                                  return;
+                                }
+                                const token = localStorage.getItem("admin_token");
+                                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+                                const headers = { Authorization: `Bearer ${token}` };
+                                try {
+                                  await axios.put(`${apiUrl}/cms/contact-buttons/${btn.id}`, { active: newActive }, { headers });
+                                  showNotification(`Tombol "${btn.label}" ${newActive ? 'diaktifkan' : 'dinonaktifkan'}.`);
+                                  fetchBackendData(token);
+                                } catch (err) {
+                                  showNotification("Gagal mengubah status: " + err.message, "error");
+                                }
+                              }}
+                              className="cursor-pointer p-1.5 rounded-lg hover:bg-white/60"
+                            >
+                              {btn.active ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingContactBtn(btn);
+                                setContactBtnForm({ label: btn.label, platform: btn.platform, value: btn.value, active: btn.active });
+                                setShowContactBtnModal(true);
+                              }}
+                              className="p-1.5 rounded-lg hover:bg-white/60 text-blue-500 cursor-pointer"
+                            >
+                              <Edit size={13} />
+                            </button>
+                            <button
+                              onClick={async () => {
+                                if (!confirm(`Hapus tombol "${btn.label}"?`)) return;
+                                if (offline) {
+                                  setContactButtons(contactButtons.filter(b => b.id !== btn.id));
+                                  showNotification("Tombol berhasil dihapus (Offline)");
+                                  return;
+                                }
+                                const token = localStorage.getItem("admin_token");
+                                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+                                const headers = { Authorization: `Bearer ${token}` };
+                                try {
+                                  await axios.delete(`${apiUrl}/cms/contact-buttons/${btn.id}`, { headers });
+                                  showNotification("Tombol berhasil dihapus.");
+                                  fetchBackendData(token);
+                                } catch (err) {
+                                  showNotification("Gagal menghapus tombol: " + err.message, "error");
+                                }
+                              }}
+                              className="p-1.5 rounded-lg hover:bg-white/60 text-red-500 cursor-pointer"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+            </div>
+          )}
+
+          {/* ---- NAV MENU MODAL ---- */}
+          {showNavMenuModal && (
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
+              <div className="w-full max-w-md bg-white rounded-2xl border border-gray-250/30 shadow-large overflow-hidden">
+                <header className="px-6 py-4 bg-gray-50 border-b border-gray-150 flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-gray-900 font-navigation uppercase tracking-wider">
+                    {editingNavMenu ? "Ubah Menu Navigasi" : "Tambah Menu Navigasi"}
+                  </h4>
+                  <button onClick={() => setShowNavMenuModal(false)} className="text-gray-400 hover:text-gray-650 cursor-pointer">
+                    <X size={16} />
+                  </button>
+                </header>
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  setShowNavMenuModal(false);
+                  if (offline) {
+                    if (editingNavMenu) {
+                      setNavMenuItems(navMenuItems.map(m => m.id === editingNavMenu.id ? { ...m, ...navMenuForm } : m));
+                      showNotification("Menu berhasil diperbarui (Offline)");
+                    } else {
+                      setNavMenuItems([...navMenuItems, { id: Date.now(), ...navMenuForm }]);
+                      showNotification("Menu baru berhasil ditambahkan (Offline)");
+                    }
+                    return;
+                  }
+                  const token = localStorage.getItem("admin_token");
+                  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+                  const headers = { Authorization: `Bearer ${token}` };
+                  try {
+                    if (editingNavMenu) {
+                      await axios.put(`${apiUrl}/cms/nav-menu/${editingNavMenu.id}`, navMenuForm, { headers });
+                      showNotification("Menu berhasil diperbarui.");
+                    } else {
+                      await axios.post(`${apiUrl}/cms/nav-menu`, navMenuForm, { headers });
+                      showNotification("Menu baru berhasil dibuat.");
+                    }
+                    fetchBackendData(token);
+                  } catch (err) {
+                    showNotification("Gagal menyimpan menu: " + err.message, "error");
+                  }
+                }} className="p-6 space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-navigation text-gray-550 font-bold uppercase">Label Menu</label>
+                    <input type="text" required value={navMenuForm.label} onChange={(e) => setNavMenuForm({ ...navMenuForm, label: e.target.value })} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs" placeholder="Tentang Kami" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-navigation text-gray-550 font-bold uppercase">Link Tujuan (anchor/URL)</label>
+                    <input type="text" required value={navMenuForm.target} onChange={(e) => setNavMenuForm({ ...navMenuForm, target: e.target.value })} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs" placeholder="#about atau https://..." />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-navigation text-gray-550 font-bold uppercase">Urutan Tampil</label>
+                      <input type="number" min={1} value={navMenuForm.order} onChange={(e) => setNavMenuForm({ ...navMenuForm, order: parseInt(e.target.value) || 1 })} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-navigation text-gray-550 font-bold uppercase">Status</label>
+                      <select value={navMenuForm.active ? "true" : "false"} onChange={(e) => setNavMenuForm({ ...navMenuForm, active: e.target.value === "true" })} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs">
+                        <option value="true">Aktif</option>
+                        <option value="false">Nonaktif</option>
+                      </select>
+                    </div>
+                  </div>
+                  <footer className="pt-4 border-t border-gray-150 flex gap-2 justify-end">
+                    <button type="button" onClick={() => setShowNavMenuModal(false)} className="px-4 py-2 border border-gray-200 rounded-lg font-bold font-navigation cursor-pointer">Batal</button>
+                    <button type="submit" className="px-5 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-bold font-navigation cursor-pointer">Simpan</button>
+                  </footer>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* ---- CONTACT BUTTON MODAL ---- */}
+          {showContactBtnModal && (
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
+              <div className="w-full max-w-md bg-white rounded-2xl border border-gray-250/30 shadow-large overflow-hidden">
+                <header className="px-6 py-4 bg-gray-50 border-b border-gray-150 flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-gray-900 font-navigation uppercase tracking-wider">
+                    {editingContactBtn ? "Ubah Tombol Kontak" : "Tambah Tombol Kontak"}
+                  </h4>
+                  <button onClick={() => setShowContactBtnModal(false)} className="text-gray-400 hover:text-gray-650 cursor-pointer">
+                    <X size={16} />
+                  </button>
+                </header>
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  setShowContactBtnModal(false);
+                  if (offline) {
+                    if (editingContactBtn) {
+                      setContactButtons(contactButtons.map(b => b.id === editingContactBtn.id ? { ...b, ...contactBtnForm } : b));
+                      showNotification("Tombol kontak diperbarui (Offline)");
+                    } else {
+                      setContactButtons([...contactButtons, { id: Date.now(), ...contactBtnForm }]);
+                      showNotification("Tombol kontak baru ditambahkan (Offline)");
+                    }
+                    return;
+                  }
+                  const token = localStorage.getItem("admin_token");
+                  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+                  const headers = { Authorization: `Bearer ${token}` };
+                  try {
+                    if (editingContactBtn) {
+                      await axios.put(`${apiUrl}/cms/contact-buttons/${editingContactBtn.id}`, contactBtnForm, { headers });
+                      showNotification("Tombol kontak berhasil diperbarui.");
+                    } else {
+                      await axios.post(`${apiUrl}/cms/contact-buttons`, contactBtnForm, { headers });
+                      showNotification("Tombol kontak baru berhasil dibuat.");
+                    }
+                    fetchBackendData(token);
+                  } catch (err) {
+                    showNotification("Gagal menyimpan tombol kontak: " + err.message, "error");
+                  }
+                }} className="p-6 space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-navigation text-gray-550 font-bold uppercase">Teks Tombol</label>
+                    <input type="text" required value={contactBtnForm.label} onChange={(e) => setContactBtnForm({ ...contactBtnForm, label: e.target.value })} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs" placeholder="Hubungi Kami" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-navigation text-gray-550 font-bold uppercase">Platform Komunikasi</label>
+                    <select value={contactBtnForm.platform} onChange={(e) => setContactBtnForm({ ...contactBtnForm, platform: e.target.value })} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs">
+                      <option value="whatsapp">WhatsApp</option>
+                      <option value="instagram">Instagram DM</option>
+                      <option value="email">Email</option>
+                      <option value="telegram">Telegram</option>
+                      <option value="custom">URL Custom</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-navigation text-gray-550 font-bold uppercase">
+                      {contactBtnForm.platform === "whatsapp" && "Nomor WhatsApp (dengan kode negara, contoh: 6281234567890)"}
+                      {contactBtnForm.platform === "instagram" && "Username Instagram (tanpa @)"}
+                      {contactBtnForm.platform === "email" && "Alamat Email"}
+                      {contactBtnForm.platform === "telegram" && "Username Telegram (tanpa @)"}
+                      {contactBtnForm.platform === "custom" && "URL Tujuan Lengkap"}
+                    </label>
+                    <input type="text" required value={contactBtnForm.value} onChange={(e) => setContactBtnForm({ ...contactBtnForm, value: e.target.value })} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs" placeholder={
+                      contactBtnForm.platform === "whatsapp" ? "6281234567890" :
+                      contactBtnForm.platform === "instagram" ? "perpustakaankota" :
+                      contactBtnForm.platform === "email" ? "info@perpustakaan.go.id" :
+                      contactBtnForm.platform === "telegram" ? "perpustakaankota" :
+                      "https://..."
+                    } />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-navigation text-gray-550 font-bold uppercase">Status</label>
+                    <select value={contactBtnForm.active ? "true" : "false"} onChange={(e) => setContactBtnForm({ ...contactBtnForm, active: e.target.value === "true" })} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs">
+                      <option value="true">Aktif</option>
+                      <option value="false">Nonaktif</option>
+                    </select>
+                  </div>
+                  <footer className="pt-4 border-t border-gray-150 flex gap-2 justify-end">
+                    <button type="button" onClick={() => setShowContactBtnModal(false)} className="px-4 py-2 border border-gray-200 rounded-lg font-bold font-navigation cursor-pointer">Batal</button>
+                    <button type="submit" className="px-5 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-bold font-navigation cursor-pointer">Simpan</button>
+                  </footer>
+                </form>
+              </div>
             </div>
           )}
 

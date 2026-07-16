@@ -175,3 +175,29 @@ model VisitorLog {
 
   @@map("visitor_logs")
 }
+
+// 13. Navbar Menu Items (configurable from admin dashboard)
+model NavMenuItem {
+  id        Int      @id @default(autoincrement())
+  label     String
+  target    String
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("nav_menu_items")
+}
+
+// 14. Contact Button Configuration (navbar CTA button)
+model ContactButton {
+  id        Int      @id @default(autoincrement())
+  label     String
+  platform  String
+  value     String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contact_buttons")
+}

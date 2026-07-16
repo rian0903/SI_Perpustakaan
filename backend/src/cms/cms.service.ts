@@ -591,4 +591,138 @@ export class CmsService {
       });
     }
   }
+
+  // ==========================================
+  // NAV MENU ITEMS (SUPER_ADMIN ONLY)
+  // ==========================================
+  async listNavMenu() {
+    return this.prisma.navMenuItem.findMany({
+      orderBy: { order: 'asc' },
+    });
+  }
+
+  async createNavMenuItem(dto: Record<string, unknown>) {
+    const { label, target, order, active } = dto as {
+      label?: string;
+      target?: string;
+      order?: string | number;
+      active?: boolean;
+    };
+    if (!label || !target) {
+      throw new BadRequestException('Label dan target menu harus diisi.');
+    }
+    const orderVal = typeof order === 'string' ? parseInt(order, 10) : order;
+    return this.prisma.navMenuItem.create({
+      data: {
+        label,
+        target,
+        order: orderVal ?? 0,
+        active: active ?? true,
+      },
+    });
+  }
+
+  async updateNavMenuItem(id: number, dto: Record<string, unknown>) {
+    const item = await this.prisma.navMenuItem.findUnique({ where: { id } });
+    if (!item) throw new NotFoundException('Menu item tidak ditemukan.');
+
+    const { label, target, order, active } = dto as {
+      label?: string;
+      target?: string;
+      order?: string | number;
+      active?: boolean;
+    };
+    const updateData: {
+      label?: string;
+      target?: string;
+      order?: number;
+      active?: boolean;
+    } = {};
+
+    if (label !== undefined) updateData.label = label;
+    if (target !== undefined) updateData.target = target;
+    if (order !== undefined) {
+      updateData.order =
+        typeof order === 'string' ? parseInt(order, 10) : order;
+    }
+    if (active !== undefined) updateData.active = active;
+
+    return this.prisma.navMenuItem.update({
+      where: { id },
+      data: updateData,
+    });
+  }
+
+  async deleteNavMenuItem(id: number) {
+    const item = await this.prisma.navMenuItem.findUnique({ where: { id } });
+    if (!item) throw new NotFoundException('Menu item tidak ditemukan.');
+    await this.prisma.navMenuItem.delete({ where: { id } });
+    return { success: true };
+  }
+
+  // ==========================================
+  // CONTACT BUTTONS (SUPER_ADMIN ONLY)
+  // ==========================================
+  async listContactButtons() {
+    return this.prisma.contactButton.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async createContactButton(dto: Record<string, unknown>) {
+    const { label, platform, value, active } = dto as {
+      label?: string;
+      platform?: string;
+      value?: string;
+      active?: boolean;
+    };
+    if (!label || !platform || !value) {
+      throw new BadRequestException(
+        'Label, platform, dan value tombol kontak harus diisi.',
+      );
+    }
+    return this.prisma.contactButton.create({
+      data: {
+        label,
+        platform,
+        value,
+        active: active ?? true,
+      },
+    });
+  }
+
+  async updateContactButton(id: number, dto: Record<string, unknown>) {
+    const btn = await this.prisma.contactButton.findUnique({ where: { id } });
+    if (!btn) throw new NotFoundException('Tombol kontak tidak ditemukan.');
+
+    const { label, platform, value, active } = dto as {
+      label?: string;
+      platform?: string;
+      value?: string;
+      active?: boolean;
+    };
+    const updateData: {
+      label?: string;
+      platform?: string;
+      value?: string;
+      active?: boolean;
+    } = {};
+
+    if (label !== undefined) updateData.label = label;
+    if (platform !== undefined) updateData.platform = platform;
+    if (value !== undefined) updateData.value = value;
+    if (active !== undefined) updateData.active = active;
+
+    return this.prisma.contactButton.update({
+      where: { id },
+      data: updateData,
+    });
+  }
+
+  async deleteContactButton(id: number) {
+    const btn = await this.prisma.contactButton.findUnique({ where: { id } });
+    if (!btn) throw new NotFoundException('Tombol kontak tidak ditemukan.');
+    await this.prisma.contactButton.delete({ where: { id } });
+    return { success: true };
+  }
 }

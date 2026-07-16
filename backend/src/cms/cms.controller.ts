@@ -266,4 +266,68 @@ export class CmsController {
   async updateSocialMedia(@Body() dto: Record<string, unknown>) {
     return this.cmsService.updateSocialMedia(dto);
   }
+
+  // ==========================================
+  // NAV MENU ITEMS (SUPER_ADMIN ONLY EDIT, PUBLIC READ)
+  // ==========================================
+  @Get('nav-menu')
+  async listNavMenu() {
+    return this.cmsService.listNavMenu();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @Post('nav-menu')
+  async createNavMenuItem(@Body() dto: Record<string, unknown>) {
+    return this.cmsService.createNavMenuItem(dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @Put('nav-menu/:id')
+  async updateNavMenuItem(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: Record<string, unknown>,
+  ) {
+    return this.cmsService.updateNavMenuItem(id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @Delete('nav-menu/:id')
+  async deleteNavMenuItem(@Param('id', ParseIntPipe) id: number) {
+    return this.cmsService.deleteNavMenuItem(id);
+  }
+
+  // ==========================================
+  // CONTACT BUTTONS (SUPER_ADMIN ONLY EDIT, PUBLIC READ)
+  // ==========================================
+  @Get('contact-buttons')
+  async listContactButtons() {
+    return this.cmsService.listContactButtons();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @Post('contact-buttons')
+  async createContactButton(@Body() dto: Record<string, unknown>) {
+    return this.cmsService.createContactButton(dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @Put('contact-buttons/:id')
+  async updateContactButton(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: Record<string, unknown>,
+  ) {
+    return this.cmsService.updateContactButton(id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @Delete('contact-buttons/:id')
+  async deleteContactButton(@Param('id', ParseIntPipe) id: number) {
+    return this.cmsService.deleteContactButton(id);
+  }
 }

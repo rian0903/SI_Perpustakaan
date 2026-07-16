@@ -8,6 +8,7 @@ import {
   Youtube, Info, Award, Shield, Library, Users2, Activity, Database
 } from "lucide-react";
 import anime from "animejs";
+import axios from "axios";
 
 // Mock Data
 const MOCK_NEWS = [
@@ -131,6 +132,57 @@ export default function Home() {
   const containerRef = useRef(null);
   const touchStartY = useRef(0);
   const floatAnimRef = useRef(null);
+
+  // Dynamic Navbar Data (from CMS)
+  const [navMenu, setNavMenu] = useState([
+    { id: 1, label: "Tentang", target: "#about", order: 1, active: true },
+    { id: 2, label: "Statistik", target: "#stats", order: 2, active: true },
+    { id: 3, label: "Berita", target: "#news", order: 3, active: true },
+    { id: 4, label: "Kegiatan", target: "#events", order: 4, active: true },
+    { id: 5, label: "Galeri", target: "#gallery", order: 5, active: true },
+    { id: 6, label: "FAQ", target: "#faq", order: 6, active: true }
+  ]);
+  const [ctaButton, setCtaButton] = useState({ label: "Hubungi Kami", href: "#contact" });
+  const [navLogoText, setNavLogoText] = useState("Digital Book Experience");
+  const [navLogoUrl, setNavLogoUrl] = useState("");
+
+  // Fetch navbar data from CMS API
+  useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+
+    const buildContactHref = (btn) => {
+      switch (btn.platform) {
+        case "whatsapp": return `https://wa.me/${btn.value}`;
+        case "instagram": return `https://instagram.com/${btn.value}`;
+        case "email": return `mailto:${btn.value}`;
+        case "telegram": return `https://t.me/${btn.value}`;
+        case "custom": return btn.value;
+        default: return "#contact";
+      }
+    };
+
+    Promise.all([
+      axios.get(`${apiUrl}/cms/nav-menu`).catch(() => null),
+      axios.get(`${apiUrl}/cms/contact-buttons`).catch(() => null),
+      axios.get(`${apiUrl}/cms/settings`).catch(() => null)
+    ]).then(([menuRes, btnRes, settingsRes]) => {
+      if (menuRes?.data?.length) {
+        setNavMenu(menuRes.data.filter(m => m.active).sort((a, b) => a.order - b.order));
+      }
+      if (btnRes?.data?.length) {
+        const activeBtn = btnRes.data.find(b => b.active);
+        if (activeBtn) {
+          setCtaButton({ label: activeBtn.label, href: buildContactHref(activeBtn) });
+        }
+      }
+      if (settingsRes?.data?.length) {
+        const lt = settingsRes.data.find(s => s.key === "navbar_logo_text");
+        const lu = settingsRes.data.find(s => s.key === "navbar_logo_url");
+        if (lt?.value) setNavLogoText(lt.value);
+        if (lu?.value) setNavLogoUrl(lu.value);
+      }
+    }).catch(() => { /* silently use defaults */ });
+  }, []);
 
   // Particles Canvas Effect
   useEffect(() => {
@@ -462,29 +514,32 @@ export default function Home() {
           <header className={`fixed top-0 left-0 w-full h-20 z-35 transition-all duration-300 ${scrolled ? "glass-header shadow-soft" : "bg-transparent"}`}>
             <div className="chapter-container h-full flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center text-white shadow-soft">
-                  <BookOpen size={18} />
-                </div>
+                {navLogoUrl ? (
+                  <img src={navLogoUrl} alt="Logo" className="w-9 h-9 rounded-lg object-cover shadow-soft" />
+                ) : (
+                  <div className="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center text-white shadow-soft">
+                    <BookOpen size={18} />
+                  </div>
+                )}
                 <span className="font-navigation font-bold text-sm tracking-wider text-gray-900 uppercase">
-                  Digital Book Experience
+                  {navLogoText}
                 </span>
               </div>
 
-              {/* Desktop Navigation */}
+              {/* Desktop Navigation - Dynamic */}
               <nav className="hidden md:flex items-center gap-8 text-xs font-navigation font-semibold text-gray-500 uppercase tracking-widest">
-                <a href="#about" className="hover:text-primary-500 transition-colors">Tentang</a>
-                <a href="#stats" className="hover:text-primary-500 transition-colors">Statistik</a>
-                <a href="#news" className="hover:text-primary-500 transition-colors">Berita</a>
-                <a href="#events" className="hover:text-primary-500 transition-colors">Kegiatan</a>
-                <a href="#gallery" className="hover:text-primary-500 transition-colors">Galeri</a>
-                <a href="#faq" className="hover:text-primary-500 transition-colors">FAQ</a>
+                {navMenu.map((item) => (
+                  <a key={item.id} href={item.target} className="hover:text-primary-500 transition-colors">{item.label}</a>
+                ))}
               </nav>
 
               <a
-                href="#contact"
+                href={ctaButton.href}
+                target={ctaButton.href.startsWith("http") || ctaButton.href.startsWith("mailto:") ? "_blank" : undefined}
+                rel={ctaButton.href.startsWith("http") ? "noopener noreferrer" : undefined}
                 className="px-6 py-2.5 rounded-full bg-gray-900 text-white font-navigation text-xs font-bold hover:bg-black shadow-soft transition-all text-center"
               >
-                Hubungi Kami
+                {ctaButton.label}
               </a>
             </div>
           </header>
