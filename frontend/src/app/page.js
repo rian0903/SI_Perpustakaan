@@ -174,7 +174,11 @@ export default function Home() {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(212, 175, 55, ${p.opacity})`;
+        // Alternate between soft gold and ocean blue particles
+        const isBlue = Math.floor(p.x + p.y) % 2 === 0;
+        ctx.fillStyle = isBlue 
+          ? `rgba(0, 113, 227, ${p.opacity * 0.45})` 
+          : `rgba(212, 175, 55, ${p.opacity * 0.6})`;
         ctx.fill();
       });
       animationId = requestAnimationFrame(draw);
@@ -359,7 +363,7 @@ export default function Home() {
       {(stage === "intro" || stage === "opening") && (
         <button
           onClick={handleSkipAnimation}
-          className="fixed top-6 right-6 z-55 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-navigation text-xs font-semibold tracking-wider backdrop-blur-md transition-all cursor-pointer"
+          className="fixed top-6 right-6 z-55 px-5 py-2.5 rounded-full bg-gray-900/5 hover:bg-gray-900/10 text-gray-800 font-navigation text-xs font-semibold tracking-wider border border-gray-250/60 backdrop-blur-md transition-all cursor-pointer"
         >
           Lewati Animasi (Skip)
         </button>
@@ -435,19 +439,19 @@ export default function Home() {
 
           {/* Intro Text Indicators */}
           <div className="intro-ui-fade text-center space-y-4 mt-16 z-20">
-            <h1 className="text-xl md:text-2xl font-bold text-white font-sans tracking-wide">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 font-sans tracking-wide">
               Perpustakaan Umum Kota Buku
             </h1>
-            <p className="text-xs text-gold-300 font-navigation tracking-wider animate-pulse uppercase">
+            <p className="text-xs text-primary-650 font-navigation tracking-wider animate-pulse uppercase">
               Scroll ke bawah untuk membuka buku perjalanan Anda.
             </p>
-            <div className="w-6 h-10 border border-white/20 rounded-full mx-auto flex items-start p-1.5 opacity-60">
-              <div className="w-1.5 h-2 bg-gold-400 rounded-full mx-auto animate-bounce" />
+            <div className="w-6 h-10 border border-gray-300 rounded-full mx-auto flex items-start p-1.5 opacity-80">
+              <div className="w-1.5 h-2 bg-primary-500 rounded-full mx-auto animate-bounce" />
             </div>
           </div>
 
           {/* Ambient Fade overlay that reveals the white website */}
-          <div className="intro-ambient-overlay absolute inset-0 bg-[#080c14] z-0 pointer-events-none" />
+          <div className="intro-ambient-overlay absolute inset-0 bg-[#FAF9F6] z-0 pointer-events-none" />
         </div>
       )}
 

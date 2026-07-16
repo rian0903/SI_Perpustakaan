@@ -105,7 +105,7 @@ body {
    -------------------------------------------------- */
 
 .dark-stage {
-  background-color: #080c14;
+  background-color: #FAF9F6;
 }
 
 /* Pulse Gold Glow keyframes */
@@ -240,9 +240,9 @@ body {
   z-index: 2;
 }
 
-/* Soft gold ambient light */
+/* Soft gold/blue ambient light on light background */
 .ambient-glow {
-  background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, rgba(8, 12, 20, 0) 70%);
+  background: radial-gradient(circle, rgba(0, 113, 227, 0.06) 0%, rgba(250, 249, 246, 0) 70%);
 }
 
 .apple-reveal {
