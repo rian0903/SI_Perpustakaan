@@ -469,17 +469,21 @@ export default function Home() {
                 </div>
 
                 {/* PAGES STACK */}
-                <div className="intro-book-page-1 book-page-cinematic page-1 select-none flex flex-col justify-between p-6">
-                  <div className="space-y-3">
-                    <span className="text-[9px] uppercase tracking-wider text-primary-500 font-bold font-navigation">Lembaran Pembuka</span>
-                    <h3 className="text-sm font-bold text-gray-900 font-sans">Bab I: Menjelajah</h3>
-                    <p className="text-[10px] text-gray-500 leading-relaxed font-sans">Menyingkap rahasia peradaban melalui aksara dan lembaran ilmu.</p>
+                <div className="intro-book-page-1 book-page-cinematic page-1 select-none p-6">
+                  <div className="flipped-page-content">
+                    <div className="space-y-3">
+                      <span className="text-[9px] uppercase tracking-wider text-primary-500 font-bold font-navigation">Lembaran Pembuka</span>
+                      <h3 className="text-sm font-bold text-gray-900 font-sans">Bab I: Menjelajah</h3>
+                      <p className="text-[10px] text-gray-500 leading-relaxed font-sans">Menyingkap rahasia peradaban melalui aksara dan lembaran ilmu.</p>
+                    </div>
+                    <FakeTextLines lines={5} />
                   </div>
-                  <FakeTextLines lines={5} />
                 </div>
-                <div className="intro-book-page-2 book-page-cinematic page-2 select-none flex flex-col justify-center p-6 gap-4">
-                  <FakeTextLines lines={8} />
-                  <FakeTextLines lines={6} />
+                <div className="intro-book-page-2 book-page-cinematic page-2 select-none p-6">
+                  <div className="flipped-page-content justify-center gap-4">
+                    <FakeTextLines lines={8} />
+                    <FakeTextLines lines={6} />
+                  </div>
                 </div>
                 <div className="intro-book-page-3 book-page-cinematic page-3 select-none flex flex-col justify-center p-6 gap-4">
                   <FakeTextLines lines={7} />
@@ -546,16 +550,20 @@ export default function Home() {
                 </div>
 
                 {/* PAGES STACK */}
-                <div className="closing-book-page-1 book-page-cinematic page-1 select-none flex flex-col justify-between p-6">
-                  <div className="space-y-3">
-                    <span className="text-[9px] uppercase tracking-wider text-primary-500 font-bold font-navigation">Lembaran Pembuka</span>
-                    <h3 className="text-sm font-bold text-gray-900 font-sans">Bab I: Menjelajah</h3>
+                <div className="closing-book-page-1 book-page-cinematic page-1 select-none p-6">
+                  <div className="flipped-page-content">
+                    <div className="space-y-3">
+                      <span className="text-[9px] uppercase tracking-wider text-primary-500 font-bold font-navigation">Lembaran Pembuka</span>
+                      <h3 className="text-sm font-bold text-gray-900 font-sans">Bab I: Menjelajah</h3>
+                    </div>
+                    <FakeTextLines lines={5} />
                   </div>
-                  <FakeTextLines lines={5} />
                 </div>
-                <div className="closing-book-page-2 book-page-cinematic page-2 select-none flex flex-col justify-center p-6 gap-4">
-                  <FakeTextLines lines={8} />
-                  <FakeTextLines lines={6} />
+                <div className="closing-book-page-2 book-page-cinematic page-2 select-none p-6">
+                  <div className="flipped-page-content justify-center gap-4">
+                    <FakeTextLines lines={8} />
+                    <FakeTextLines lines={6} />
+                  </div>
                 </div>
                 <div className="closing-book-page-3 book-page-cinematic page-3 select-none flex flex-col justify-center p-6 gap-4">
                   <FakeTextLines lines={7} />
