@@ -5,7 +5,7 @@ import {
   BookOpen, ArrowRight, Compass, Calendar, Image as ImageIcon, 
   MapPin, User, ChevronDown, X, Mail, Phone, Clock, Search, 
   AlertCircle, CheckCircle, ArrowUpRight, Facebook, Twitter, Instagram, 
-  Youtube, Info, Award, Shield, Library, Users2, Activity, Database, RefreshCw
+  Youtube, Info, Award, Shield, Library, Users2, Activity, Database
 } from "lucide-react";
 import anime from "animejs";
 
@@ -105,7 +105,6 @@ const FakeTextLines = ({ lines = 6, color = "bg-gray-300/40" }) => {
   return (
     <div className="space-y-2 w-full">
       {Array.from({ length: lines }).map((_, idx) => {
-        // Alternating widths to make it look like natural paragraphs
         const widths = ["w-full", "w-11/12", "w-5/6", "w-4/5", "w-3/4", "w-2/3"];
         const width = widths[idx % widths.length];
         return <div key={idx} className={`h-1 rounded-full ${width} ${color}`} />;
@@ -115,7 +114,7 @@ const FakeTextLines = ({ lines = 6, color = "bg-gray-300/40" }) => {
 };
 
 export default function Home() {
-  // Cinematic States: intro | opening | site | closing | backcover
+  // Cinematic States: intro | opening | site
   const [stage, setStage] = useState("intro");
   const [scrolled, setScrolled] = useState(false);
   const [activeFaq, setActiveFaq] = useState(null);
@@ -129,13 +128,12 @@ export default function Home() {
   const [eventRegisterForm, setEventRegisterForm] = useState({ name: "", email: "" });
 
   const canvasRef = useRef(null);
-  const statsSectionRef = useRef(null);
   const containerRef = useRef(null);
   const touchStartY = useRef(0);
 
   // Particles Canvas Effect
   useEffect(() => {
-    if (stage !== "intro" && stage !== "opening" && stage !== "closing") return;
+    if (stage !== "intro" && stage !== "opening") return;
     
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -168,7 +166,6 @@ export default function Home() {
         p.y += p.speedY;
         p.x += p.speedX;
         
-        // Loop particles to bottom if out of bounds
         if (p.y < -10) {
           p.y = height + 10;
           p.x = Math.random() * width;
@@ -176,7 +173,7 @@ export default function Home() {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(212, 175, 55, ${p.opacity})`; // Gold particles
+        ctx.fillStyle = `rgba(212, 175, 55, ${p.opacity})`;
         ctx.fill();
       });
       animationId = requestAnimationFrame(draw);
@@ -190,7 +187,7 @@ export default function Home() {
     };
   }, [stage]);
 
-  // Set up float loop for intro book
+  // Float loop for intro book
   useEffect(() => {
     if (stage === "intro") {
       anime({
@@ -272,107 +269,32 @@ export default function Home() {
     });
   };
 
-  // Trigger Closing Timeline (Site to Backcover)
-  const triggerClosing = () => {
-    if (stage !== "site") return;
-    setStage("closing");
-    window.scrollTo(0, 0);
-
-    const tl = anime.timeline({
-      easing: "cubicBezier(0.25, 1, 0.5, 1)",
-      complete: () => {
-        setStage("backcover");
-      }
-    });
-
-    tl.add({
-      targets: ".closing-screen-overlay",
-      opacity: [0, 1],
-      duration: 1000
-    })
-    .add({
-      targets: ".closing-book-model",
-      scale: [1.8, 1],
-      opacity: [0, 1],
-      duration: 1200,
-      offset: "-=600"
-    })
-    .add({
-      targets: ".closing-book-cover",
-      rotateY: [ -155, 0 ],
-      duration: 1800,
-      offset: "-=800"
-    })
-    .add({
-      targets: ".closing-book-page-1",
-      rotateY: [ -140, 0 ],
-      duration: 1800,
-      offset: "-=1800"
-    })
-    .add({
-      targets: ".closing-book-page-2",
-      rotateY: [ -125, 0 ],
-      duration: 1800,
-      offset: "-=1800"
-    })
-    .add({
-      targets: ".closing-book-page-3",
-      rotateY: [ -25, 0 ],
-      duration: 1800,
-      offset: "-=1800"
-    })
-    .add({
-      targets: ".closing-text-fade",
-      opacity: [0, 1],
-      translateY: [20, 0],
-      duration: 600,
-      offset: "-=400"
-    });
-  };
-
   // Skip animations directly to site
   const handleSkipAnimation = () => {
     setStage("site");
     window.scrollTo(0, 0);
   };
 
-  // Re-open book from backcover to homepage
-  const handleRestartJourney = () => {
-    setStage("intro");
-    setTimeout(() => {
-      triggerOpening();
-    }, 100);
-  };
-
-  // Scroll Interceptions (Wheel / Touch)
+  // Scroll Interceptions (Intro stage locks only)
   const handleWheel = (e) => {
     if (stage === "intro" && e.deltaY > 5) {
       e.preventDefault();
       triggerOpening();
-    } else if (stage === "site") {
-      // Check if user is at the absolute bottom of the page and scrolling down
-      const isAtBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 5;
-      if (isAtBottom && e.deltaY > 5) {
-        e.preventDefault();
-        triggerClosing();
-      }
     }
   };
 
   const handleTouchStart = (e) => {
-    touchStartY.current = e.touches[0].clientY;
+    if (stage === "intro") {
+      touchStartY.current = e.touches[0].clientY;
+    }
   };
 
   const handleTouchMove = (e) => {
-    const deltaY = touchStartY.current - e.touches[0].clientY;
-    if (stage === "intro" && deltaY > 10) {
-      e.preventDefault();
-      triggerOpening();
-    } else if (stage === "site") {
-      const isAtBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 5;
-      if (isAtBottom && deltaY > 10) {
+    if (stage === "intro") {
+      const deltaY = touchStartY.current - e.touches[0].clientY;
+      if (deltaY > 10) {
         e.preventDefault();
-        triggerClosing();
+        triggerOpening();
       }
     }
   };
@@ -411,11 +333,11 @@ export default function Home() {
       onWheel={handleWheel}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
-      className={`flex-1 flex flex-col min-h-screen relative overflow-x-hidden ${stage === "intro" || stage === "opening" || stage === "closing" ? "overflow-y-hidden h-screen" : ""}`}
+      className={`flex-1 flex flex-col min-h-screen relative overflow-x-hidden ${stage === "intro" || stage === "opening" ? "overflow-y-hidden h-screen" : ""}`}
     >
       
       {/* -------------------- DUST PARTICLES CANVAS -------------------- */}
-      {(stage === "intro" || stage === "opening" || stage === "closing") && (
+      {(stage === "intro" || stage === "opening") && (
         <canvas ref={canvasRef} className="particle-canvas" />
       )}
 
@@ -515,81 +437,9 @@ export default function Home() {
         </div>
       )}
 
-      {/* -------------------- CINEMATIC STAGE: CLOSING -------------------- */}
-      {stage === "closing" && (
-        <div className="fixed inset-0 z-45 dark-stage flex flex-col justify-center items-center overflow-hidden">
-          {/* Ambient Glow */}
-          <div className="absolute inset-0 ambient-glow opacity-80 pointer-events-none" />
-
-          {/* Book Wrapper */}
-          <div className="closing-book-model flex justify-center items-center scale-100 z-10">
-            <div className="perspective-1800">
-              <div className="book-cinematic">
-                <div className="book-spine-cinematic" />
-
-                {/* FRONT COVER */}
-                <div className="closing-book-cover book-cover-cinematic flex flex-col justify-between p-8 select-none">
-                  <div className="border border-gold-305/20 h-full w-full absolute top-0 left-0 p-4 pointer-events-none">
-                    <div className="border border-gold-300/10 h-full w-full rounded-sm" />
-                  </div>
-                  <div className="space-y-4 relative z-10">
-                    <span className="text-[10px] tracking-[0.25em] text-gold-300 font-navigation font-bold uppercase block">
-                      Digital Book Experience
-                    </span>
-                    <h2 className="text-3xl font-bold text-white font-sans leading-snug">
-                      Sistem Informasi <br />
-                      <span className="text-gold-400 font-display italic font-light">Perpustakaan</span>
-                    </h2>
-                  </div>
-                  <div className="border-t border-white/10 pt-6 space-y-2 relative z-10">
-                    <p className="text-[10px] text-gold-300 font-navigation tracking-wider font-bold">
-                      KOTA BUKU
-                    </p>
-                    <div className="h-0.5 w-16 bg-gold-400 rounded-full" />
-                  </div>
-                </div>
-
-                {/* PAGES STACK */}
-                <div className="closing-book-page-1 book-page-cinematic page-1 select-none p-6">
-                  <div className="flipped-page-content">
-                    <div className="space-y-3">
-                      <span className="text-[9px] uppercase tracking-wider text-primary-500 font-bold font-navigation">Lembaran Pembuka</span>
-                      <h3 className="text-sm font-bold text-gray-900 font-sans">Bab I: Menjelajah</h3>
-                    </div>
-                    <FakeTextLines lines={5} />
-                  </div>
-                </div>
-                <div className="closing-book-page-2 book-page-cinematic page-2 select-none p-6">
-                  <div className="flipped-page-content justify-center gap-4">
-                    <FakeTextLines lines={8} />
-                    <FakeTextLines lines={6} />
-                  </div>
-                </div>
-                <div className="closing-book-page-3 book-page-cinematic page-3 select-none flex flex-col justify-center p-6 gap-4">
-                  <FakeTextLines lines={7} />
-                  <FakeTextLines lines={5} />
-                </div>
-                <div className="book-page-cinematic page-4 select-none flex flex-col justify-center p-6 gap-4">
-                  <FakeTextLines lines={8} />
-                  <FakeTextLines lines={4} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Closing Text Info */}
-          <div className="closing-text-fade text-center mt-12 z-20 space-y-3 opacity-0">
-            <h2 className="text-lg font-bold text-white font-sans">Menutup Lembaran Informasi...</h2>
-            <p className="text-xs text-gray-400 font-navigation">Halaman FAQ dan Kontak akan terbentang sesaat lagi.</p>
-          </div>
-
-          <div className="closing-screen-overlay absolute inset-0 bg-[#080c14] z-0 pointer-events-none" />
-        </div>
-      )}
-
-      {/* -------------------- STAGE: MAIN SITE (Scrollable) -------------------- */}
+      {/* -------------------- STAGE: MAIN SITE (Scrollable Layout) -------------------- */}
       {stage === "site" && (
-        <div className="flex-1 flex flex-col animate-fade-in relative z-10">
+        <div className="flex-1 flex flex-col animate-fade-in relative z-10 bg-white">
           {/* HEADER */}
           <header className={`fixed top-0 left-0 w-full h-20 z-35 transition-all duration-300 ${scrolled ? "glass-header shadow-soft" : "bg-transparent"}`}>
             <div className="chapter-container h-full flex items-center justify-between">
@@ -609,14 +459,15 @@ export default function Home() {
                 <a href="#news" className="hover:text-primary-500 transition-colors">Berita</a>
                 <a href="#events" className="hover:text-primary-500 transition-colors">Kegiatan</a>
                 <a href="#gallery" className="hover:text-primary-500 transition-colors">Galeri</a>
+                <a href="#faq" className="hover:text-primary-500 transition-colors">FAQ</a>
               </nav>
 
-              <button
-                onClick={triggerClosing}
-                className="px-6 py-2.5 rounded-full bg-gray-900 text-white font-navigation text-xs font-bold hover:bg-black shadow-soft transition-all cursor-pointer"
+              <a
+                href="#contact"
+                className="px-6 py-2.5 rounded-full bg-gray-900 text-white font-navigation text-xs font-bold hover:bg-black shadow-soft transition-all text-center"
               >
-                Halaman Kontak
-              </button>
+                Hubungi Kami
+              </a>
             </div>
           </header>
 
@@ -646,7 +497,6 @@ export default function Home() {
                 </div>
               </div>
               <div className="lg:col-span-4 flex justify-center">
-                {/* Floating minimal graphic decoration */}
                 <div className="w-56 h-56 rounded-full bg-primary-100/50 flex items-center justify-center relative">
                   <div className="absolute inset-4 rounded-full border border-primary-300 border-dashed animate-spin duration-[10000ms]" />
                   <Library size={48} className="text-primary-500" />
@@ -740,7 +590,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="lg:col-span-4 bg-paper-200 p-6 rounded-xl border border-gray-100 flex flex-col justify-between">
+                <div className="lg:col-span-4 bg-paper-200 p-6 rounded-xl border border-gray-150 flex flex-col justify-between">
                   <div className="space-y-2">
                     <h4 className="text-sm font-bold text-gray-900 font-navigation flex items-center gap-1.5">
                       <Clock size={16} className="text-primary-500" />
@@ -919,7 +769,7 @@ export default function Home() {
           </section>
 
           {/* GALERI */}
-          <section id="gallery" className="py-24 bg-white">
+          <section id="gallery" className="py-24 bg-white border-b border-gray-200/40">
             <div className="chapter-container space-y-12">
               <div className="max-w-2xl space-y-3">
                 <span className="text-xs uppercase tracking-widest text-primary-500 font-navigation font-bold">Galeri Dokumentasi</span>
@@ -937,169 +787,130 @@ export default function Home() {
                   </div>
                 ))}
               </div>
+            </div>
+          </section>
 
-              {/* Bottom trigger to close book */}
-              <div className="pt-12 text-center border-t border-gray-100">
-                <p className="text-xs text-gray-400 font-navigation mb-3 uppercase tracking-wider">Anda telah mencapai akhir bab utama</p>
-                <button
-                  onClick={triggerClosing}
-                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-gray-900 text-white font-navigation text-xs font-bold hover:bg-black shadow-medium cursor-pointer"
-                >
-                  <span>Lanjut Ke Halaman Penutup ( FAQ / Kontak )</span>
-                  <ArrowRight size={14} />
-                </button>
+          {/* FAQ SECTION (Moved to Main Page) */}
+          <section id="faq" className="py-24 bg-white border-b border-gray-200/40">
+            <div className="chapter-container max-w-4xl space-y-8">
+              <div className="text-center space-y-2">
+                <span className="text-xs uppercase tracking-widest text-primary-500 font-navigation font-bold">Informasi Layanan</span>
+                <h2 className="text-3xl font-bold text-gray-900 font-sans">Pertanyaan Umum (FAQ)</h2>
+                <p className="text-xs text-gray-400 font-sans">Jawaban atas pertanyaan yang paling sering diajukan pengunjung.</p>
+              </div>
+
+              <div className="space-y-4">
+                {FAQS.map((faq, index) => (
+                  <div key={index} className="bg-white rounded-xl border border-gray-150 overflow-hidden shadow-soft">
+                    <button
+                      onClick={() => setActiveFaq(activeFaq === index ? null : index)}
+                      className="w-full text-left p-4.5 flex items-center justify-between font-navigation text-sm font-semibold text-primary-600 hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                      <span>{faq.q}</span>
+                      <ChevronDown 
+                        size={16} 
+                        className={`text-primary-500 transition-transform duration-300 ${activeFaq === index ? "transform rotate-180" : ""}`} 
+                      />
+                    </button>
+                    {activeFaq === index && (
+                      <div className="p-4.5 pt-0 border-t border-gray-50 text-xs text-gray-500 leading-relaxed font-sans">
+                        {faq.a}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           </section>
-        </div>
-      )}
 
-      {/* -------------------- STAGE: BACKCOVER (FAQ, CONTACT, FOOTER) -------------------- */}
-      {stage === "backcover" && (
-        <div className="flex-1 flex flex-col animate-fade-in relative z-20 bg-paper-100">
-          
-          {/* Header Backcover */}
-          <header className="w-full h-20 border-b border-gray-250/20 bg-white shadow-soft">
-            <div className="chapter-container h-full flex items-center justify-between">
-              <button
-                onClick={handleRestartJourney}
-                className="inline-flex items-center gap-1.5 text-xs text-primary-500 font-bold font-navigation hover:text-primary-700 cursor-pointer"
-              >
-                <RefreshCw size={14} />
-                <span>Buka Kembali Buku Informasi</span>
-              </button>
-              
-              <span className="font-navigation font-bold text-xs tracking-wider text-gray-400 uppercase">
-                Bab Penutup: Informasi Sekretariat
-              </span>
-            </div>
-          </header>
-
-          {/* MAIN FAQ & CONTACT */}
-          <main className="py-16 md:py-24 flex-1">
-            <div className="chapter-container space-y-16">
-              
-              {/* Header */}
-              <div className="text-center max-w-2xl mx-auto space-y-2">
-                <span className="text-xs uppercase tracking-widest text-primary-500 font-navigation font-bold">Halaman Penutup</span>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 font-sans">Pertanyaan & Pusat Kontak</h2>
-                <p className="text-xs text-gray-400 font-sans">Jawaban pertanyaan mendasar serta layanan aduan sekretariat kami.</p>
+          {/* KONTAK & MAPS SECTION (Moved to Main Page) */}
+          <section id="contact" className="py-24 bg-white">
+            <div className="chapter-container space-y-12">
+              <div className="max-w-2xl space-y-3">
+                <span className="text-xs uppercase tracking-widest text-primary-500 font-navigation font-bold">Bab Kontak</span>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 font-sans">Pusat Bantuan & Lokasi</h2>
+                <p className="text-xs text-gray-400 font-sans">Hubungi admin atau kunjungi gedung perpustakaan kami melalui peta rute berikut.</p>
               </div>
 
-              {/* Grid 2 Columns */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-                
-                {/* Left: FAQ (6 cols) */}
-                <div className="lg:col-span-6 space-y-6">
-                  <h3 className="text-xl font-bold text-gray-900 font-navigation">Pertanyaan Umum (FAQ)</h3>
-                  <div className="space-y-3">
-                    {FAQS.map((faq, index) => (
-                      <div key={index} className="bg-white rounded-xl border border-gray-150 overflow-hidden shadow-soft">
-                        <button
-                          onClick={() => setActiveFaq(activeFaq === index ? null : index)}
-                          className="w-full text-left p-4 flex items-center justify-between font-navigation text-[13px] font-semibold text-primary-600 hover:bg-gray-50 transition-colors cursor-pointer"
-                        >
-                          <span>{faq.q}</span>
-                          <ChevronDown 
-                            size={16} 
-                            className={`text-primary-500 transition-transform duration-300 ${activeFaq === index ? "transform rotate-180" : ""}`} 
+                {/* Message Form (7 cols) */}
+                <div className="lg:col-span-7 space-y-6">
+                  <h3 className="text-lg font-bold text-gray-900 font-navigation">Form Hubungi Kami</h3>
+                  
+                  {contactSuccess ? (
+                    <div className="bg-green-50 border border-green-200 text-green-700 p-8 rounded-2xl text-center space-y-3">
+                      <CheckCircle size={32} className="mx-auto text-green-600 animate-bounce" />
+                      <h4 className="font-bold text-base">Pesan Anda Terkirim!</h4>
+                      <p className="text-xs text-green-650">Terima kasih atas laporan Anda. Hubungan Masyarakat kami akan segera merespons aduan Anda.</p>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleContactSubmit} className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-navigation text-gray-500 font-bold uppercase">Nama Lengkap</label>
+                          <input
+                            type="text"
+                            required
+                            value={contactForm.name}
+                            onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                            className="w-full px-3 py-2 bg-paper-100 border border-gray-250 rounded-lg focus:outline-none focus:border-primary-500 text-xs font-sans"
                           />
-                        </button>
-                        {activeFaq === index && (
-                          <div className="p-4 pt-0 border-t border-gray-50 text-xs text-gray-500 leading-relaxed font-sans">
-                            {faq.a}
-                          </div>
-                        )}
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-navigation text-gray-500 font-bold uppercase">Email</label>
+                          <input
+                            type="email"
+                            required
+                            value={contactForm.email}
+                            onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                            className="w-full px-3 py-2 bg-paper-100 border border-gray-250 rounded-lg focus:outline-none focus:border-primary-500 text-xs font-sans"
+                          />
+                        </div>
                       </div>
-                    ))}
-                  </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-navigation text-gray-500 font-bold uppercase">Isi Pesan</label>
+                        <textarea
+                          required
+                          rows={4}
+                          value={contactForm.message}
+                          onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                          className="w-full px-3 py-2 bg-paper-100 border border-gray-250 rounded-lg focus:outline-none focus:border-primary-500 text-xs font-sans resize-none"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-navigation text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        Kirim Aduan
+                      </button>
+                    </form>
+                  )}
                 </div>
 
-                {/* Right: Contact Form & Maps Info (6 cols) */}
-                <div className="lg:col-span-6 space-y-8">
-                  <div className="bg-white p-6 rounded-2xl border border-gray-200/50 shadow-soft">
-                    <h3 className="text-xl font-bold text-gray-900 font-navigation mb-4">Kirim Pesan</h3>
-                    
-                    {contactSuccess ? (
-                      <div className="bg-green-50 border border-green-200 text-green-700 p-6 rounded-xl text-center space-y-2">
-                        <CheckCircle size={28} className="mx-auto text-green-600" />
-                        <h4 className="font-bold text-sm">Pesan Berhasil Terkirim!</h4>
-                        <p className="text-[11px] text-green-600">Terima kasih. Kami akan segera membalas email aduan Anda.</p>
-                      </div>
-                    ) : (
-                      <form onSubmit={handleContactSubmit} className="space-y-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-navigation text-gray-500 font-bold uppercase">Nama Lengkap</label>
-                            <input
-                              type="text"
-                              required
-                              value={contactForm.name}
-                              onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                              className="w-full px-3 py-2 bg-paper-100 border border-gray-250 rounded-lg focus:outline-none focus:border-primary-500 text-xs font-sans"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-navigation text-gray-500 font-bold uppercase">Email</label>
-                            <input
-                              type="email"
-                              required
-                              value={contactForm.email}
-                              onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                              className="w-full px-3 py-2 bg-paper-100 border border-gray-250 rounded-lg focus:outline-none focus:border-primary-500 text-xs font-sans"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-navigation text-gray-500 font-bold uppercase">Isi Pesan</label>
-                          <textarea
-                            required
-                            rows={3}
-                            value={contactForm.message}
-                            onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
-                            className="w-full px-3 py-2 bg-paper-100 border border-gray-250 rounded-lg focus:outline-none focus:border-primary-500 text-xs font-sans resize-none"
-                          />
-                        </div>
-
-                        <button
-                          type="submit"
-                          className="w-full py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-navigation text-xs font-bold transition-colors cursor-pointer"
-                        >
-                          Kirim Pesan
-                        </button>
-                      </form>
-                    )}
-                  </div>
-
-                  {/* Maps & Address Info */}
-                  <div className="space-y-4">
-                    <h3 className="text-xs uppercase tracking-widest text-gray-400 font-navigation font-bold">Sekretariat Fisik</h3>
-                    <div className="bg-white p-5 rounded-xl border border-gray-150 flex gap-4 items-center">
-                      <div className="w-10 h-10 rounded-full bg-primary-50 text-primary-500 flex items-center justify-center shrink-0">
-                        <MapPin size={18} />
-                      </div>
-                      <div>
-                        <h4 className="font-navigation text-xs font-bold text-gray-900">Jl. Sastra Kencana No. 45, Kota Buku</h4>
-                        <p className="text-[10px] text-gray-450 leading-relaxed pt-0.5">Gedung Utama Sektor Timur (Samping Danau Kota).</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 text-xs text-gray-500 font-sans">
-                      <div className="bg-white p-4 rounded-xl border border-gray-150 flex items-center gap-2">
-                        <Mail size={14} className="text-primary-500" />
-                        <span>info@perpustakaankota.go.id</span>
-                      </div>
-                      <div className="bg-white p-4 rounded-xl border border-gray-150 flex items-center gap-2">
-                        <Phone size={14} className="text-primary-500" />
-                        <span>(021) 8899-7766</span>
-                      </div>
+                {/* Maps & Medsos (5 cols) */}
+                <div className="lg:col-span-5 space-y-6">
+                  <h3 className="text-lg font-bold text-gray-900 font-navigation">Detail Kontak & Peta</h3>
+                  
+                  {/* Map box */}
+                  <div className="relative h-56 w-full rounded-2xl overflow-hidden border border-gray-150 bg-paper-100 flex flex-col justify-center items-center text-center p-4">
+                    <MapPin size={24} className="text-primary-500 animate-bounce mb-2" />
+                    <h5 className="font-navigation text-xs font-bold text-gray-800 font-semibold">Jl. Sastra Kencana No. 45, Kota Buku</h5>
+                    <p className="text-[10px] text-gray-400 max-w-xs leading-relaxed pt-1">Gedung Utama Sektor Timur (Samping Danau Kota).</p>
+                    <div className="mt-3 px-3 py-1.5 rounded bg-white text-[10px] text-primary-500 font-bold border border-primary-100 shadow-soft cursor-pointer">
+                      Tunjukkan Arah Google Maps
                     </div>
                   </div>
 
-                  {/* Social Media Link Icons */}
+                  <div className="bg-paper-100 p-5 rounded-xl border border-gray-150 space-y-3 font-sans text-xs text-gray-500">
+                    <div className="flex items-center gap-3"><Mail size={16} className="text-primary-500" /> <span>info@perpustakaankota.go.id</span></div>
+                    <div className="flex items-center gap-3"><Phone size={16} className="text-primary-500" /> <span>(021) 8899-7766</span></div>
+                  </div>
+
+                  {/* Social media */}
                   <div className="space-y-3">
-                    <h4 className="text-xs uppercase tracking-widest text-gray-400 font-navigation font-bold">Kanal Media Sosial</h4>
+                    <h4 className="text-[10px] uppercase tracking-widest text-gray-400 font-navigation font-bold">Ikuti Media Sosial</h4>
                     <div className="flex gap-4">
                       {[
                         { icon: <Facebook size={16} />, link: "#", color: "hover:bg-[#1877F2]" },
@@ -1110,19 +921,17 @@ export default function Home() {
                         <a
                           key={idx}
                           href={soc.link}
-                          className={`w-9 h-9 rounded-full bg-white text-gray-400 hover:text-white flex items-center justify-center border border-gray-200 transition-all ${soc.color}`}
+                          className={`w-9 h-9 rounded-full bg-paper-100 text-gray-400 hover:text-white flex items-center justify-center border border-gray-200 transition-all ${soc.color}`}
                         >
                           {soc.icon}
                         </a>
                       ))}
                     </div>
                   </div>
-
                 </div>
-
               </div>
             </div>
-          </main>
+          </section>
 
           {/* FOOTER */}
           <footer className="bg-white border-t border-gray-250/20 py-12 text-gray-400 font-sans text-xs">
@@ -1140,7 +949,6 @@ export default function Home() {
               </div>
             </div>
           </footer>
-
         </div>
       )}
 
