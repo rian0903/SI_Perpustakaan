@@ -99,3 +99,119 @@ body {
   font-family: var(--font-display);
   color: #1E5631;
 }
+
+/* --------------------------------------------------
+   3D BOOK EXPERIMENTAL ANIMATIONS
+   -------------------------------------------------- */
+
+.perspective-1000 {
+  perspective: 1500px;
+}
+
+.book-3d {
+  position: relative;
+  width: 260px;
+  height: 380px;
+  transform-style: preserve-3d;
+  transition: transform 1.2s cubic-bezier(0.15, 0.85, 0.35, 1);
+  transform: rotateY(-15deg) rotateX(10deg);
+}
+
+.book-3d:hover {
+  transform: rotateY(-35deg) rotateX(5deg) translateY(-10px);
+}
+
+/* 3D Book Cover styling */
+.book-cover-3d {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  transition: transform 1s cubic-bezier(0.15, 0.85, 0.35, 1);
+  z-index: 15;
+  cursor: pointer;
+  box-shadow: 5px 5px 25px rgba(0, 0, 0, 0.15);
+  border-radius: 0 16px 16px 0;
+}
+
+/* Cover Open State */
+.book-3d:hover .book-cover-3d {
+  transform: rotateY(-135deg);
+}
+
+/* Inside pages styling */
+.book-page-3d {
+  position: absolute;
+  top: 6px;
+  left: 4px;
+  width: calc(100% - 10px);
+  height: calc(100% - 12px);
+  background: #fdfdfd;
+  background-image: linear-gradient(90deg, #f5f5f5 0%, #ffffff 10%, #ffffff 100%);
+  border-radius: 0 8px 8px 0;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.08);
+  transform-origin: left center;
+  transition: transform 1.2s cubic-bezier(0.15, 0.85, 0.35, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+  border-left: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Page Stack Effect */
+.page-1 { z-index: 5; }
+.page-2 { z-index: 4; }
+.page-3 { z-index: 3; }
+.page-4 { z-index: 2; }
+
+/* Page Opening on Hover */
+.book-3d:hover .page-1 {
+  transform: rotateY(-120deg);
+}
+
+.book-3d:hover .page-2 {
+  transform: rotateY(-105deg);
+}
+
+.book-3d:hover .page-3 {
+  transform: rotateY(-20deg);
+}
+
+.book-3d:hover .page-4 {
+  transform: rotateY(-10deg);
+}
+
+/* Spine shadow decoration */
+.book-spine-3d {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 12px;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 100%);
+  z-index: 20;
+  pointer-events: none;
+  transform: translateZ(1px);
+}
+
+/* Paper texture helper */
+.paper-texture {
+  position: relative;
+}
+.paper-texture::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 0);
+  background-size: 4px 4px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
