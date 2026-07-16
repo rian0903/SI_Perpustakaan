@@ -101,117 +101,123 @@ body {
 }
 
 /* --------------------------------------------------
-   ENHANCED REALISTIC 3D BOOK ANIMATIONS
+   CINEMATIC INTRO STYLING
    -------------------------------------------------- */
 
-.perspective-1500 {
-  perspective: 1800px;
+.dark-stage {
+  background-color: #080c14;
 }
 
-.book-3d {
+/* Pulse Gold Glow keyframes */
+@keyframes goldGlowPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.15));
+    opacity: 0.8;
+  }
+  50% {
+    filter: drop-shadow(0 0 45px rgba(212, 175, 55, 0.45));
+    opacity: 1;
+  }
+}
+.gold-glow-pulse {
+  animation: goldGlowPulse 5s infinite ease-in-out;
+}
+
+/* Floating animation for book cover */
+@keyframes floatBook {
+  0%, 100% {
+    transform: translateY(0px) rotateY(-18deg) rotateX(8deg);
+  }
+  50% {
+    transform: translateY(-8px) rotateY(-15deg) rotateX(10deg);
+  }
+}
+.float-book-animation {
+  animation: floatBook 6s infinite ease-in-out;
+}
+
+/* --------------------------------------------------
+   ENHANCED REALISTIC 3D CINEMATIC BOOK
+   -------------------------------------------------- */
+
+.perspective-1800 {
+  perspective: 2000px;
+}
+
+.book-cinematic {
   position: relative;
-  width: 250px;
-  height: 360px;
+  width: 280px;
+  height: 400px;
   transform-style: preserve-3d;
-  transition: transform 1.5s cubic-bezier(0.15, 0.85, 0.35, 1);
-  transform: rotateY(-18deg) rotateX(8deg);
+  transition: transform 1.2s cubic-bezier(0.15, 0.85, 0.35, 1);
 }
 
-.book-3d:hover {
-  transform: rotateY(-38deg) rotateX(4deg) translateY(-8px);
-}
-
-/* 3D Book Cover styling */
-.book-cover-3d {
+/* Hardcover Green */
+.book-cover-cinematic {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  background-color: #123524; /* Hardcover Dark Green */
+  border-left: 8px solid #091c13;
   transform-origin: left center;
   transform-style: preserve-3d;
-  transition: transform 1.6s cubic-bezier(0.15, 0.85, 0.35, 1);
-  z-index: 15;
-  cursor: pointer;
-  box-shadow: 8px 8px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: 12px 12px 40px rgba(0, 0, 0, 0.4);
   border-radius: 0 16px 16px 0;
-}
-
-/* Cover Open State */
-.book-3d:hover .book-cover-3d {
-  transform: rotateY(-145deg);
-}
-
-/* Inside pages styling with stacked sheets effect */
-.book-page-3d {
-  position: absolute;
-  top: 6px;
-  left: 4px;
-  width: calc(100% - 10px);
-  height: calc(100% - 12px);
-  background: #fcfcfc;
-  background-image: linear-gradient(90deg, #f2ede4 0%, #ffffff 6%, #ffffff 94%, #f7f5f0 100%);
-  border-radius: 0 14px 14px 0;
-  box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.06);
-  transform-origin: left center;
-  transition: transform 1.8s cubic-bezier(0.15, 0.85, 0.35, 1);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 24px;
-  border-left: 2px solid rgba(0, 0, 0, 0.06);
+  z-index: 20;
 }
 
 /* Spine groove decoration */
-.book-spine-3d {
+.book-spine-cinematic {
   position: absolute;
   top: 0;
   left: 0;
-  width: 16px;
+  width: 18px;
   height: 100%;
   background: linear-gradient(90deg, 
-    rgba(0,0,0,0.2) 0%, 
-    rgba(255,255,255,0.06) 30%, 
-    rgba(0,0,0,0.12) 60%, 
-    rgba(255,255,255,0) 100%
+    rgba(0,0,0,0.45) 0%, 
+    rgba(255,255,255,0.08) 25%, 
+    rgba(0,0,0,0.2) 60%, 
+    rgba(255,255,255,0) 100-percent
   );
-  z-index: 20;
+  z-index: 25;
   pointer-events: none;
   transform: translateZ(2px);
 }
 
-/* Page Stack Effect */
-.page-1 { z-index: 5; }
-.page-2 { z-index: 4; }
-.page-3 { z-index: 3; }
-.page-4 { z-index: 2; }
-
-/* Page Opening on Hover */
-.book-3d:hover .page-1 {
-  transform: rotateY(-130deg);
+/* Gold Title Emboss */
+.gold-emboss {
+  color: #D4AF37;
+  font-family: var(--font-display);
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.9), 0 0 1px #8a640f;
+  letter-spacing: 0.1em;
 }
 
-.book-3d:hover .page-2 {
-  transform: rotateY(-115deg);
+/* Inside pages stack */
+.book-page-cinematic {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+  background: #fdfdfd;
+  background-image: linear-gradient(90deg, #eae3d5 0%, #ffffff 6%, #ffffff 94%, #f5f2eb 100%);
+  border-radius: 0 14px 14px 0;
+  box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.15);
+  transform-origin: left center;
+  border-left: 2px solid rgba(0, 0, 0, 0.08);
 }
 
-.book-3d:hover .page-3 {
-  transform: rotateY(-22deg);
-}
-
-.book-3d:hover .page-4 {
-  transform: rotateY(-12deg);
-}
-
-/* Book page stacked borders (gives the look of a real thick book edge on the right) */
-.book-page-3d::after {
+/* Stack border overlays */
+.book-page-cinematic::after {
   content: '';
   position: absolute;
   top: 0;
   right: 0;
-  width: 5px;
+  width: 6px;
   height: 100%;
-  background: linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(255,255,255,0.8) 100%);
+  background: linear-gradient(90deg, rgba(0,0,0,0.06) 0%, rgba(255,255,255,0.85) 100%);
   border-radius: 0 14px 14px 0;
   pointer-events: none;
 }
@@ -223,7 +229,22 @@ body {
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-/* Apple-style typography reveals */
+/* Particle Canvas Overlay */
+.particle-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Soft gold ambient light */
+.ambient-glow {
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, rgba(8, 12, 20, 0) 70%);
+}
+
 .apple-reveal {
   opacity: 0;
   transform: translateY(30px);
