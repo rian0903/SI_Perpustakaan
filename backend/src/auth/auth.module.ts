@@ -19,7 +19,7 @@ import { JwtStrategy } from './jwt.strategy';
           configService.get<string>('JWT_SECRET') ||
           'super-secret-jwt-key-change-in-production',
         signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRATION') || '1d',
+          expiresIn: (configService.get<string>('JWT_EXPIRATION') || '1d') as any,
         },
       }),
     }),
