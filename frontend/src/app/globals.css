@@ -1,37 +1,37 @@
 @import "tailwindcss";
 
 @theme {
-  /* Color Palette - Forest Green, Warm Paper, Classic Gold */
-  --color-primary-50: #E8F5EA;
-  --color-primary-100: #D2ECD6;
-  --color-primary-200: #A8D9AF;
-  --color-primary-300: #7EC688;
-  --color-primary-400: #54B361;
-  --color-primary-500: #1E5631; /* Forest Green */
-  --color-primary-600: #184726;
-  --color-primary-700: #12381D;
-  --color-primary-800: #0B2914;
-  --color-primary-900: #05160A;
+  /* Color Palette - Ocean Blue, Cream, White, Black */
+  --color-primary-50: #F2F8FC;
+  --color-primary-100: #E1EFF8;
+  --color-primary-200: #BCE0F5;
+  --color-primary-300: #81C2EE;
+  --color-primary-400: #3CA1E4;
+  --color-primary-500: #0071E3; /* Apple Ocean Blue */
+  --color-primary-600: #005FB3;
+  --color-primary-700: #004B8E;
+  --color-primary-800: #003766;
+  --color-primary-900: #001F3D;
 
   --color-paper-50: #FFFFFF;
-  --color-paper-100: #FCFBF8;
-  --color-paper-200: #F8F6F0;
-  --color-paper-300: #F5F1E8; /* Warm Paper */
-  --color-paper-400: #EEE7D8;
+  --color-paper-100: #FAF9F6; /* Alabaster White */
+  --color-paper-200: #F5F3EF; /* Light Cream */
+  --color-paper-300: #EFECE6; /* Warm Cream */
+  --color-paper-400: #E5E0D8;
 
-  --color-gold-100: #F9F1DC;
-  --color-gold-200: #EFD9A0;
-  --color-gold-300: #D7BC7B;
-  --color-gold-400: #C8A96A; /* Classic Gold */
-  --color-gold-500: #9C7C3A;
+  --color-gold-100: #FAF3E0;
+  --color-gold-200: #F3E5AB;
+  --color-gold-300: #E6C280;
+  --color-gold-400: #D4AF37; /* Gold Accent */
+  --color-gold-500: #AA820A;
 
   --color-gray-50: #FAFAFA;
-  --color-gray-100: #F3F4F6;
-  --color-gray-200: #E5E7EB;
-  --color-gray-300: #D1D5DB;
-  --color-gray-500: #6B7280;
-  --color-gray-700: #374151;
-  --color-gray-900: #111827;
+  --color-gray-100: #F5F5F7; /* Apple Gray */
+  --color-gray-200: #E8E8ED;
+  --color-gray-300: #D2D2D7;
+  --color-gray-500: #86868B;
+  --color-gray-700: #515154;
+  --color-gray-900: #1D1D1F; /* Apple Dark */
 
   /* Typography Fonts */
   --font-display: var(--font-playfair), serif;
@@ -46,11 +46,11 @@
   --radius-xl: 32px;
 
   /* Shadows - Only Soft and Subtle */
-  --shadow-soft: 0 4px 20px -2px rgba(30, 86, 49, 0.04), 0 2px 8px -1px rgba(0, 0, 0, 0.02);
-  --shadow-medium: 0 10px 30px -5px rgba(30, 86, 49, 0.06), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
-  --shadow-large: 0 20px 50px -10px rgba(30, 86, 49, 0.09), 0 8px 24px -4px rgba(0, 0, 0, 0.05);
-  --shadow-floating: 0 30px 70px -15px rgba(30, 86, 49, 0.12), 0 12px 36px -6px rgba(0, 0, 0, 0.06);
-  --shadow-glass: 0 8px 32px 0 rgba(30, 86, 49, 0.02);
+  --shadow-soft: 0 4px 20px -2px rgba(0, 113, 227, 0.04), 0 2px 8px -1px rgba(0, 0, 0, 0.02);
+  --shadow-medium: 0 10px 30px -5px rgba(0, 113, 227, 0.06), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+  --shadow-large: 0 20px 50px -10px rgba(0, 113, 227, 0.08), 0 8px 24px -4px rgba(0, 0, 0, 0.05);
+  --shadow-floating: 0 30px 70px -15px rgba(0, 113, 227, 0.12), 0 12px 36px -6px rgba(0, 0, 0, 0.06);
+  --shadow-glass: 0 8px 32px 0 rgba(0, 113, 227, 0.02);
 
   /* Spacing Adjustments */
   --spacing-120: 120px;
@@ -59,8 +59,8 @@
 }
 
 :root {
-  --background: #FCFBF8; /* Paper 100 as base */
-  --foreground: #111827; /* Gray 900 */
+  --background: #FAF9F6; /* Alabaster White base */
+  --foreground: #1D1D1F; /* Apple Dark */
 }
 
 body {
@@ -77,19 +77,19 @@ body {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #FCFBF8;
+  background: #FAF9F6;
 }
 ::-webkit-scrollbar-thumb {
-  background: #EEE7D8;
+  background: #E5E0D8;
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #C8A96A;
+  background: #0071E3;
 }
 
 /* Editorial layout styles */
 .chapter-container {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
   padding-left: 24px;
   padding-right: 24px;
@@ -97,28 +97,28 @@ body {
 
 .text-editorial-title {
   font-family: var(--font-display);
-  color: #1E5631;
+  color: #0071E3;
 }
 
 /* --------------------------------------------------
-   3D BOOK EXPERIMENTAL ANIMATIONS
+   ENHANCED REALISTIC 3D BOOK ANIMATIONS
    -------------------------------------------------- */
 
-.perspective-1000 {
-  perspective: 1500px;
+.perspective-1500 {
+  perspective: 1800px;
 }
 
 .book-3d {
   position: relative;
-  width: 260px;
-  height: 380px;
+  width: 250px;
+  height: 360px;
   transform-style: preserve-3d;
-  transition: transform 1.2s cubic-bezier(0.15, 0.85, 0.35, 1);
-  transform: rotateY(-15deg) rotateX(10deg);
+  transition: transform 1.5s cubic-bezier(0.15, 0.85, 0.35, 1);
+  transform: rotateY(-18deg) rotateX(8deg);
 }
 
 .book-3d:hover {
-  transform: rotateY(-35deg) rotateX(5deg) translateY(-10px);
+  transform: rotateY(-38deg) rotateX(4deg) translateY(-8px);
 }
 
 /* 3D Book Cover styling */
@@ -130,36 +130,54 @@ body {
   height: 100%;
   transform-origin: left center;
   transform-style: preserve-3d;
-  transition: transform 1s cubic-bezier(0.15, 0.85, 0.35, 1);
+  transition: transform 1.6s cubic-bezier(0.15, 0.85, 0.35, 1);
   z-index: 15;
   cursor: pointer;
-  box-shadow: 5px 5px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 8px 8px 30px rgba(0, 0, 0, 0.12);
   border-radius: 0 16px 16px 0;
 }
 
 /* Cover Open State */
 .book-3d:hover .book-cover-3d {
-  transform: rotateY(-135deg);
+  transform: rotateY(-145deg);
 }
 
-/* Inside pages styling */
+/* Inside pages styling with stacked sheets effect */
 .book-page-3d {
   position: absolute;
   top: 6px;
   left: 4px;
   width: calc(100% - 10px);
   height: calc(100% - 12px);
-  background: #fdfdfd;
-  background-image: linear-gradient(90deg, #f5f5f5 0%, #ffffff 10%, #ffffff 100%);
-  border-radius: 0 8px 8px 0;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.08);
+  background: #fcfcfc;
+  background-image: linear-gradient(90deg, #f2ede4 0%, #ffffff 6%, #ffffff 94%, #f7f5f0 100%);
+  border-radius: 0 14px 14px 0;
+  box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.06);
   transform-origin: left center;
-  transition: transform 1.2s cubic-bezier(0.15, 0.85, 0.35, 1);
+  transition: transform 1.8s cubic-bezier(0.15, 0.85, 0.35, 1);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 24px;
-  border-left: 2px solid rgba(0, 0, 0, 0.05);
+  border-left: 2px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Spine groove decoration */
+.book-spine-3d {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    rgba(0,0,0,0.2) 0%, 
+    rgba(255,255,255,0.06) 30%, 
+    rgba(0,0,0,0.12) 60%, 
+    rgba(255,255,255,0) 100%
+  );
+  z-index: 20;
+  pointer-events: none;
+  transform: translateZ(2px);
 }
 
 /* Page Stack Effect */
@@ -170,48 +188,51 @@ body {
 
 /* Page Opening on Hover */
 .book-3d:hover .page-1 {
-  transform: rotateY(-120deg);
+  transform: rotateY(-130deg);
 }
 
 .book-3d:hover .page-2 {
-  transform: rotateY(-105deg);
+  transform: rotateY(-115deg);
 }
 
 .book-3d:hover .page-3 {
-  transform: rotateY(-20deg);
+  transform: rotateY(-22deg);
 }
 
 .book-3d:hover .page-4 {
-  transform: rotateY(-10deg);
+  transform: rotateY(-12deg);
 }
 
-/* Spine shadow decoration */
-.book-spine-3d {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 12px;
-  height: 100%;
-  background: linear-gradient(90deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 100%);
-  z-index: 20;
-  pointer-events: none;
-  transform: translateZ(1px);
-}
-
-/* Paper texture helper */
-.paper-texture {
-  position: relative;
-}
-.paper-texture::after {
+/* Book page stacked borders (gives the look of a real thick book edge on the right) */
+.book-page-3d::after {
   content: '';
   position: absolute;
   top: 0;
-  left: 0;
-  width: 100%;
+  right: 0;
+  width: 5px;
   height: 100%;
-  background-image: radial-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 0);
-  background-size: 4px 4px;
-  opacity: 0.5;
+  background: linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(255,255,255,0.8) 100%);
+  border-radius: 0 14px 14px 0;
   pointer-events: none;
 }
 
+/* Frosted glass header helper */
+.glass-header {
+  background-color: rgba(250, 249, 246, 0.72);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Apple-style typography reveals */
+.apple-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: appleFadeIn 1s cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
+}
+
+@keyframes appleFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
