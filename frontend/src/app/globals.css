@@ -152,15 +152,15 @@ body {
   transition: transform 1.2s cubic-bezier(0.15, 0.85, 0.35, 1);
 }
 
-/* Hardcover Green */
+/* Hardcover Ocean Navy */
 .book-cover-cinematic {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #123524; /* Hardcover Dark Green */
-  border-left: 8px solid #091c13;
+  background-color: #0b2545; /* Hardcover Ocean Navy */
+  border-left: 8px solid #051324;
   transform-origin: left center;
   transform-style: preserve-3d;
   box-shadow: 12px 12px 40px rgba(0, 0, 0, 0.4);
@@ -176,10 +176,10 @@ body {
   width: 18px;
   height: 100%;
   background: linear-gradient(90deg, 
-    rgba(0,0,0,0.45) 0%, 
-    rgba(255,255,255,0.08) 25%, 
-    rgba(0,0,0,0.2) 60%, 
-    rgba(255,255,255,0) 100-percent
+    rgba(5, 19, 36, 0.45) 0%, 
+    rgba(255, 255, 255, 0.08) 25%, 
+    rgba(5, 19, 36, 0.2) 60%, 
+    rgba(255, 255, 255, 0) 100%
   );
   z-index: 25;
   pointer-events: none;

@@ -100,6 +100,20 @@ const FAQS = [
   }
 ];
 
+// Faux text line placeholders for book pages representation
+const FakeTextLines = ({ lines = 6, color = "bg-gray-300/40" }) => {
+  return (
+    <div className="space-y-2 w-full">
+      {Array.from({ length: lines }).map((_, idx) => {
+        // Alternating widths to make it look like natural paragraphs
+        const widths = ["w-full", "w-11/12", "w-5/6", "w-4/5", "w-3/4", "w-2/3"];
+        const width = widths[idx % widths.length];
+        return <div key={idx} className={`h-1 rounded-full ${width} ${color}`} />;
+      })}
+    </div>
+  );
+};
+
 export default function Home() {
   // Cinematic States: intro | opening | site | closing | backcover
   const [stage, setStage] = useState("intro");
@@ -461,10 +475,20 @@ export default function Home() {
                     <h3 className="text-sm font-bold text-gray-900 font-sans">Bab I: Menjelajah</h3>
                     <p className="text-[10px] text-gray-500 leading-relaxed font-sans">Menyingkap rahasia peradaban melalui aksara dan lembaran ilmu.</p>
                   </div>
+                  <FakeTextLines lines={5} />
                 </div>
-                <div className="intro-book-page-2 book-page-cinematic page-2 select-none" />
-                <div className="intro-book-page-3 book-page-cinematic page-3 select-none" />
-                <div className="book-page-cinematic page-4 select-none" />
+                <div className="intro-book-page-2 book-page-cinematic page-2 select-none flex flex-col justify-center p-6 gap-4">
+                  <FakeTextLines lines={8} />
+                  <FakeTextLines lines={6} />
+                </div>
+                <div className="intro-book-page-3 book-page-cinematic page-3 select-none flex flex-col justify-center p-6 gap-4">
+                  <FakeTextLines lines={7} />
+                  <FakeTextLines lines={5} />
+                </div>
+                <div className="book-page-cinematic page-4 select-none flex flex-col justify-center p-6 gap-4">
+                  <FakeTextLines lines={8} />
+                  <FakeTextLines lines={4} />
+                </div>
               </div>
             </div>
           </div>
@@ -527,10 +551,20 @@ export default function Home() {
                     <span className="text-[9px] uppercase tracking-wider text-primary-500 font-bold font-navigation">Lembaran Pembuka</span>
                     <h3 className="text-sm font-bold text-gray-900 font-sans">Bab I: Menjelajah</h3>
                   </div>
+                  <FakeTextLines lines={5} />
                 </div>
-                <div className="closing-book-page-2 book-page-cinematic page-2 select-none" />
-                <div className="closing-book-page-3 book-page-cinematic page-3 select-none" />
-                <div className="book-page-cinematic page-4 select-none" />
+                <div className="closing-book-page-2 book-page-cinematic page-2 select-none flex flex-col justify-center p-6 gap-4">
+                  <FakeTextLines lines={8} />
+                  <FakeTextLines lines={6} />
+                </div>
+                <div className="closing-book-page-3 book-page-cinematic page-3 select-none flex flex-col justify-center p-6 gap-4">
+                  <FakeTextLines lines={7} />
+                  <FakeTextLines lines={5} />
+                </div>
+                <div className="book-page-cinematic page-4 select-none flex flex-col justify-center p-6 gap-4">
+                  <FakeTextLines lines={8} />
+                  <FakeTextLines lines={4} />
+                </div>
               </div>
             </div>
           </div>
