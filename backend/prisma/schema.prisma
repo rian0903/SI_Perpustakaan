@@ -1,0 +1,177 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Role Enumeration
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+}
+
+// 1. Users Model (Super Admin & Admin CMS accounts)
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(ADMIN)
+  news      News[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// 2. News Categories Model
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  slug      String   @unique
+  news      News[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("categories")
+}
+
+// 3. News Articles Model
+model News {
+  id         String   @id @default(uuid())
+  title      String
+  slug       String   @unique
+  content    String   @db.Text
+  thumbnail  String?
+  published  Boolean  @default(false)
+  views      Int      @default(0)
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id])
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("news")
+}
+
+// 4. Events / Agenda Model
+model Event {
+  id              String   @id @default(uuid())
+  title           String
+  slug            String   @unique
+  description     String   @db.Text
+  date            DateTime
+  location        String
+  speaker         String?
+  thumbnail       String?
+  capacity        Int?
+  registeredCount Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("events")
+}
+
+// 5. Gallery Documentation Albums
+model Gallery {
+  id          String         @id @default(uuid())
+  title       String
+  description String?        @db.Text
+  thumbnail   String?
+  images      GalleryImage[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@map("gallery")
+}
+
+// 6. Gallery Images inside Albums
+model GalleryImage {
+  id        String   @id @default(uuid())
+  imageUrl  String
+  caption   String?
+  galleryId String
+  gallery   Gallery  @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("gallery_images")
+}
+
+// 7. Frequently Asked Questions (FAQ) Model
+model Faq {
+  id        Int      @id @default(autoincrement())
+  question  String
+  answer    String   @db.Text
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("faq")
+}
+
+// 8. Banners / Hero Slider Model
+model Banner {
+  id        Int      @id @default(autoincrement())
+  title     String
+  subtitle  String?
+  imageUrl  String
+  linkUrl   String?
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("banners")
+}
+
+// 9. Contact Enquiries Form Submissions
+model Contact {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("contacts")
+}
+
+// 10. General Website Configuration Settings
+model Setting {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String   @db.Text
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("settings")
+}
+
+// 11. Social Media Links Model
+model SocialMedia {
+  id       Int     @id @default(autoincrement())
+  platform String
+  url      String
+  icon     String?
+
+  @@map("social_media")
+}
+
+// 12. Visitor Logs for CMS Analytics
+model VisitorLog {
+  id        String   @id @default(uuid())
+  ip        String
+  userAgent String?
+  path      String
+  timestamp DateTime @default(now())
+
+  @@map("visitor_logs")
+}

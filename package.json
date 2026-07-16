@@ -1,0 +1,27 @@
+{
+  "name": "digital-book-experience",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run start:dev --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "build:backend": "npm run build --workspace=backend",
+    "lint:frontend": "npm run lint --workspace=frontend",
+    "lint:backend": "npm run lint --workspace=backend",
+    "lint": "npm run lint:frontend && npm run lint:backend",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "db:push": "npx prisma db push --schema=backend/prisma/schema.prisma",
+    "db:migrate": "npx prisma migrate dev --schema=backend/prisma/schema.prisma",
+    "db:studio": "npx prisma studio --schema=backend/prisma/schema.prisma",
+    "db:generate": "npx prisma generate --schema=backend/prisma/schema.prisma"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "prettier": "^3.3.3"
+  }
+}
