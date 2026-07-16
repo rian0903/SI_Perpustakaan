@@ -47,7 +47,7 @@ model News {
   id         String   @id @default(uuid())
   title      String
   slug       String   @unique
-  content    String   @db.Text
+  content    String
   thumbnail  String?
   published  Boolean  @default(false)
   views      Int      @default(0)
@@ -66,7 +66,7 @@ model Event {
   id              String   @id @default(uuid())
   title           String
   slug            String   @unique
-  description     String   @db.Text
+  description     String
   date            DateTime
   location        String
   speaker         String?
@@ -83,7 +83,7 @@ model Event {
 model Gallery {
   id          String         @id @default(uuid())
   title       String
-  description String?        @db.Text
+  description String?
   thumbnail   String?
   images      GalleryImage[]
   createdAt   DateTime       @default(now())
@@ -108,7 +108,7 @@ model GalleryImage {
 model Faq {
   id        Int      @id @default(autoincrement())
   question  String
-  answer    String   @db.Text
+  answer    String
   order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -137,7 +137,7 @@ model Contact {
   name      String
   email     String
   subject   String
-  message   String   @db.Text
+  message   String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 
@@ -148,7 +148,7 @@ model Contact {
 model Setting {
   id          Int      @id @default(autoincrement())
   key         String   @unique
-  value       String   @db.Text
+  value       String
   description String?
   updatedAt   DateTime @updatedAt
 
