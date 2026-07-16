@@ -130,6 +130,7 @@ export default function Home() {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const touchStartY = useRef(0);
+  const floatAnimRef = useRef(null);
 
   // Particles Canvas Effect
   useEffect(() => {
@@ -190,7 +191,7 @@ export default function Home() {
   // Float loop for intro book
   useEffect(() => {
     if (stage === "intro") {
-      anime({
+      floatAnimRef.current = anime({
         targets: ".intro-book-float",
         translateY: [-10, 10],
         duration: 4000,
@@ -216,6 +217,11 @@ export default function Home() {
     if (stage !== "intro") return;
     setStage("opening");
 
+    // Pause floating loop to prevent jitter
+    if (floatAnimRef.current) {
+      floatAnimRef.current.pause();
+    }
+
     const tl = anime.timeline({
       easing: "cubicBezier(0.25, 1, 0.5, 1)",
       complete: () => {
@@ -233,7 +239,7 @@ export default function Home() {
     .add({
       targets: ".intro-book-float",
       translateY: 0,
-      scale: [1, 1.8],
+      scale: [1, 2.2], // Centered scale up
       duration: 1600,
       offset: "-=300"
     })
@@ -261,11 +267,19 @@ export default function Home() {
       duration: 1800,
       offset: "-=1800"
     })
+    // Smoothly blur and fade out the book model as it finishes opening
+    .add({
+      targets: ".intro-book-float",
+      filter: ["blur(0px)", "blur(16px)"],
+      opacity: [1, 0],
+      duration: 1000,
+      offset: "-=1000"
+    })
     .add({
       targets: ".intro-ambient-overlay",
       opacity: [1, 0],
       duration: 1400,
-      offset: "-=1200"
+      offset: "-=1400"
     });
   };
 
