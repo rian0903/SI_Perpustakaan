@@ -227,11 +227,11 @@ export default function Home() {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        // Alternate between soft gold and ocean blue particles
-        const isBlue = Math.floor(p.x + p.y) % 2 === 0;
-        ctx.fillStyle = isBlue 
-          ? `rgba(0, 113, 227, ${p.opacity * 0.45})` 
-          : `rgba(212, 175, 55, ${p.opacity * 0.6})`;
+        // Very subtle neutral floating dust particles
+        const isWarm = Math.floor(p.x + p.y) % 2 === 0;
+        ctx.fillStyle = isWarm 
+          ? `rgba(229, 193, 88, ${p.opacity * 0.08})` 
+          : `rgba(0, 0, 0, ${p.opacity * 0.04})`;
         ctx.fill();
       });
       animationId = requestAnimationFrame(draw);
@@ -424,10 +424,18 @@ export default function Home() {
 
       {/* -------------------- CINEMATIC STAGE: INTRO / OPENING -------------------- */}
       {(stage === "intro" || stage === "opening") && (
-        <div className="fixed inset-0 z-40 dark-stage flex flex-col justify-center items-center overflow-hidden">
-          
-          {/* Ambient Glow behind the book */}
-          <div className="absolute inset-0 ambient-glow opacity-80 pointer-events-none" />
+        <div 
+          className="fixed inset-0 z-40 flex flex-col justify-center items-center overflow-hidden transition-all duration-700"
+          style={{
+            background: "linear-gradient(135deg, #fcfcfd 0%, #f4f4f6 100%)"
+          }}
+        >
+          {/* Soft Blurred Background Abstract Shapes */}
+          <div className="absolute top-[10%] left-[15%] w-80 h-80 rounded-full bg-primary-300/3 filter blur-[90px] animate-pulse duration-[8000ms] pointer-events-none" />
+          <div className="absolute bottom-[10%] right-[15%] w-96 h-96 rounded-full bg-gold-300/3 filter blur-[100px] animate-pulse duration-[10000ms] pointer-events-none" />
+
+          {/* Glassmorphic Accent Ring behind the book to anchor it in space */}
+          <div className="absolute w-[440px] h-[440px] rounded-full border border-black/[0.025] bg-white/[0.01] backdrop-blur-[1px] shadow-[inset_0_4px_24px_rgba(0,0,0,0.005)] pointer-events-none z-0" />
 
           {/* Book Wrapper */}
           <div className="intro-book-float flex justify-center items-center scale-100 z-10 w-[90vw] h-[90vw] max-w-[550px] max-h-[550px] md:w-[550px] md:h-[550px] relative">

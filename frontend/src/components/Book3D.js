@@ -312,6 +312,15 @@ export default function Book3D({ stage }) {
     ribbon.castShadow = true;
     bookGroup.add(ribbon);
 
+    // --- 7.5 Shadow Receiver Floor Plane (creates visual depth) ---
+    const floorGeom = new THREE.PlaneGeometry(15, 15);
+    const floorMat = new THREE.ShadowMaterial({ opacity: 0.07 }); // extremely soft shadow
+    const floorMesh = new THREE.Mesh(floorGeom, floorMat);
+    floorMesh.rotation.x = -Math.PI / 2;
+    floorMesh.position.y = -1.65; // positioned below the book
+    floorMesh.receiveShadow = true;
+    scene.add(floorMesh);
+
     // --- 8. Animation & Render Loop ---
     const clock = new THREE.Clock();
 
