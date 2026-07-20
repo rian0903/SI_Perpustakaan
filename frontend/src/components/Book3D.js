@@ -318,11 +318,13 @@ export default function Book3D({ stage }) {
     const animate = () => {
       const time = clock.getElapsedTime();
 
-      // Soft rotating floats for intro stage (3/4 perspective: -30 degrees Y, tilted back 10 degrees X)
+      // Idle floating breathing animation (6s cycle, Y-pos ±6px ~0.035 units, Y rotation ±3° ~0.052 rad, X rotation ±1° ~0.0175 rad)
       if (stage === "intro") {
-        bookGroup.rotation.y = -0.52 + Math.sin(time * 0.5) * 0.04;
-        bookGroup.rotation.x = 0.17 + Math.sin(time * 0.4) * 0.02;
-        bookGroup.rotation.z = Math.sin(time * 0.3) * 0.006;
+        const angle = time * Math.PI / 3; // 6 seconds per full cycle (2*pi radians)
+        bookGroup.position.y = Math.sin(angle) * 0.035;
+        bookGroup.rotation.y = -0.52 + Math.sin(angle) * 0.052; // ±3 degrees Y
+        bookGroup.rotation.x = 0.17 + Math.cos(angle) * 0.0175; // ±1 degree X (phase shifted by 90° for smooth orbit)
+        bookGroup.rotation.z = Math.sin(angle) * 0.003; // subtle Z wobble
       }
 
       renderer.render(scene, camera);
