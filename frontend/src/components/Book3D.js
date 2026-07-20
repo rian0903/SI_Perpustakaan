@@ -25,9 +25,9 @@ export default function Book3D({ stage }) {
     // --- 2. Camera Setup ---
     const width = containerRef.current.clientWidth || 400;
     const height = containerRef.current.clientHeight || 450;
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-    camera.position.set(0, 1.4, 4.8);
-    const targetLookAt = new THREE.Vector3(-0.25, 0, 0);
+    const camera = new THREE.PerspectiveCamera(32, width / height, 0.1, 100);
+    camera.position.set(0, 0.2, 5.8);
+    const targetLookAt = new THREE.Vector3(-0.23, -0.1, 0);
     camera.lookAt(targetLookAt);
 
     // --- 3. Renderer Setup ---
@@ -40,20 +40,28 @@ export default function Book3D({ stage }) {
     rendererRef.current = renderer;
 
     // --- 4. Lights ---
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0xfff8ee, 1.4);
-    dirLight.position.set(4, 6, 5);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 1024;
-    dirLight.shadow.mapSize.height = 1024;
-    dirLight.shadow.bias = -0.001;
-    scene.add(dirLight);
+    // Soft key light from the upper left
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    keyLight.position.set(-3.5, 5, 4);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.width = 2048;
+    keyLight.shadow.mapSize.height = 2048;
+    keyLight.shadow.bias = -0.0005;
+    keyLight.shadow.radius = 6; // very soft shadow blur
+    scene.add(keyLight);
 
-    const softFillLight = new THREE.DirectionalLight(0x8bc4f5, 0.5);
-    softFillLight.position.set(-4, 2, -2);
-    scene.add(softFillLight);
+    // Soft fill light from the right
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.45);
+    fillLight.position.set(4, 1, 2);
+    scene.add(fillLight);
+
+    // Subtle rim light behind the book
+    const rimLight = new THREE.DirectionalLight(0xffffff, 0.65);
+    rimLight.position.set(1.5, 2.5, -5);
+    scene.add(rimLight);
 
     // --- 5. Procedural Cover Textures ---
     const generateCoverCanvas = (isFront) => {
@@ -165,27 +173,27 @@ export default function Book3D({ stage }) {
     const frontTexture = new THREE.CanvasTexture(frontCanvas);
     const backTexture = new THREE.CanvasTexture(backCanvas);
 
-    // Cover material with PBR roughness/bump
+    // Cover material with PBR roughness/bump (matte, non-reflective)
     const coverMaterialFront = new THREE.MeshStandardMaterial({
       map: frontTexture,
-      roughness: 0.4,
-      metalness: 0.1,
+      roughness: 0.85,
+      metalness: 0.05,
       bumpMap: frontTexture,
-      bumpScale: 0.005,
+      bumpScale: 0.002,
     });
 
     const coverMaterialBack = new THREE.MeshStandardMaterial({
       map: backTexture,
-      roughness: 0.4,
-      metalness: 0.1,
+      roughness: 0.85,
+      metalness: 0.05,
       bumpMap: backTexture,
-      bumpScale: 0.005,
+      bumpScale: 0.002,
     });
 
     // Dark green leather color for solid sides of cover
     const coverSideMaterial = new THREE.MeshStandardMaterial({
       color: 0x022c1d,
-      roughness: 0.65,
+      roughness: 0.85,
     });
 
     // Materials array for box cover faces (Right, Left, Top, Bottom, Front, Back)
@@ -212,12 +220,12 @@ export default function Book3D({ stage }) {
     scene.add(bookGroup);
     bookRef.current = bookGroup;
 
-    // Dimensions
-    const bookWidth = 1.9;
-    const bookHeight = 2.7;
-    const coverThickness = 0.06;
-    const pagesThickness = 0.22;
-    const spineRadius = (pagesThickness + coverThickness) / 2; // 0.14 for elegant flush spine
+    // Dimensions (10 : 7 : 1.2 Proportions)
+    const bookWidth = 1.82;
+    const bookHeight = 2.6;
+    const coverThickness = 0.023; // Thin covers
+    const pagesThickness = 0.265; // Pages represent ~85% of total thickness
+    const spineRadius = (pagesThickness + coverThickness * 2) / 2; // 0.156 for elegant flush spine
     const xSpine = -bookWidth / 2 - spineRadius;
 
     // Pivots positioned on spine (X = xSpine)
