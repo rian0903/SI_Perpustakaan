@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import anime from "animejs";
 import axios from "axios";
+import Book3D from "../components/Book3D";
 
 // Mock Data
 const MOCK_NEWS = [
@@ -429,64 +430,8 @@ export default function Home() {
           <div className="absolute inset-0 ambient-glow opacity-80 pointer-events-none" />
 
           {/* Book Wrapper */}
-          <div className="intro-book-float flex justify-center items-center scale-100 z-10">
-            <div className="perspective-1800">
-              <div className="book-cinematic">
-                {/* Spine groove decoration */}
-                <div className="book-spine-cinematic" />
-
-                {/* FRONT COVER */}
-                <div className="intro-book-cover book-cover-cinematic flex flex-col justify-between p-8 select-none">
-                  {/* Decorative internal frame */}
-                  <div className="border border-gold-305/20 h-full w-full absolute top-0 left-0 p-4 pointer-events-none">
-                    <div className="border border-gold-300/10 h-full w-full rounded-sm" />
-                  </div>
-
-                  <div className="space-y-4 relative z-10">
-                    <span className="text-[10px] tracking-[0.25em] text-gold-300 font-navigation font-bold uppercase block">
-                      Digital Book Experience
-                    </span>
-                    <h2 className="text-3xl font-bold text-white font-sans leading-snug">
-                      Sistem Informasi <br />
-                      <span className="text-gold-400 font-display italic font-light">Perpustakaan</span>
-                    </h2>
-                  </div>
-
-                  <div className="border-t border-white/10 pt-6 space-y-2 relative z-10">
-                    <p className="text-[10px] text-gold-300 font-navigation tracking-wider font-bold">
-                      KOTA BUKU
-                    </p>
-                    <div className="h-0.5 w-16 bg-gold-400 rounded-full" />
-                  </div>
-                </div>
-
-                {/* PAGES STACK */}
-                <div className="intro-book-page-1 book-page-cinematic page-1 select-none p-6">
-                  <div className="flipped-page-content">
-                    <div className="space-y-3">
-                      <span className="text-[9px] uppercase tracking-wider text-primary-500 font-bold font-navigation">Lembaran Pembuka</span>
-                      <h3 className="text-sm font-bold text-gray-900 font-sans">Bab I: Menjelajah</h3>
-                      <p className="text-[10px] text-gray-500 leading-relaxed font-sans">Menyingkap rahasia peradaban melalui aksara dan lembaran ilmu.</p>
-                    </div>
-                    <FakeTextLines lines={5} />
-                  </div>
-                </div>
-                <div className="intro-book-page-2 book-page-cinematic page-2 select-none p-6">
-                  <div className="flipped-page-content justify-center gap-4">
-                    <FakeTextLines lines={8} />
-                    <FakeTextLines lines={6} />
-                  </div>
-                </div>
-                <div className="intro-book-page-3 book-page-cinematic page-3 select-none flex flex-col justify-center p-6 gap-4">
-                  <FakeTextLines lines={7} />
-                  <FakeTextLines lines={5} />
-                </div>
-                <div className="book-page-cinematic page-4 select-none flex flex-col justify-center p-6 gap-4">
-                  <FakeTextLines lines={8} />
-                  <FakeTextLines lines={4} />
-                </div>
-              </div>
-            </div>
+          <div className="intro-book-float flex justify-center items-center scale-100 z-10 w-[90vw] h-[90vw] max-w-[550px] max-h-[550px] md:w-[550px] md:h-[550px] relative">
+            <Book3D stage={stage} />
           </div>
 
           {/* Intro Text Indicators */}
