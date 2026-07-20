@@ -342,7 +342,7 @@ export default function Book3D({ stage }) {
 
     animate();
 
-    // --- 9. Cleanup ---
+    // --- 9. Cleanup & Responsiveness ---
     const handleResize = () => {
       if (!containerRef.current || !rendererRef.current) return;
       const w = containerRef.current.clientWidth;
@@ -350,8 +350,29 @@ export default function Book3D({ stage }) {
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       rendererRef.current.setSize(w, h);
+
+      // Desired book height in pixels for each screen width bracket
+      const winW = window.innerWidth;
+      let targetHeight = 420; // Desktop (w >= 1200)
+      if (winW < 1200 && winW >= 1024) targetHeight = 380; // Laptop
+      if (winW < 1024 && winW >= 640) targetHeight = 300;  // Tablet
+      if (winW < 640) targetHeight = 220;               // Mobile
+
+      // Calculate camera distance to map 3D units to screen pixels
+      const ratio = targetHeight / h;
+      const fovRad = (32 / 2) * Math.PI / 180;
+      const targetD = bookHeight / (2 * ratio * Math.tan(fovRad));
+
+      // Scale Y and target Y proportionally to keep the downward composition angle identical
+      const scaleFactor = targetD / 5.8;
+      camera.position.set(0, 0.2 * scaleFactor, targetD);
+      targetLookAt.set(-0.23, -0.1 * scaleFactor, 0);
+      camera.lookAt(targetLookAt);
     };
     window.addEventListener("resize", handleResize);
+
+    // Call initially to calibrate correct distance on first render
+    handleResize();
 
     return () => {
       window.removeEventListener("resize", handleResize);
