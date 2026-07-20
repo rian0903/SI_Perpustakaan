@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { gsap } from "gsap";
 
 export default function Book3D({ stage }) {
   const containerRef = useRef(null);
@@ -9,6 +10,7 @@ export default function Book3D({ stage }) {
   const sceneRef = useRef(null);
   const bookRef = useRef(null);
   const animationFrameRef = useRef(null);
+  const openTimelineRef = useRef(null);
 
   // References to animated elements
   const frontCoverPivotRef = useRef(null);
@@ -321,6 +323,29 @@ export default function Book3D({ stage }) {
     floorMesh.receiveShadow = true;
     scene.add(floorMesh);
 
+    // --- 7.6 GSAP Automatic Cover Opening Timeline Setup ---
+    const animParams = {
+      tiltOffset: 0,
+      coverRotY: 0
+    };
+
+    const openTimeline = gsap.timeline({ delay: 0.1 });
+    openTimelineRef.current = openTimeline;
+
+    // 0.0s to 0.2s: anticipation tilt backward by 2 degrees (0.035 rad)
+    openTimeline.to(animParams, {
+      tiltOffset: 0.035,
+      duration: 0.2,
+      ease: "power2.inOut"
+    }, 0);
+
+    // 0.3s to 0.8s: cover opens to 120 degrees (-2.094 rad)
+    openTimeline.to(animParams, {
+      coverRotY: -2.094,
+      duration: 0.5,
+      ease: "power2.inOut"
+    }, 0.3);
+
     // --- 8. Animation & Render Loop ---
     const clock = new THREE.Clock();
 
@@ -332,9 +357,13 @@ export default function Book3D({ stage }) {
         const angle = time * Math.PI / 3; // 6 seconds per full cycle (2*pi radians)
         bookGroup.position.y = Math.sin(angle) * 0.035;
         bookGroup.rotation.y = -0.52 + Math.sin(angle) * 0.052; // ±3 degrees Y
-        bookGroup.rotation.x = 0.17 + Math.cos(angle) * 0.0175; // ±1 degree X (phase shifted by 90° for smooth orbit)
+        // Combine base tilt (10° ~ 0.17 rad), GSAP anticipation tiltOffset, and floating offset
+        bookGroup.rotation.x = 0.17 + animParams.tiltOffset + Math.cos(angle) * 0.0175; // ±1 degree X (phase shifted by 90° for smooth orbit)
         bookGroup.rotation.z = Math.sin(angle) * 0.003; // subtle Z wobble
       }
+
+      // Keep the cover open at the Y angle computed by the GSAP timeline
+      frontCoverPivot.rotation.y = animParams.coverRotY;
 
       renderer.render(scene, camera);
       animationFrameRef.current = requestAnimationFrame(animate);
@@ -391,6 +420,11 @@ export default function Book3D({ stage }) {
     if (!frontCoverPivot || !pagePivots.length) return;
 
     if (stage === "opening") {
+      // Kill the automatic cover opening timeline to avoid conflicts
+      if (openTimelineRef.current) {
+        openTimelineRef.current.kill();
+      }
+
       // 3.7 seconds total animation.
       // Reset cover and page positions
       frontCoverPivot.rotation.y = 0;
@@ -438,6 +472,10 @@ export default function Book3D({ stage }) {
 
       requestAnimationFrame(step);
     } else if (stage === "site") {
+      // Kill the automatic cover opening timeline to avoid conflicts
+      if (openTimelineRef.current) {
+        openTimelineRef.current.kill();
+      }
       // Instantly open state if skipped
       frontCoverPivot.rotation.y = -Math.PI * 0.85;
       pagePivots.forEach((page, idx) => {
