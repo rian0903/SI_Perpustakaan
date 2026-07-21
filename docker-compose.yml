@@ -28,9 +28,10 @@ services:
       CORS_ORIGIN: "http://localhost:3000"
     ports:
       - "3001:3001"
-    volumes:
-      - backend-uploads:/app/backend/uploads
-    networks:
+  volumes:
+    - ./backend/prisma:/app/backend/prisma
+    - backend-uploads:/app/backend/uploads
+  networks:
       - library-network
 
   # Next.js Frontend Web Application Service
