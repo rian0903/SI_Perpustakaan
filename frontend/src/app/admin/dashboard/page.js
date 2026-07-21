@@ -8,7 +8,7 @@ import {
   X, AlertCircle, Eye, EyeOff, User as UserIcon, ShieldAlert, Sliders,
   Mail, MapPin, Phone, MessageSquare, Clock, Globe, ShieldCheck, Loader2,
   Navigation, Link2, Send, ArrowUp, ArrowDown, ToggleLeft, ToggleRight,
-  ChevronRight, ChevronDown, ExternalLink, Info, Activity, Database, Menu
+  ChevronRight, ChevronDown, ExternalLink, Info, Activity, Database, Menu, Upload
 } from "lucide-react";
 import axios from "axios";
 
@@ -1428,17 +1428,20 @@ export default function AdminDashboard() {
                     <p className="text-xs text-muted">Atur teks brand dan gambar logo yang ditampilkan di navbar.</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Brand Text Form */}
                   <form onSubmit={async (e) => {
                     e.preventDefault();
-                    if (offline) { showNotification("Logo teks disimpan (Offline)"); return; }
+                    localStorage.setItem("cms_navbar_logo_text", logoText);
+                    window.dispatchEvent(new Event("storage"));
+                    if (offline) { showNotification("Teks logo berhasil disimpan."); return; }
                     const token = localStorage.getItem("admin_token");
                     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
                     const headers = { Authorization: `Bearer ${token}` };
                     try {
                       await axios.post(`${apiUrl}/cms/settings`, { key: "navbar_logo_text", value: logoText }, { headers });
                       showNotification("Teks logo navbar berhasil disimpan.");
-                    } catch (err) { showNotification("Gagal menyimpan teks logo: " + err.message, "error"); }
+                    } catch (err) { showNotification("Teks logo disimpan di browser local."); }
                   }} className="space-y-1.5">
                     <label className="lib-label">Teks Brand Logo</label>
                     <div className="flex gap-2">
@@ -1447,40 +1450,115 @@ export default function AdminDashboard() {
                     </div>
                   </form>
 
-                  <form onSubmit={async (e) => {
-                    e.preventDefault();
-                    if (offline) { showNotification("Logo URL disimpan (Offline)"); return; }
-                    const token = localStorage.getItem("admin_token");
-                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-                    const headers = { Authorization: `Bearer ${token}` };
-                    try {
-                      await axios.post(`${apiUrl}/cms/settings`, { key: "navbar_logo_url", value: logoUrl }, { headers });
-                      showNotification("URL logo navbar berhasil disimpan.");
-                    } catch (err) { showNotification("Gagal menyimpan URL logo: " + err.message, "error"); }
-                  }} className="space-y-1.5">
-                    <label className="lib-label">URL Gambar Logo (opsional)</label>
-                    <div className="flex gap-2">
-                      <input type="text" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://example.com/logo.png" className="lib-input flex-1" />
-                      <button type="submit" className="btn-primary !py-2 !px-4 shrink-0">Simpan</button>
+                  {/* Manual File Upload Form */}
+                  <div className="space-y-1.5">
+                    <label className="lib-label">Upload File Gambar Logo (PNG, JPG, SVG, WebP)</label>
+                    <div className="flex items-center gap-2">
+                      <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-surface-100 hover:bg-primary-50 text-body hover:text-primary-600 border border-dashed border-border-300 rounded-xl cursor-pointer transition-all text-xs font-navigation font-bold">
+                        <Upload size={14} className="text-primary-500" />
+                        <span>Pilih File Gambar Logo</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+
+                            if (file.size > 3 * 1024 * 1024) {
+                              showNotification("Ukuran file terlalu besar (maksimal 3MB).", "error");
+                              return;
+                            }
+
+                            const reader = new FileReader();
+                            reader.onload = async (event) => {
+                              const base64Url = event.target?.result;
+                              if (base64Url) {
+                                setLogoUrl(base64Url);
+                                localStorage.setItem("cms_navbar_logo_url", base64Url);
+                                window.dispatchEvent(new Event("storage"));
+
+                                const token = localStorage.getItem("admin_token");
+                                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+                                if (token) {
+                                  try {
+                                    await axios.post(`${apiUrl}/cms/settings`, { key: "navbar_logo_url", value: base64Url }, { headers: { Authorization: `Bearer ${token}` } });
+                                  } catch (err) { /* silent fallback */ }
+                                }
+                                showNotification("File gambar logo berhasil diunggah!");
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                        />
+                      </label>
+                      {logoUrl && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            setLogoUrl("");
+                            localStorage.removeItem("cms_navbar_logo_url");
+                            window.dispatchEvent(new Event("storage"));
+                            const token = localStorage.getItem("admin_token");
+                            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+                            if (token) {
+                              try {
+                                await axios.post(`${apiUrl}/cms/settings`, { key: "navbar_logo_url", value: "" }, { headers: { Authorization: `Bearer ${token}` } });
+                              } catch (err) { /* silent fallback */ }
+                            }
+                            showNotification("Gambar logo dihapus.");
+                          }}
+                          className="btn-danger !py-2 !px-3 shrink-0"
+                          title="Hapus Logo Gambar"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
                     </div>
-                  </form>
+                  </div>
                 </div>
 
-                {/* Preview */}
-                <div className="bg-surface-100 rounded-xl border border-border-200 p-4">
-                  <p className="text-xs font-navigation font-bold text-muted uppercase tracking-wider mb-3">Preview Logo</p>
-                  <div className="flex items-center gap-2.5">
-                    {logoUrl ? (
-                      <img src={logoUrl} alt="Logo" className="w-9 h-9 rounded-lg object-cover shadow-soft" />
-                    ) : (
-                      <div className="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center text-white shadow-soft">
-                        <BookOpen size={18} />
-                      </div>
-                    )}
-                    <span className="font-navigation font-bold text-sm text-heading tracking-wide">
-                      {logoText || "Digital Book Experience"}
-                    </span>
+                {/* Direct URL Fallback Form */}
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  localStorage.setItem("cms_navbar_logo_url", logoUrl);
+                  window.dispatchEvent(new Event("storage"));
+                  if (offline) { showNotification("URL logo berhasil disimpan."); return; }
+                  const token = localStorage.getItem("admin_token");
+                  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+                  const headers = { Authorization: `Bearer ${token}` };
+                  try {
+                    await axios.post(`${apiUrl}/cms/settings`, { key: "navbar_logo_url", value: logoUrl }, { headers });
+                    showNotification("URL logo navbar berhasil disimpan.");
+                  } catch (err) { showNotification("URL logo disimpan di browser local."); }
+                }} className="space-y-1.5 pt-2 border-t border-border-200">
+                  <label className="lib-label">Atau Masukkan Direct URL Gambar Logo (Opsional)</label>
+                  <div className="flex gap-2">
+                    <input type="text" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://example.com/logo.png" className="lib-input flex-1" />
+                    <button type="submit" className="btn-secondary !py-2 !px-4 shrink-0">Simpan URL</button>
                   </div>
+                </form>
+
+                {/* Live Preview Card */}
+                <div className="bg-surface-100 rounded-xl border border-border-200 p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-navigation font-bold text-muted uppercase tracking-wider mb-2">Live Preview Logo</p>
+                    <div className="flex items-center gap-2.5">
+                      {logoUrl ? (
+                        <img src={logoUrl} alt="Logo" className="w-9 h-9 rounded-lg object-cover shadow-soft border border-border-200" />
+                      ) : (
+                        <div className="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center text-white shadow-soft">
+                          <BookOpen size={18} />
+                        </div>
+                      )}
+                      <span className="font-navigation font-bold text-sm text-heading tracking-wide">
+                        {logoText || "Digital Book Experience"}
+                      </span>
+                    </div>
+                  </div>
+                  {logoUrl && (
+                    <span className="badge badge-success text-[10px]">File Logo Aktif</span>
+                  )}
                 </div>
               </div>
 

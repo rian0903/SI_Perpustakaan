@@ -127,10 +127,19 @@ export default function Home() {
   const [navLogoText, setNavLogoText] = useState("Digital Book Experience");
   const [navLogoUrl, setNavLogoUrl] = useState("");
 
-  // Fetch navbar data from CMS API
+  // Load local & CMS navbar settings
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+    const loadLocalLogo = () => {
+      const localText = localStorage.getItem("cms_navbar_logo_text");
+      const localUrl = localStorage.getItem("cms_navbar_logo_url");
+      if (localText) setNavLogoText(localText);
+      if (localUrl !== null) setNavLogoUrl(localUrl);
+    };
 
+    loadLocalLogo();
+    window.addEventListener("storage", loadLocalLogo);
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
     const buildContactHref = (btn) => {
       switch (btn.platform) {
         case "whatsapp": return `https://wa.me/${btn.value}`;
@@ -159,10 +168,12 @@ export default function Home() {
       if (settingsRes?.data?.length) {
         const lt = settingsRes.data.find(s => s.key === "navbar_logo_text");
         const lu = settingsRes.data.find(s => s.key === "navbar_logo_url");
-        if (lt?.value) setNavLogoText(lt.value);
-        if (lu?.value) setNavLogoUrl(lu.value);
+        if (lt?.value && !localStorage.getItem("cms_navbar_logo_text")) setNavLogoText(lt.value);
+        if (lu?.value && !localStorage.getItem("cms_navbar_logo_url")) setNavLogoUrl(lu.value);
       }
     }).catch(() => { /* silently use defaults */ });
+
+    return () => window.removeEventListener("storage", loadLocalLogo);
   }, []);
 
   const [aboutInfo, setAboutInfo] = useState({
