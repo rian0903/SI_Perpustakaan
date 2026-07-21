@@ -1,37 +1,22 @@
 services:
-  # PostgreSQL Database Container
-  db:
-    image: postgres:15-alpine
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres_password
-      POSTGRES_DB: digital_book_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - library-network
-
-  # NestJS Backend API Service
+  # NestJS Backend API Service (SQLite Database + File Uploads)
   backend:
     build:
       context: .
       dockerfile: ./docker/Dockerfile.backend
     restart: always
     environment:
-      DATABASE_URL: "file:./prisma/dev.db"
+      DATABASE_URL: "file:./dev.db"
       PORT: 3001
       JWT_SECRET: "super-secret-jwt-key-change-in-production"
       JWT_EXPIRATION: "1d"
       CORS_ORIGIN: "http://localhost:3000"
     ports:
-      - "3001:3001"
-  volumes:
-    - ./backend/prisma:/app/backend/prisma
-    - backend-uploads:/app/backend/uploads
-  networks:
+      - "${BACKEND_PORT:-3001}:3001"
+    volumes:
+      - sqlite-data:/app/backend/prisma
+      - backend-uploads:/app/backend/uploads
+    networks:
       - library-network
 
   # Next.js Frontend Web Application Service
@@ -44,7 +29,7 @@ services:
       NEXT_PUBLIC_API_URL: "http://localhost:3001/api"
       PORT: 3000
     ports:
-      - "3002:3000"
+      - "${FRONTEND_PORT:-3005}:3000"
     depends_on:
       - backend
     networks:
@@ -55,7 +40,7 @@ services:
     image: nginx:alpine
     restart: always
     ports:
-      - "80:80"
+      - "${HTTP_PORT:-8080}:80"
     volumes:
       - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -65,7 +50,7 @@ services:
       - library-network
 
 volumes:
-  pgdata:
+  sqlite-data:
     driver: local
   backend-uploads:
     driver: local
