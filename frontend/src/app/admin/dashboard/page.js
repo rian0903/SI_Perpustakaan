@@ -661,7 +661,7 @@ export default function AdminDashboard() {
 
       {/* ==================== SIDEBAR (DESKTOP & MOBILE DRAWER) ==================== */}
       <aside
-        className={`fixed md:sticky top-0 left-0 bottom-0 z-50 md:z-30 w-72 md:w-64 flex flex-col shrink-0 transition-transform duration-300 ease-in-out md:translate-x-0 ${
+        className={`fixed top-0 left-0 bottom-0 z-50 md:z-30 w-72 md:w-64 flex flex-col shrink-0 transition-transform duration-300 ease-in-out ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
         style={{ backgroundColor: "#005BAC", height: "100vh" }}
@@ -745,7 +745,7 @@ export default function AdminDashboard() {
       </aside>
 
       {/* ==================== MAIN CONTENT ==================== */}
-      <main className="flex-1 flex flex-col min-h-screen min-w-0">
+      <main className="flex-1 flex flex-col min-h-screen min-w-0 md:ml-64">
 
         {/* Desktop Header Bar */}
         <header className="bg-white border-b border-border-200 px-4 md:px-8 py-4 flex items-center justify-between shrink-0 sticky top-0 z-30">
