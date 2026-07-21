@@ -198,8 +198,20 @@ export default function AdminDashboard() {
   const [editingContactBtn, setEditingContactBtn] = useState(null);
   const [showNavMenuModal, setShowNavMenuModal] = useState(false);
   const [showContactBtnModal, setShowContactBtnModal] = useState(false);
-  const [logoText, setLogoText] = useState("Digital Book Experience");
-  const [logoUrl, setLogoUrl] = useState("");
+  const [logoText, setLogoText] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_navbar_logo_text");
+      if (saved) return saved;
+    }
+    return "Digital Book Experience";
+  });
+  const [logoUrl, setLogoUrl] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_navbar_logo_url");
+      if (saved !== null) return saved;
+    }
+    return "";
+  });
 
   // Form Modals / Input States
   const [showModal, setShowModal] = useState(false);
@@ -616,9 +628,15 @@ export default function AdminDashboard() {
           >
             {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
-          <div className="flex items-center gap-2">
-            <BookOpen size={18} className="text-white" />
-            <span className="font-navigation font-bold text-sm text-white tracking-wide">CMS Panel</span>
+          <div className="flex items-center gap-2 min-w-0">
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="w-7 h-7 rounded-lg object-cover border border-white/20 shrink-0" />
+            ) : (
+              <BookOpen size={18} className="text-white shrink-0" />
+            )}
+            <span className="font-navigation font-bold text-sm text-white tracking-wide truncate max-w-[130px]">
+              {logoText || "CMS Panel"}
+            </span>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -650,15 +668,24 @@ export default function AdminDashboard() {
       >
         {/* Brand Header */}
         <div className="px-5 py-5 border-b flex items-center justify-between" style={{ borderColor: "rgba(255,255,255,0.15)" }}>
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-white/15 border border-white/25 flex items-center justify-center text-white shrink-0">
-              <BookOpen size={16} />
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="w-8 h-8 rounded-lg object-cover shadow-soft border border-white/20 shrink-0" />
+            ) : (
+              <div className="w-8 h-8 rounded-lg bg-white/15 border border-white/25 flex items-center justify-center text-white shrink-0">
+                <BookOpen size={16} />
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <span className="font-navigation font-bold text-white text-sm tracking-wide truncate block">
+                {logoText || "Digital Book Experience"}
+              </span>
+              <span className="text-[10px] text-white/60 font-navigation block">Admin Dashboard</span>
             </div>
-            <span className="font-navigation font-bold text-white text-sm tracking-wide">CMS Panel</span>
           </div>
           <button
             onClick={() => setIsMobileMenuOpen(false)}
-            className="md:hidden text-white/70 hover:text-white p-1 cursor-pointer"
+            className="md:hidden text-white/70 hover:text-white p-1 cursor-pointer shrink-0"
           >
             <X size={18} />
           </button>
