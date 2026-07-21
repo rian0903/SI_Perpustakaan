@@ -21,7 +21,7 @@ services:
       dockerfile: ./docker/Dockerfile.backend
     restart: always
     environment:
-      DATABASE_URL: "postgresql://postgres:postgres_password@db:5432/digital_book_db?schema=public"
+      DATABASE_URL: "file:./prisma/dev.db"
       PORT: 3001
       JWT_SECRET: "super-secret-jwt-key-change-in-production"
       JWT_EXPIRATION: "1d"
