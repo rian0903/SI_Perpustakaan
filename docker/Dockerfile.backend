@@ -41,5 +41,5 @@ EXPOSE 3001
 
 WORKDIR /app/backend
 
-# Run migrations and start the NestJS production server
-CMD ["node", "dist/main.js"]
+# Run database push/migrations and start the NestJS production server
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/main.js"]

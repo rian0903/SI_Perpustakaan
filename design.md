@@ -1,98 +1,54 @@
-# design.md
+# Library Website Design System
 
-# Digital Book Experience Design System
-
-## Design Philosophy
-
-This project follows the philosophy of **"Less, but Better."**
-
-Every element exists for a purpose.
-
-Animations support the user experience rather than distract from it.
-
-The website should feel calm, premium, elegant, and timeless.
-
-The browsing experience should resemble reading a modern digital book.
+Version : 1.0
 
 ---
 
-# Design Principles
+# Objective
 
-## Simplicity
+Melakukan redesign tampilan website perpustakaan agar memiliki nuansa modern seperti website Pusat Perpustakaan Universitas Terbuka.
 
-Keep every page clean.
-
-Avoid unnecessary UI elements.
-
-One primary focus per section.
+Target redesign hanya pada aspek visual (UI/UX), tanpa mengubah business logic, struktur data, routing, API, database maupun fitur yang telah berjalan.
 
 ---
 
-## Storytelling
+# Overall Design Direction
 
-Scrolling should tell a story.
+Keyword:
 
-Every section is a chapter.
+- Academic
+- Clean
+- Modern
+- Elegant
+- Professional
+- Minimal
+- Spacious
+- Friendly
+- Institutional
 
-Every interaction has meaning.
+Feel yang ingin didapat:
 
----
-
-## Whitespace
-
-Use generous spacing.
-
-Never overcrowd the interface.
-
-Content should breathe.
-
----
-
-## Motion
-
-Motion should communicate.
-
-Never animate without purpose.
-
-Animations must remain under approximately 600–800 ms for standard interactions.
-
-Respect users who prefer reduced motion.
+✔ ringan
+✔ bersih
+✔ mudah dibaca
+✔ tidak ramai
+✔ modern namun formal
 
 ---
 
-# Visual Identity
-
-## Theme
-
-Digital Book Experience
-
-Modern Library
-
-Editorial Layout
-
-Premium Reading Experience
-
----
-
-# Color System
+# Color Palette
 
 Primary
 
-Forest Green
-
-#1E5631
+#005BAC
 
 Secondary
 
-Warm Paper
-
-#F5F1E8
+#0077D9
 
 Accent
 
-Classic Gold
-
-#C8A96A
+#F4B400
 
 Background
 
@@ -100,31 +56,35 @@ Background
 
 Surface
 
-#FAFAF8
-
-Text Primary
-
-#1F2937
-
-Text Secondary
-
-#6B7280
+#F8FAFC
 
 Border
 
 #E5E7EB
 
+Heading
+
+#1E293B
+
+Body Text
+
+#475569
+
+Muted Text
+
+#94A3B8
+
 Success
 
-#16A34A
+#22C55E
+
+Danger
+
+#EF4444
 
 Warning
 
 #F59E0B
-
-Danger
-
-#DC2626
 
 ---
 
@@ -133,284 +93,494 @@ Danger
 Heading
 
 Poppins
+600-700
 
 Body
 
 Inter
 
-Editorial Heading
+Alternative
 
-Playfair Display
+Roboto
 
-Use large typography.
+Line Height
 
-Avoid small unreadable text.
+1.6
+
+Font Weight
+
+400
+500
+600
+700
 
 ---
 
 # Border Radius
 
-Cards
+Small
+
+8px
+
+Medium
+
+12px
+
+Large
+
+18px
+
+Card
 
 20px
 
-Buttons
+Button
 
-999px
-
-Input
-
-14px
-
-Images
-
-24px
+12px
 
 ---
 
-# Shadows
+# Shadow
 
-Soft shadows only.
+Gunakan shadow yang lembut.
 
-Avoid heavy shadows.
+Contoh
+
+shadow-sm
+
+hover:
+shadow-lg
+
+Tidak menggunakan shadow gelap.
 
 ---
 
 # Layout
 
-Maximum Width
+Gunakan max-width
 
-1440px
+1280px
 
-Content Width
+Container
 
-1200px
+mx-auto
 
-Section Padding
-
-120px Desktop
-
-80px Tablet
-
-60px Mobile
-
----
-
-# Components
-
-## Navbar
-
-Transparent initially.
-
-Solid background on scroll.
-
-Sticky.
-
-Glass effect (optional).
-
----
-
-## Hero
-
-Large illustration.
-
-Book visualization.
-
-Big typography.
-
-Clear CTA.
-
----
-
-## Cards
-
-Rounded.
-
-Soft hover.
-
-Lift slightly.
-
-Smooth shadow.
-
----
-
-## Buttons
-
-Primary
-
-Green background.
-
-Secondary
-
-White outline.
-
-Ghost
-
-Transparent.
-
----
-
-## Gallery
-
-Large images.
-
-Rounded corners.
-
-Masonry grid.
-
----
-
-## FAQ
-
-Accordion.
-
-Minimal.
-
-Easy to scan.
-
----
-
-## Footer
-
-Minimal.
-
-Large spacing.
-
-Three-column layout.
-
----
-
-# Animation Guidelines
-
-Library
-
-Anime.js
-
-Animation Style
-
-Elegant
-
-Natural
-
-Minimal
-
-Smooth
-
-Editorial
-
-Motion Rules
-
-No excessive bouncing.
-
-No distracting effects.
-
-Use easing functions.
-
-Maintain 60 FPS whenever possible.
-
-Animate opacity, transform, and scale before layout properties.
-
----
-
-# Scroll Experience
-
-Reveal sections progressively.
-
-Create a chapter-like reading flow.
-
-Smooth page transitions.
-
----
-
-# Accessibility
-
-Minimum contrast ratio WCAG AA.
-
-Keyboard navigable.
-
-Visible focus states.
-
-Alt text for images.
-
-Reduced motion support.
-
-Semantic HTML.
-
----
-
-# Responsive Breakpoints
-
-Mobile
-
-<768px
-
-Tablet
-
-768–1023px
-
-Laptop
-
-1024–1439px
+px-6
 
 Desktop
 
-1440px+
+12 column grid
+
+Mobile
+
+1 column
+
+Tablet
+
+2-6 column sesuai kebutuhan
+
+---
+
+# Navbar
+
+Style
+
+White Background
+
+Sticky
+
+Height
+
+72px
+
+Logo kiri
+
+Menu tengah
+
+Button Login kanan
+
+Hover menu
+
+Primary Blue
+
+Dropdown memiliki animasi halus.
+
+---
+
+# Hero Section
+
+Layout
+
+2 Column
+
+Left
+
+Judul besar
+
+Deskripsi
+
+CTA
+
+Right
+
+Ilustrasi perpustakaan atau mahasiswa
+
+Background putih
+
+Tambahkan sedikit decorative shape biru yang sangat soft.
+
+---
+
+# Search Area
+
+Search bar besar
+
+Rounded
+
+Shadow kecil
+
+Icon Search
+
+Filter berada di kanan
+
+Responsive
+
+---
+
+# Card Design
+
+Card Buku
+
+White
+
+Rounded 20
+
+Soft Shadow
+
+Hover
+
+- sedikit naik
+- shadow bertambah
+- smooth transition
+
+Informasi:
+
+Cover
+
+Judul
+
+Penulis
+
+Kategori
+
+Status
+
+Button Detail
+
+---
+
+# Button Style
+
+Primary
+
+Blue Fill
+
+White Text
+
+Hover
+
+lebih gelap
+
+Secondary
+
+Outline Blue
+
+Ghost
+
+Transparent
+
+Danger
+
+Red
+
+Success
+
+Green
+
+Semua button:
+
+Rounded
+
+Padding nyaman
+
+Transition 200ms
+
+---
+
+# Table
+
+Header
+
+Blue Tint
+
+Hover Row
+
+Soft Blue
+
+Border
+
+Minimal
+
+Rounded Container
+
+---
+
+# Form
+
+Input
+
+Rounded
+
+Border Gray
+
+Focus
+
+Blue Ring
+
+Error
+
+Red Border
+
+Label di atas input
+
+---
+
+# Sidebar Admin
+
+Background
+
+Primary Blue
+
+Menu putih
+
+Active
+
+White Background
+
+Blue Text
+
+Hover
+
+Light Blue
+
+Icon menggunakan Lucide Icons
+
+---
+
+# Dashboard
+
+Stat Card
+
+White
+
+Icon besar
+
+Jumlah
+
+Keterangan
+
+Chart
+
+Rounded
+
+White
+
+Shadow
+
+---
+
+# Footer
+
+Background
+
+Primary Blue
+
+Text
+
+White
+
+Isi:
+
+Alamat
+
+Kontak
+
+Jam Operasional
+
+Social Media
+
+Copyright
+
+---
+
+# Animation
+
+Gunakan hanya:
+
+Fade
+
+Slide Up
+
+Scale
+
+Hover Lift
+
+Duration
+
+200-300ms
+
+Tidak menggunakan animasi berlebihan.
+
+---
+
+# Icons
+
+Gunakan Lucide Icons.
+
+Ukuran
+
+18
+
+20
+
+24
+
+Jangan menggunakan icon campuran.
 
 ---
 
 # Image Style
 
-Natural lighting.
+Rasio konsisten
 
-Real library environments.
+Rounded
 
-Students reading.
+Lazy Load
 
-Bookshelves.
-
-Community activities.
-
-No generic corporate stock-photo feeling.
+Object Cover
 
 ---
 
-# Icon Style
+# Spacing
 
-Lucide Icons
+Section
 
-Outline style
+80-120px
 
-Consistent sizing
+Card Gap
 
-24px standard
+24px
 
----
+Component Gap
 
-# Development Rules
-
-* Build with reusable React components.
-* Keep each component focused on a single responsibility.
-* Use consistent spacing tokens.
-* Avoid hardcoded colors.
-* Centralize design tokens.
-* Prefer CSS variables for colors and spacing.
-* Optimize images and lazy-load media.
-* Ensure all animations degrade gracefully on low-end devices.
+16px
 
 ---
 
-# Overall Feeling
+# Accessibility
 
-The website should evoke the feeling of:
+Kontras minimal WCAG AA
 
-Opening a beautiful book.
+Focusable
 
-Walking into a quiet modern library.
+Keyboard Navigation
 
-Feeling curious.
+ARIA Label
 
-Feeling welcomed.
+Alt Image
 
-Feeling inspired to learn.
+---
 
-Every interaction should reinforce those emotions while maintaining a professional, accessible, and high-performance user experience.
+# Responsive
+
+Breakpoint
+
+640
+
+768
+
+1024
+
+1280
+
+Desktop First
+
+---
+
+# UI Components
+
+Gunakan komponen berikut:
+
+Navbar
+
+Hero
+
+Announcement
+
+Search
+
+Category
+
+Book Card
+
+News Card
+
+Gallery
+
+FAQ
+
+Footer
+
+Modal
+
+Toast
+
+Pagination
+
+Breadcrumb
+
+Profile Dropdown
+
+Sidebar
+
+Dashboard Card
+
+Table
+
+Chart
+
+Statistic Card
+
+---
+
+# Design Principle
+
+Semua halaman harus memiliki:
+
+Whitespace yang luas
+
+Visual hierarchy jelas
+
+Typography konsisten
+
+Grid konsisten
+
+Button konsisten
+
+Card konsisten
+
+Spacing konsisten
+
+Color konsisten
+
+Icon konsisten

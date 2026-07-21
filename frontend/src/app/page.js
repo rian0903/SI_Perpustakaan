@@ -1,15 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   BookOpen, ArrowRight, Compass, Calendar, Image as ImageIcon, 
   MapPin, User, ChevronDown, X, Mail, Phone, Clock, Search, 
   AlertCircle, CheckCircle, ArrowUpRight, Facebook, Twitter, Instagram, 
   Youtube, Info, Award, Shield, Library, Users2, Activity, Database
 } from "lucide-react";
-import anime from "animejs";
 import axios from "axios";
-import Book3D from "../components/Book3D";
 
 // Mock Data
 const MOCK_NEWS = [
@@ -102,22 +100,9 @@ const FAQS = [
   }
 ];
 
-// Faux text line placeholders for book pages representation
-const FakeTextLines = ({ lines = 6, color = "bg-gray-300/40" }) => {
-  return (
-    <div className="space-y-2 w-full">
-      {Array.from({ length: lines }).map((_, idx) => {
-        const widths = ["w-full", "w-11/12", "w-5/6", "w-4/5", "w-3/4", "w-2/3"];
-        const width = widths[idx % widths.length];
-        return <div key={idx} className={`h-1 rounded-full ${width} ${color}`} />;
-      })}
-    </div>
-  );
-};
+
 
 export default function Home() {
-  // Cinematic States: intro | opening | site
-  const [stage, setStage] = useState("intro");
   const [scrolled, setScrolled] = useState(false);
   const [activeFaq, setActiveFaq] = useState(null);
   
@@ -128,11 +113,6 @@ export default function Home() {
   const [contactSuccess, setContactSuccess] = useState(false);
   const [registeredEventId, setRegisteredEventId] = useState(null);
   const [eventRegisterForm, setEventRegisterForm] = useState({ name: "", email: "" });
-
-  const canvasRef = useRef(null);
-  const containerRef = useRef(null);
-  const touchStartY = useRef(0);
-  const floatAnimRef = useRef(null);
 
   // Dynamic Navbar Data (from CMS)
   const [navMenu, setNavMenu] = useState([
@@ -185,190 +165,97 @@ export default function Home() {
     }).catch(() => { /* silently use defaults */ });
   }, []);
 
-  // Particles Canvas Effect
+  const [aboutInfo, setAboutInfo] = useState({
+    eyebrow: "Tentang Kami",
+    title: "Sejarah & Filosofi Literasi",
+    subtitle: "Langkah perjalanan kami membina peradaban intelektual masyarakat.",
+    historyTitle: "Sejarah Kehadiran",
+    historyP1: "Didirikan sebagai ruang baca kolektif kecil pada tahun 1980 di pinggiran balai kota, perpustakaan ini berdiri atas impian sederhana: memberikan akses buku gratis kepada anak-anak sekolah. Melalui dedikasi tanpa henti selama lebih dari 45 tahun, perpustakaan ini kini tegak sebagai pusat digitalisasi literatur dan pelestarian manuskrip kota.",
+    historyP2: "Transformasi digital kami membuktikan bahwa buku fisik dan portal e-journal modern dapat bersatu memberikan pengalaman penelitian akademik yang lengkap bagi masyarakat umum.",
+    historyImageUrl: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=600&auto=format&fit=crop",
+    visiTitle: "Visi Mulia",
+    visiDesc: "Menjadi pusat peradaban pengetahuan terkemuka yang memadukan kehangatan interaksi sosial budaya membaca dengan akselerasi inovasi teknologi digital.",
+    misiTitle: "Misi Layanan"
+  });
+
+  const [teamList, setTeamList] = useState([
+    { id: "team-1", name: "Dr. Hendrawan Basuki", role: "Kepala Perpustakaan", desc: "Mengarahkan visi strategis literasi kota." },
+    { id: "team-2", name: "Siti Rahmawati, M.Hum", role: "Sekretaris & Operasional", desc: "Mengelola manajemen internal & kemitraan." },
+    { id: "team-3", name: "Budi Utomo, S.I.Pust", role: "Kepala Bidang Layanan & TI", desc: "Mengembangkan integrasi sistem & digitalisasi." }
+  ]);
+
+  const [facilityList, setFacilityList] = useState([
+    { id: "fac-1", num: "01", title: "Ruang Baca Hening", desc: "Meja partisi individu dengan pencahayaan baca personal untuk fokus maksimal." },
+    { id: "fac-2", num: "02", title: "Lab Komputer & E-Library", desc: "Workstation komputer terhubung basis data jurnal internasional premium." },
+    { id: "fac-3", num: "03", title: "Kids Literacy Area", desc: "Sudut buku cerita edukatif, karpet bermain, dan ruang dongeng anak." },
+    { id: "fac-4", num: "04", title: "Taman Diskusi Terbuka", desc: "Ruang luar hijau yang nyaman untuk mendiskusikan buku dengan santai." }
+  ]);
+
+  const [statsList, setStatsList] = useState([
+    { id: "stat-1", value: "25.000+", label: "Koleksi Buku Fisik" },
+    { id: "stat-2", value: "10.500+", label: "Anggota Aktif" },
+    { id: "stat-3", value: "120+", label: "Kegiatan / Tahun" },
+    { id: "stat-4", value: "5.000+", label: "E-Journal Premium" }
+  ]);
+
   useEffect(() => {
-    if (stage !== "intro" && stage !== "opening") return;
-    
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    
-    let animationId;
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
+    if (typeof window !== "undefined") {
+      const savedInfo = localStorage.getItem("cms_about_info");
+      if (savedInfo) try { setAboutInfo(JSON.parse(savedInfo)); } catch(e) {}
 
-    const handleResize = () => {
-      if (!canvas) return;
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    };
-    window.addEventListener("resize", handleResize);
+      const savedTeam = localStorage.getItem("cms_team_list");
+      if (savedTeam) try { setTeamList(JSON.parse(savedTeam)); } catch(e) {}
 
-    const particles = Array.from({ length: 60 }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height + height,
-      size: Math.random() * 2 + 0.5,
-      speedY: -(Math.random() * 0.8 + 0.2),
-      speedX: Math.random() * 0.4 - 0.2,
-      opacity: Math.random() * 0.5 + 0.2,
-      fadeSpeed: Math.random() * 0.005 + 0.002
-    }));
+      const savedFac = localStorage.getItem("cms_facility_list");
+      if (savedFac) try { setFacilityList(JSON.parse(savedFac)); } catch(e) {}
 
-    const draw = () => {
-      ctx.clearRect(0, 0, width, height);
-      particles.forEach((p) => {
-        p.y += p.speedY;
-        p.x += p.speedX;
-        
-        if (p.y < -10) {
-          p.y = height + 10;
-          p.x = Math.random() * width;
-        }
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        // Very subtle neutral floating dust particles
-        const isWarm = Math.floor(p.x + p.y) % 2 === 0;
-        ctx.fillStyle = isWarm 
-          ? `rgba(229, 193, 88, ${p.opacity * 0.08})` 
-          : `rgba(0, 0, 0, ${p.opacity * 0.04})`;
-        ctx.fill();
-      });
-      animationId = requestAnimationFrame(draw);
-    };
-
-    draw();
-
-    return () => {
-      cancelAnimationFrame(animationId);
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [stage]);
-
-  // Float loop for intro book
-  useEffect(() => {
-    if (stage === "intro") {
-      floatAnimRef.current = anime({
-        targets: ".intro-book-float",
-        translateY: [-10, 10],
-        duration: 4000,
-        direction: "alternate",
-        loop: true,
-        easing: "easeInOutQuad"
-      });
+      const savedStats = localStorage.getItem("cms_stats_list");
+      if (savedStats) try { setStatsList(JSON.parse(savedStats)); } catch(e) {}
     }
-  }, [stage]);
+  }, []);
+
+  const [footerInfo, setFooterInfo] = useState({
+    brandName: "Perpustakaan Kota Buku",
+    description: "Pusat layanan literasi dan informasi terpadu untuk masyarakat Kota Buku. Gratis untuk semua.",
+    address: "Jl. Sastra Kencana No. 45, Kota Buku",
+    email: "info@perpustakaankota.go.id",
+    phone: "(021) 8899-7766",
+    copyright: "© 2026 Perpustakaan Kota Buku. Hak Cipta Dilindungi Undang-Undang."
+  });
+
+  const [footerHours, setFooterHours] = useState([
+    { id: "fh-1", days: "Senin — Jumat", hours: "08:00 — 18:00" },
+    { id: "fh-2", days: "Sabtu — Minggu", hours: "09:00 — 15:00" }
+  ]);
+
+  const [footerLinks, setFooterLinks] = useState([
+    { id: "fl-1", label: "Kebijakan Privasi", url: "#privacy" },
+    { id: "fl-2", label: "Ketentuan Layanan", url: "#terms" }
+  ]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedFooterInfo = localStorage.getItem("cms_footer_info");
+      if (savedFooterInfo) try { setFooterInfo(JSON.parse(savedFooterInfo)); } catch(e) {}
+
+      const savedFooterHours = localStorage.getItem("cms_footer_hours");
+      if (savedFooterHours) try { setFooterHours(JSON.parse(savedFooterHours)); } catch(e) {}
+
+      const savedFooterLinks = localStorage.getItem("cms_footer_links");
+      if (savedFooterLinks) try { setFooterLinks(JSON.parse(savedFooterLinks)); } catch(e) {}
+    }
+  }, []);
+
+
+
+
 
   // Handle header background change on scroll
   useEffect(() => {
-    if (stage !== "site") return;
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [stage]);
-
-  // Trigger Opening Timeline (Intro to Site)
-  const triggerOpening = () => {
-    if (stage !== "intro") return;
-    setStage("opening");
-
-    // Pause floating loop to prevent jitter
-    if (floatAnimRef.current) {
-      floatAnimRef.current.pause();
-    }
-
-    const tl = anime.timeline({
-      easing: "cubicBezier(0.25, 1, 0.5, 1)",
-      complete: () => {
-        setStage("site");
-        window.scrollTo(0, 0);
-      }
-    });
-
-    tl.add({
-      targets: ".intro-ui-fade",
-      opacity: [1, 0],
-      translateY: [0, -20],
-      duration: 600
-    })
-    .add({
-      targets: ".intro-book-float",
-      translateY: 0,
-      scale: [1, 2.2], // Centered scale up
-      duration: 1600,
-      offset: "-=300"
-    })
-    .add({
-      targets: ".intro-book-cover",
-      rotateY: -155,
-      duration: 1800,
-      offset: "-=1400"
-    })
-    .add({
-      targets: ".intro-book-page-1",
-      rotateY: -140,
-      duration: 1800,
-      offset: "-=1800"
-    })
-    .add({
-      targets: ".intro-book-page-2",
-      rotateY: -125,
-      duration: 1800,
-      offset: "-=1800"
-    })
-    .add({
-      targets: ".intro-book-page-3",
-      rotateY: -25,
-      duration: 1800,
-      offset: "-=1800"
-    })
-    // Smoothly blur and fade out the book model as it finishes opening
-    .add({
-      targets: ".intro-book-float",
-      filter: ["blur(0px)", "blur(16px)"],
-      opacity: [1, 0],
-      duration: 1000,
-      offset: "-=1000"
-    })
-    .add({
-      targets: ".intro-ambient-overlay",
-      opacity: [1, 0],
-      duration: 1400,
-      offset: "-=1400"
-    });
-  };
-
-  // Skip animations directly to site
-  const handleSkipAnimation = () => {
-    setStage("site");
-    window.scrollTo(0, 0);
-  };
-
-  // Scroll Interceptions (Intro stage locks only)
-  const handleWheel = (e) => {
-    if (stage === "intro" && e.deltaY > 5) {
-      e.preventDefault();
-      triggerOpening();
-    }
-  };
-
-  const handleTouchStart = (e) => {
-    if (stage === "intro") {
-      touchStartY.current = e.touches[0].clientY;
-    }
-  };
-
-  const handleTouchMove = (e) => {
-    if (stage === "intro") {
-      const deltaY = touchStartY.current - e.touches[0].clientY;
-      if (deltaY > 10) {
-        e.preventDefault();
-        triggerOpening();
-      }
-    }
-  };
+  }, []);
 
   // Event Registration Submit
   const handleRegisterEventSubmit = (e, eventId) => {
@@ -399,286 +286,324 @@ export default function Home() {
   });
 
   return (
-    <div 
-      ref={containerRef}
-      onWheel={handleWheel}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      className={`flex-1 flex flex-col min-h-screen relative overflow-x-hidden ${stage === "intro" || stage === "opening" ? "overflow-y-hidden h-screen" : ""}`}
-    >
-      
-      {/* -------------------- DUST PARTICLES CANVAS -------------------- */}
-      {(stage === "intro" || stage === "opening") && (
-        <canvas ref={canvasRef} className="particle-canvas" />
-      )}
+    <div className="flex-1 flex flex-col min-h-screen relative overflow-x-hidden bg-white">
 
-      {/* -------------------- ACCESSIBILITY: SKIP LINK -------------------- */}
-      {(stage === "intro" || stage === "opening") && (
-        <button
-          onClick={handleSkipAnimation}
-          className="fixed top-6 right-6 z-55 px-5 py-2.5 rounded-full bg-gray-900/5 hover:bg-gray-900/10 text-gray-800 font-navigation text-xs font-semibold tracking-wider border border-gray-250/60 backdrop-blur-md transition-all cursor-pointer"
-        >
-          Lewati Animasi (Skip)
-        </button>
-      )}
 
-      {/* -------------------- CINEMATIC STAGE: INTRO / OPENING -------------------- */}
-      {(stage === "intro" || stage === "opening") && (
-        <div 
-          className="fixed inset-0 z-40 flex flex-col justify-center items-center overflow-hidden transition-all duration-700"
-          style={{
-            background: "linear-gradient(135deg, #fcfcfd 0%, #f4f4f6 100%)"
-          }}
-        >
-          {/* Soft Blurred Background Abstract Shapes */}
-          <div className="absolute top-[10%] left-[15%] w-80 h-80 rounded-full bg-primary-300/3 filter blur-[90px] animate-pulse duration-[8000ms] pointer-events-none" />
-          <div className="absolute bottom-[10%] right-[15%] w-96 h-96 rounded-full bg-gold-300/3 filter blur-[100px] animate-pulse duration-[10000ms] pointer-events-none" />
-
-          {/* Glassmorphic Accent Ring behind the book to anchor it in space */}
-          <div className="absolute w-[440px] h-[440px] rounded-full border border-black/[0.025] bg-white/[0.01] backdrop-blur-[1px] shadow-[inset_0_4px_24px_rgba(0,0,0,0.005)] pointer-events-none z-0" />
-
-          {/* Book Wrapper */}
-          <div className="intro-book-float flex justify-center items-center scale-100 z-10 w-[90vw] h-[90vw] max-w-[550px] max-h-[550px] md:w-[550px] md:h-[550px] relative">
-            <Book3D stage={stage} />
-          </div>
-
-          {/* Intro Text Indicators */}
-          <div className="intro-ui-fade text-center space-y-4 mt-16 z-20">
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900 font-sans tracking-wide">
-              Perpustakaan Umum Kota Buku
-            </h1>
-            <p className="text-xs text-primary-650 font-navigation tracking-wider animate-pulse uppercase">
-              Scroll ke bawah untuk membuka buku perjalanan Anda.
-            </p>
-            <div className="w-6 h-10 border border-gray-300 rounded-full mx-auto flex items-start p-1.5 opacity-80">
-              <div className="w-1.5 h-2 bg-primary-500 rounded-full mx-auto animate-bounce" />
-            </div>
-          </div>
-
-          {/* Ambient Fade overlay that reveals the white website */}
-          <div className="intro-ambient-overlay absolute inset-0 bg-[#FAF9F6] z-0 pointer-events-none" />
-        </div>
-      )}
-
-      {/* -------------------- STAGE: MAIN SITE (Scrollable Layout) -------------------- */}
-      {stage === "site" && (
-        <div className="flex-1 flex flex-col animate-fade-in relative z-10 bg-white">
-          {/* HEADER */}
-          <header className={`fixed top-0 left-0 w-full h-20 z-35 transition-all duration-300 ${scrolled ? "glass-header shadow-soft" : "bg-transparent"}`}>
+          {/* ===== HEADER / NAVBAR ===== */}
+          <header
+            className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+              scrolled
+                ? "bg-white border-b border-border-200 shadow-soft"
+                : "bg-white border-b border-border-200"
+            }`}
+            style={{ height: "72px" }}
+          >
             <div className="chapter-container h-full flex items-center justify-between">
+              {/* Logo */}
               <div className="flex items-center gap-2.5">
                 {navLogoUrl ? (
                   <img src={navLogoUrl} alt="Logo" className="w-9 h-9 rounded-lg object-cover shadow-soft" />
                 ) : (
-                  <div className="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center text-white shadow-soft">
+                  <div className="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center text-white shadow-soft shrink-0">
                     <BookOpen size={18} />
                   </div>
                 )}
-                <span className="font-navigation font-bold text-sm tracking-wider text-gray-900 uppercase">
+                <span className="font-navigation font-bold text-sm text-heading tracking-wide">
                   {navLogoText}
                 </span>
               </div>
 
-              {/* Desktop Navigation - Dynamic */}
-              <nav className="hidden md:flex items-center gap-8 text-xs font-navigation font-semibold text-gray-500 uppercase tracking-widest">
+              {/* Desktop Navigation */}
+              <nav className="hidden md:flex items-center gap-1" aria-label="Navigasi utama">
                 {navMenu.map((item) => (
-                  <a key={item.id} href={item.target} className="hover:text-primary-500 transition-colors">{item.label}</a>
+                  <a
+                    key={item.id}
+                    href={item.target}
+                    className="px-4 py-2 rounded-lg text-sm font-navigation font-medium text-body hover:text-primary-500 hover:bg-primary-50 transition-all"
+                  >
+                    {item.label}
+                  </a>
                 ))}
               </nav>
 
+              {/* CTA Button */}
               <a
                 href={ctaButton.href}
                 target={ctaButton.href.startsWith("http") || ctaButton.href.startsWith("mailto:") ? "_blank" : undefined}
                 rel={ctaButton.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                className="px-6 py-2.5 rounded-full bg-gray-900 text-white font-navigation text-xs font-bold hover:bg-black shadow-soft transition-all text-center"
+                className="btn-primary"
               >
                 {ctaButton.label}
               </a>
             </div>
           </header>
 
-          {/* HERO */}
-          <section className="pt-32 pb-16 md:pt-40 md:pb-24 flex items-center min-h-[85vh] bg-paper-100">
-            <div className="chapter-container grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-              <div className="lg:col-span-8 space-y-6">
-                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-50 text-primary-700 text-[10px] font-bold tracking-widest uppercase font-navigation">
-                  <Compass size={12} className="text-primary-500" />
-                  <span>Bab I: Permulaan Perjalanan</span>
-                </span>
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 font-sans leading-[1.08]">
-                  Membuka Lembaran Baru <br />
-                  <span className="text-primary-500 font-display italic font-light">Ilmu Pengetahuan.</span>
-                </h1>
-                <p className="text-base text-gray-500 max-w-xl leading-relaxed font-sans pt-2">
-                  Selamat datang di portal perpustakaan kota. Setiap bab yang Anda temukan di halaman ini dirancang khusus untuk memandu Anda menyerap wawasan literatur dengan sentuhan visual modern.
-                </p>
-                <div className="flex gap-4 pt-4">
-                  <a href="#about" className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-primary-500 text-white font-navigation text-xs font-bold hover:bg-primary-600 shadow-soft">
-                    <span>Baca Profil Kami</span>
-                    <ArrowRight size={14} />
-                  </a>
-                  <a href="#news" className="inline-flex items-center gap-2 px-7 py-3 rounded-full border border-gray-200 bg-white text-gray-700 font-navigation text-xs font-bold hover:border-primary-500 shadow-soft">
-                    <span>Berita Terbaru</span>
-                  </a>
+          {/* ===== HERO SECTION ===== */}
+          <section className="pt-28 pb-20 md:pt-36 md:pb-28 bg-white relative overflow-hidden">
+            {/* Decorative soft blue shape */}
+            <div
+              className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full pointer-events-none"
+              style={{ background: "radial-gradient(circle at 80% 20%, rgba(0,91,172,0.05) 0%, transparent 65%)" }}
+            />
+            <div
+              className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full pointer-events-none"
+              style={{ background: "radial-gradient(circle at 20% 80%, rgba(244,180,0,0.04) 0%, transparent 65%)" }}
+            />
+
+            <div className="chapter-container relative">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                {/* Left — Text */}
+                <div className="space-y-7">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gold-50 border border-gold-200">
+                    <Compass size={13} className="text-gold-500" />
+                    <span className="text-xs font-navigation font-bold text-gold-600 uppercase tracking-widest">
+                      Portal Literasi Kota
+                    </span>
+                  </div>
+
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-heading font-navigation leading-tight">
+                    Membuka Lembaran Baru{" "}
+                    <span className="text-primary-500">Ilmu Pengetahuan.</span>
+                  </h1>
+
+                  <p className="text-base text-body leading-relaxed max-w-lg">
+                    Selamat datang di portal perpustakaan kota. Akses ribuan koleksi buku fisik, jurnal digital, dan ikuti kegiatan literasi kreatif kami — gratis untuk semua.
+                  </p>
+
+                  <div className="flex flex-wrap gap-4 pt-2">
+                    <a href="#about" className="btn-primary">
+                      <span>Profil Perpustakaan</span>
+                      <ArrowRight size={15} />
+                    </a>
+                    <a href="#news" className="btn-secondary">
+                      Berita Terbaru
+                    </a>
+                  </div>
+
+                  {/* Quick stats */}
+                  <div className="flex flex-wrap gap-6 pt-4 border-t border-border-200">
+                    {statsList.slice(0, 3).map((s, i) => (
+                      <div key={s.id || i}>
+                        <div className="text-xl font-bold text-primary-500 font-navigation">{s.value}</div>
+                        <div className="text-xs text-muted font-navigation">{s.label}</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="lg:col-span-4 flex justify-center">
-                <div className="w-56 h-56 rounded-full bg-primary-100/50 flex items-center justify-center relative">
-                  <div className="absolute inset-4 rounded-full border border-primary-300 border-dashed animate-spin duration-[10000ms]" />
-                  <Library size={48} className="text-primary-500" />
+
+                {/* Right — Illustration */}
+                <div className="flex justify-center lg:justify-end">
+                  <div className="relative w-72 h-72 md:w-80 md:h-80 lg:w-96 lg:h-96">
+                    {/* Soft circular background */}
+                    <div className="absolute inset-0 rounded-full bg-primary-50 border border-primary-100" />
+                    {/* Dashed orbit ring */}
+                    <div className="absolute inset-6 rounded-full border-2 border-dashed border-primary-200 animate-spin" style={{ animationDuration: "20s" }} />
+                    {/* Center icon */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-28 h-28 rounded-2xl bg-white shadow-medium flex items-center justify-center border border-border-200">
+                        <Library size={52} className="text-primary-500" />
+                      </div>
+                    </div>
+                    {/* Floating decorative badges */}
+                    <div className="absolute top-6 right-4 bg-white rounded-xl shadow-soft border border-border-200 px-3 py-2 flex items-center gap-1.5">
+                      <div className="w-2 h-2 rounded-full bg-success-500" />
+                      <span className="text-xs font-navigation font-bold text-heading">Buka Sekarang</span>
+                    </div>
+                    <div className="absolute bottom-8 left-2 bg-white rounded-xl shadow-soft border border-border-200 px-3 py-2">
+                      <div className="text-xs font-navigation font-bold text-primary-500">
+                        {statsList[3] ? `${statsList[3].value} ${statsList[3].label}` : "5.000+ E-Journal"}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* TENTANG KAMI */}
-          <section id="about" className="py-24 bg-white border-y border-gray-200/40">
+          {/* ===== TENTANG KAMI ===== */}
+          <section id="about" className="py-24 bg-surface-100 border-y border-border-200">
             <div className="chapter-container space-y-16">
+              {/* Section header */}
               <div className="max-w-2xl space-y-3">
-                <span className="text-xs uppercase tracking-widest text-primary-500 font-navigation font-bold">Tentang Kami</span>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 font-sans">Sejarah & Filosofi Literasi</h2>
-                <p className="text-xs text-gray-400 font-sans">Langkah perjalanan kami membina peradaban intelektual masyarakat.</p>
+                <span className="section-eyebrow">{aboutInfo.eyebrow}</span>
+                <h2 className="text-3xl md:text-4xl font-bold text-heading font-navigation">
+                  {aboutInfo.title}
+                </h2>
+                <p className="text-sm text-muted">{aboutInfo.subtitle}</p>
               </div>
 
               {/* Sejarah */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div className="space-y-5">
-                  <h3 className="text-xl font-bold text-gray-900 font-display italic">Sejarah Kehadiran</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed font-sans">
-                    Didirikan sebagai ruang baca kolektif kecil pada tahun 1980 di pinggiran balai kota, perpustakaan ini berdiri atas impian sederhana: memberikan akses buku gratis kepada anak-anak sekolah. Melalui dedikasi tanpa henti selama lebih dari 45 tahun, perpustakaan ini kini tegak sebagai pusat digitalisasi literatur dan pelestarian manuskrip kota.
+                  <h3 className="text-xl font-bold text-heading font-navigation">{aboutInfo.historyTitle}</h3>
+                  <p className="text-sm text-body leading-relaxed">
+                    {aboutInfo.historyP1}
                   </p>
-                  <p className="text-xs text-gray-500 leading-relaxed font-sans">
-                    Transformasi digital kami membuktikan bahwa buku fisik dan portal e-journal modern dapat bersatu memberikan pengalaman penelitian akademik yang lengkap bagi masyarakat umum.
+                  <p className="text-sm text-body leading-relaxed">
+                    {aboutInfo.historyP2}
                   </p>
                 </div>
-                <div className="relative h-64 rounded-2xl overflow-hidden border border-gray-100 shadow-soft">
-                  <img src="https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=600&auto=format&fit=crop" alt="Library space" className="w-full h-full object-cover" />
+                <div className="relative h-64 rounded-2xl overflow-hidden border border-border-200 shadow-medium">
+                  <img
+                    src={aboutInfo.historyImageUrl}
+                    alt="Ruang perpustakaan"
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
                 </div>
               </div>
 
               {/* Visi & Misi */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-paper-200 p-8 rounded-2xl border border-gray-100 space-y-3">
-                  <div className="w-8 h-8 rounded-full bg-primary-50 text-primary-500 flex items-center justify-center"><Shield size={16} /></div>
-                  <h4 className="text-base font-bold text-gray-900 font-display">Visi Mulia</h4>
-                  <p className="text-xs text-gray-500 leading-relaxed font-sans">
-                    Menjadi pusat peradaban pengetahuan terkemuka yang memadukan kehangatan interaksi sosial budaya membaca dengan akselerasi inovasi teknologi digital.
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white p-8 rounded-2xl border border-border-200 shadow-soft space-y-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-500 flex items-center justify-center">
+                    <Shield size={18} />
+                  </div>
+                  <h4 className="text-base font-bold text-heading font-navigation">{aboutInfo.visiTitle}</h4>
+                  <p className="text-sm text-body leading-relaxed">
+                    {aboutInfo.visiDesc}
                   </p>
                 </div>
-                <div className="bg-paper-200 p-8 rounded-2xl border border-gray-100 space-y-3">
-                  <div className="w-8 h-8 rounded-full bg-primary-50 text-primary-500 flex items-center justify-center"><Award size={16} /></div>
-                  <h4 className="text-base font-bold text-gray-900 font-display">Misi Layanan</h4>
-                  <ul className="text-xs text-gray-500 leading-relaxed space-y-1.5 font-sans list-disc list-inside">
-                    <li>Menyelenggarakan repositori literatur digital yang terbuka dan akurat.</li>
-                    <li>Mengadakan program kepenulisan kreatif dan seminar sastra berkala.</li>
-                    <li>Membangun infrastruktur ruang baca inklusif ramah difabel dan lansia.</li>
+                <div className="bg-white p-8 rounded-2xl border border-border-200 shadow-soft space-y-3">
+                  <div className="w-10 h-10 rounded-xl bg-gold-50 text-gold-500 flex items-center justify-center">
+                    <Award size={18} />
+                  </div>
+                  <h4 className="text-base font-bold text-heading font-navigation">{aboutInfo.misiTitle}</h4>
+                  <ul className="text-sm text-body leading-relaxed space-y-2">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle size={14} className="text-success-500 mt-0.5 shrink-0" />
+                      Menyelenggarakan repositori literatur digital yang terbuka dan akurat.
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle size={14} className="text-success-500 mt-0.5 shrink-0" />
+                      Mengadakan program kepenulisan kreatif dan seminar sastra berkala.
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle size={14} className="text-success-500 mt-0.5 shrink-0" />
+                      Membangun infrastruktur ruang baca inklusif ramah difabel dan lansia.
+                    </li>
                   </ul>
                 </div>
               </div>
 
               {/* Struktur Organisasi */}
-              <div className="space-y-6 pt-4 border-t border-gray-100">
-                <h4 className="text-lg font-bold text-gray-900 font-navigation text-center">Struktur Pengurus</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                  {[
-                    { name: "Dr. Hendrawan Basuki", role: "Kepala Perpustakaan", desc: "Mengarahkan visi strategis literasi kota." },
-                    { name: "Siti Rahmawati, M.Hum", role: "Sekretaris & Operasional", desc: "Mengelola manajemen internal & kemitraan." },
-                    { name: "Budi Utomo, S.I.Pust", role: "Kepala Bidang Layanan & TI", desc: "Mengembangkan integrasi sistem & digitalisasi." }
-                  ].map((item, idx) => (
-                    <div key={idx} className="bg-white p-5 rounded-xl border border-gray-150 text-center space-y-1">
-                      <h5 className="font-bold text-xs text-gray-900 font-navigation">{item.name}</h5>
-                      <span className="text-[9px] font-bold text-primary-500 uppercase block tracking-wider">{item.role}</span>
-                      <p className="text-[10px] text-gray-400 leading-relaxed font-sans">{item.desc}</p>
+              <div className="space-y-6 pt-4 border-t border-border-200">
+                <h4 className="text-lg font-bold text-heading font-navigation">Struktur Pengurus</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                  {teamList.map((item, idx) => (
+                    <div key={item.id || idx} className="bg-white p-5 rounded-xl border border-border-200 shadow-soft text-center space-y-1.5 hover:shadow-medium hover:-translate-y-0.5 transition-all duration-200">
+                      <div className="w-12 h-12 rounded-full bg-primary-50 border-2 border-primary-100 flex items-center justify-center mx-auto mb-3">
+                        <User size={20} className="text-primary-500" />
+                      </div>
+                      <h5 className="font-bold text-sm text-heading font-navigation">{item.name}</h5>
+                      <span className="text-xs font-bold text-primary-500 uppercase tracking-wider block">{item.role}</span>
+                      <p className="text-xs text-muted leading-relaxed">{item.desc}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Fasilitas & Operasional */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-4 border-t border-gray-100">
+              {/* Fasilitas & Jam Operasional */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-4 border-t border-border-200">
                 <div className="lg:col-span-8 space-y-4">
-                  <h4 className="text-base font-bold text-gray-900 font-navigation">Fasilitas Utama</h4>
+                  <h4 className="text-base font-bold text-heading font-navigation">Fasilitas Utama</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {[
-                      { title: "Ruang Baca Hening", desc: "Meja partisi individu dengan pencahayaan baca personal untuk fokus maksimal." },
-                      { title: "Lab Komputer & E-Library", desc: "Workstation komputer terhubung basis data jurnal internasional premium." },
-                      { title: "Kids Literacy Area", desc: "Sudut buku cerita edukatif, karpet bermain, dan ruang dongeng anak." },
-                      { title: "Taman Diskusi Terbuka", desc: "Ruang luar hijau yang nyaman untuk mendiskusikan buku dengan santai." }
-                    ].map((f, i) => (
-                      <div key={i} className="flex gap-2.5 items-start">
-                        <div className="w-5 h-5 rounded-full bg-primary-50 text-primary-500 flex items-center justify-center shrink-0 text-[10px] font-bold">{i+1}</div>
+                    {facilityList.map((f, i) => (
+                      <div key={f.id || i} className="flex gap-3 items-start bg-white p-4 rounded-xl border border-border-200">
+                        <div className="w-8 h-8 rounded-lg bg-primary-500 text-white flex items-center justify-center shrink-0 text-xs font-bold font-navigation">
+                          {f.num}
+                        </div>
                         <div>
-                          <h5 className="font-bold text-xs text-gray-900 font-navigation">{f.title}</h5>
-                          <p className="text-[10px] text-gray-400 leading-relaxed font-sans">{f.desc}</p>
+                          <h5 className="font-bold text-sm text-heading font-navigation">{f.title}</h5>
+                          <p className="text-xs text-muted leading-relaxed mt-0.5">{f.desc}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="lg:col-span-4 bg-paper-200 p-6 rounded-xl border border-gray-150 flex flex-col justify-between">
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-bold text-gray-900 font-navigation flex items-center gap-1.5">
+                <div className="lg:col-span-4 bg-white p-6 rounded-xl border border-border-200 shadow-soft space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center">
                       <Clock size={16} className="text-primary-500" />
-                      <span>Jam Layanan Fisik</span>
-                    </h4>
-                    <p className="text-[10px] text-gray-400 font-sans">Silakan kunjungi gedung layanan kami pada jam operasional berikut.</p>
+                    </div>
+                    <h4 className="text-sm font-bold text-heading font-navigation">Jam Layanan Fisik</h4>
                   </div>
-                  <div className="space-y-2 pt-4">
-                    <div className="flex justify-between items-center text-[11px] border-b border-gray-250 pb-2">
-                      <span className="font-semibold text-gray-500 font-navigation">Senin - Jumat</span>
-                      <span className="font-bold text-primary-500">08:00 - 18:00 WIB</span>
+                  <p className="text-xs text-muted">Kunjungi gedung layanan kami pada jam operasional berikut.</p>
+                  <div className="space-y-3 pt-1">
+                    <div className="flex justify-between items-center text-sm border-b border-border-200 pb-3">
+                      <span className="font-medium text-body font-navigation">Senin — Jumat</span>
+                      <span className="font-bold text-primary-500 font-navigation">08:00 — 18:00</span>
                     </div>
-                    <div className="flex justify-between items-center text-[11px]">
-                      <span className="font-semibold text-gray-500 font-navigation">Sabtu - Minggu</span>
-                      <span className="font-bold text-primary-500">09:00 - 15:00 WIB</span>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="font-medium text-body font-navigation">Sabtu — Minggu</span>
+                      <span className="font-bold text-primary-500 font-navigation">09:00 — 15:00</span>
                     </div>
+                  </div>
+                  <div className="pt-2">
+                    <span className="badge badge-success">
+                      <div className="w-1.5 h-1.5 rounded-full bg-success-500" />
+                      Saat ini Buka
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* STATISTIK */}
-          <section id="stats" className="py-16 bg-gray-900 text-white relative">
-            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#0071E3_1px,transparent_0)] bg-[size:16px_16px]" />
+          {/* ===== STATISTIK ===== */}
+          <section id="stats" className="py-20 relative overflow-hidden" style={{ backgroundColor: "#005BAC" }}>
+            {/* Subtle pattern overlay */}
+            <div className="absolute inset-0 opacity-[0.06]" style={{
+              backgroundImage: "radial-gradient(circle, #fff 1px, transparent 0)",
+              backgroundSize: "20px 20px"
+            }} />
+
             <div className="chapter-container relative z-10">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                {[
-                  { icon: <Library size={22} />, value: "25.000+", label: "Koleksi Buku Fisik" },
-                  { icon: <Users2 size={22} />, value: "10.500+", label: "Anggota Aktif" },
-                  { icon: <Activity size={22} />, value: "120+", label: "Kegiatan / Tahun" },
-                  { icon: <Database size={22} />, value: "5.000+", label: "E-Journal Premium" }
-                ].map((stat, i) => (
-                  <div key={i} className="space-y-1">
-                    <div className="w-8 h-8 rounded-full bg-white/5 text-primary-400 flex items-center justify-center mx-auto mb-1">{stat.icon}</div>
-                    <div className="text-3xl font-bold font-sans text-white">{stat.value}</div>
-                    <div className="text-[10px] text-gray-400 uppercase font-navigation font-semibold tracking-wider">{stat.label}</div>
+              <div className="text-center mb-12">
+                <span className="text-xs font-navigation font-bold tracking-widest uppercase text-white/60 block mb-2">Perpustakaan dalam Angka</span>
+                <h2 className="text-3xl font-bold text-white font-navigation">Statistik Layanan Kami</h2>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {statsList.map((stat, i) => (
+                  <div key={stat.id || i} className="text-center group">
+                    <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 text-white flex items-center justify-center mx-auto mb-4 group-hover:bg-white/20 transition-colors duration-200">
+                      <Activity size={24} />
+                    </div>
+                    <div className="text-3xl md:text-4xl font-bold text-white font-navigation mb-1">
+                      {stat.value}
+                    </div>
+                    <div className="text-xs text-white/70 font-navigation font-medium uppercase tracking-wider">
+                      {stat.label}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           </section>
 
-          {/* BERITA */}
-          <section id="news" className="py-24 bg-white border-b border-gray-200/40">
+          {/* ===== BERITA ===== */}
+          <section id="news" className="py-24 bg-white">
             <div className="chapter-container space-y-12">
-              <div className="max-w-2xl space-y-3">
-                <span className="text-xs uppercase tracking-widest text-primary-500 font-navigation font-bold">Berita Terbaru</span>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 font-sans">Kabar & Publikasi Terkini</h2>
-                <p className="text-xs text-gray-400 font-sans">Ikuti info perkembangan literasi komunitas dan pembaruan sistem katalog.</p>
+              {/* Header */}
+              <div className="max-w-2xl space-y-2">
+                <span className="section-eyebrow">Berita Terbaru</span>
+                <h2 className="text-3xl md:text-4xl font-bold text-heading font-navigation">
+                  Kabar & Publikasi Terkini
+                </h2>
+                <p className="text-sm text-muted">Ikuti info perkembangan literasi komunitas dan pembaruan sistem katalog.</p>
               </div>
 
-              {/* Controls */}
-              <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-paper-200 p-4 rounded-xl border border-gray-150">
-                <div className="relative w-full sm:w-80">
-                  <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              {/* Search & Filter Controls */}
+              <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-surface-100 p-4 rounded-2xl border border-border-200">
+                <div className="lib-search w-full sm:w-80">
+                  <Search size={16} className="search-icon" />
                   <input
                     type="text"
                     placeholder="Cari berita..."
                     value={newsSearch}
                     onChange={(e) => setNewsSearch(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 bg-white rounded-lg border border-gray-200 focus:outline-none focus:border-primary-500 text-xs font-sans"
+                    aria-label="Cari berita"
                   />
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto overflow-x-auto">
@@ -686,8 +611,10 @@ export default function Home() {
                     <button
                       key={cat}
                       onClick={() => setSelectedNewsCategory(cat)}
-                      className={`px-4 py-1.5 rounded-full text-xs font-navigation font-semibold transition-colors cursor-pointer ${
-                        selectedNewsCategory === cat ? "bg-primary-500 text-white" : "bg-white text-gray-500 border border-gray-200"
+                      className={`px-4 py-2 rounded-lg text-xs font-navigation font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                        selectedNewsCategory === cat
+                          ? "bg-primary-500 text-white shadow-soft"
+                          : "bg-white text-body border border-border-200 hover:border-primary-300 hover:text-primary-500"
                       }`}
                     >
                       {cat}
@@ -696,92 +623,142 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* News Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {filteredNews.length > 0 ? (
                   filteredNews.map((news) => (
-                    <article key={news.id} className="bg-white rounded-2xl border border-gray-200/50 shadow-soft overflow-hidden group flex flex-col justify-between">
-                      <div className="h-44 overflow-hidden relative">
-                        <img src={news.thumbnail} alt={news.title} className="w-full h-full object-cover group-hover:scale-105 duration-500" />
-                      </div>
-                      <div className="p-6 space-y-4 flex-1 flex flex-col justify-between">
-                        <div className="space-y-1.5">
-                          <span className="text-[10px] text-gray-400 font-navigation font-bold block">{news.date}</span>
-                          <h4 className="text-base font-bold text-gray-900 font-sans leading-snug group-hover:text-primary-500 line-clamp-2">{news.title}</h4>
-                          <p className="text-xs text-gray-500 line-clamp-3 font-sans leading-relaxed">{news.content}</p>
+                    <article
+                      key={news.id}
+                      className="lib-card flex flex-col"
+                    >
+                      <div className="h-48 overflow-hidden relative">
+                        <img
+                          src={news.thumbnail}
+                          alt={news.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          loading="lazy"
+                        />
+                        <div className="absolute top-3 left-3">
+                          <span className="badge badge-primary">{news.category}</span>
                         </div>
-                        <button className="text-[11px] text-primary-500 font-bold font-navigation flex items-center gap-1 cursor-pointer pt-2">
+                      </div>
+                      <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-1.5 text-xs text-muted font-navigation">
+                            <Calendar size={12} />
+                            <span>{news.date}</span>
+                          </div>
+                          <h4 className="text-base font-bold text-heading font-navigation leading-snug hover:text-primary-500 transition-colors line-clamp-2">
+                            {news.title}
+                          </h4>
+                          <p className="text-sm text-body line-clamp-3 leading-relaxed">
+                            {news.content}
+                          </p>
+                        </div>
+                        <button className="inline-flex items-center gap-1.5 text-sm text-primary-500 font-bold font-navigation pt-2 hover:gap-3 transition-all cursor-pointer">
                           <span>Selengkapnya</span>
-                          <ArrowUpRight size={12} />
+                          <ArrowUpRight size={14} />
                         </button>
                       </div>
                     </article>
                   ))
                 ) : (
-                  <div className="col-span-3 text-center py-16 bg-white border border-gray-150 rounded-2xl">
-                    <AlertCircle size={28} className="mx-auto text-gray-300 mb-2" />
-                    <p className="text-xs text-gray-400 font-navigation">Berita tidak ditemukan.</p>
+                  <div className="col-span-3 text-center py-20 bg-surface-100 border border-border-200 rounded-2xl">
+                    <AlertCircle size={32} className="mx-auto text-muted mb-3" />
+                    <p className="text-sm text-muted font-navigation font-medium">Berita tidak ditemukan.</p>
                   </div>
                 )}
               </div>
             </div>
           </section>
 
-          {/* EVENTS */}
-          <section id="events" className="py-24 bg-paper-100 border-b border-gray-200/40">
+          {/* ===== EVENTS ===== */}
+          <section id="events" className="py-24 bg-surface-100 border-y border-border-200">
             <div className="chapter-container space-y-12">
-              <div className="max-w-2xl space-y-3">
-                <span className="text-xs uppercase tracking-widest text-primary-500 font-navigation font-bold">Kegiatan Komunitas</span>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 font-sans">Agenda Literasi Kreatif</h2>
-                <p className="text-xs text-gray-400 font-sans">Segera daftarkan diri Anda pada program lokakarya dan diskusi gratis di bawah ini.</p>
+              <div className="max-w-2xl space-y-2">
+                <span className="section-eyebrow">Kegiatan Komunitas</span>
+                <h2 className="text-3xl md:text-4xl font-bold text-heading font-navigation">
+                  Agenda Literasi Kreatif
+                </h2>
+                <p className="text-sm text-muted">Segera daftarkan diri Anda pada program lokakarya dan diskusi gratis di bawah ini.</p>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-5">
                 {MOCK_EVENTS.map((event) => (
-                  <div key={event.id} className="bg-white rounded-2xl border border-gray-250/40 shadow-soft overflow-hidden grid grid-cols-1 lg:grid-cols-12">
-                    <div className="lg:col-span-4 h-48 lg:h-full relative min-h-40">
-                      <img src={event.thumbnail} alt={event.title} className="w-full h-full object-cover" />
+                  <div
+                    key={event.id}
+                    className="bg-white rounded-2xl border border-border-200 shadow-soft overflow-hidden grid grid-cols-1 lg:grid-cols-12 hover:shadow-medium transition-shadow duration-200"
+                  >
+                    {/* Image */}
+                    <div className="lg:col-span-4 h-52 lg:h-full relative min-h-48">
+                      <img
+                        src={event.thumbnail}
+                        alt={event.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
                     </div>
-                    
-                    <div className="lg:col-span-8 p-6 md:p-8 flex flex-col justify-between space-y-4">
-                      <div className="space-y-2">
-                        <h4 className="text-lg font-bold text-gray-900 font-sans leading-snug">{event.title}</h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-gray-500 font-sans pt-1">
-                          <div className="flex items-center gap-1.5"><Calendar size={14} className="text-primary-500" /> <span>{event.date} ({event.time})</span></div>
-                          <div className="flex items-center gap-1.5"><MapPin size={14} className="text-primary-500" /> <span>{event.location}</span></div>
-                          <div className="flex items-center gap-1.5 col-span-1 sm:col-span-2"><User size={14} className="text-primary-500" /> <span>Pembicara: **{event.speaker}**</span></div>
+
+                    {/* Content */}
+                    <div className="lg:col-span-8 p-6 md:p-8 flex flex-col justify-between space-y-5">
+                      <div className="space-y-3">
+                        <span className="badge badge-primary">Agenda Mendatang</span>
+                        <h4 className="text-lg font-bold text-heading font-navigation leading-snug">{event.title}</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <div className="flex items-center gap-2 text-sm text-body">
+                            <Calendar size={14} className="text-primary-500 shrink-0" />
+                            <span>{event.date} · {event.time}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-body">
+                            <MapPin size={14} className="text-primary-500 shrink-0" />
+                            <span>{event.location}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-body sm:col-span-2">
+                            <User size={14} className="text-primary-500 shrink-0" />
+                            <span>Pembicara: <strong className="text-heading">{event.speaker}</strong></span>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="border-t border-gray-100 pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div className="text-[11px] font-sans text-gray-400">
-                          <span className="block text-primary-600 font-semibold">Telah Terdaftar: {event.registered} / {event.capacity} Kursi</span>
+                      <div className="border-t border-border-200 pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="space-y-1">
+                          <div className="text-sm font-bold text-heading font-navigation">
+                            {event.registered} / {event.capacity} kursi terisi
+                          </div>
+                          <div className="w-40 h-1.5 bg-border-200 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-primary-500 transition-all"
+                              style={{ width: `${(event.registered / event.capacity) * 100}%` }}
+                            />
+                          </div>
                         </div>
 
                         {registeredEventId === event.id ? (
-                          <div className="flex items-center gap-1 text-[11px] text-green-600 font-semibold font-navigation bg-green-50 px-3 py-1.5 rounded-full border border-green-200">
-                            <CheckCircle size={12} />
+                          <div className="flex items-center gap-2 text-sm text-success-700 font-bold font-navigation bg-success-50 px-4 py-2 rounded-lg border border-success-500/30">
+                            <CheckCircle size={15} />
                             <span>Pendaftaran Berhasil!</span>
                           </div>
                         ) : (
-                          <form onSubmit={(e) => handleRegisterEventSubmit(e, event.id)} className="flex gap-2 w-full sm:w-auto">
-                            <input 
-                              type="text" 
-                              placeholder="Nama Lengkap" 
+                          <form onSubmit={(e) => handleRegisterEventSubmit(e, event.id)} className="flex flex-wrap gap-2">
+                            <input
+                              type="text"
+                              placeholder="Nama Lengkap"
                               required
                               value={eventRegisterForm.name}
-                              onChange={(e) => setEventRegisterForm({...eventRegisterForm, name: e.target.value})}
-                              className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs w-full sm:w-32 focus:outline-none bg-paper-100" 
+                              onChange={(e) => setEventRegisterForm({ ...eventRegisterForm, name: e.target.value })}
+                              className="lib-input !w-auto !py-2 text-xs"
+                              style={{ minWidth: "120px" }}
                             />
-                            <input 
-                              type="email" 
-                              placeholder="Email" 
+                            <input
+                              type="email"
+                              placeholder="Email"
                               required
                               value={eventRegisterForm.email}
-                              onChange={(e) => setEventRegisterForm({...eventRegisterForm, email: e.target.value})}
-                              className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs w-full sm:w-32 focus:outline-none bg-paper-100" 
+                              onChange={(e) => setEventRegisterForm({ ...eventRegisterForm, email: e.target.value })}
+                              className="lib-input !w-auto !py-2 text-xs"
+                              style={{ minWidth: "120px" }}
                             />
-                            <button type="submit" className="px-4 py-1.5 bg-primary-500 text-white rounded-lg text-xs font-bold font-navigation hover:bg-primary-600 cursor-pointer shrink-0">
+                            <button type="submit" className="btn-primary !py-2 !px-4 !text-xs shrink-0">
                               Daftar
                             </button>
                           </form>
@@ -794,21 +771,31 @@ export default function Home() {
             </div>
           </section>
 
-          {/* GALERI */}
-          <section id="gallery" className="py-24 bg-white border-b border-gray-200/40">
+          {/* ===== GALERI ===== */}
+          <section id="gallery" className="py-24 bg-white">
             <div className="chapter-container space-y-12">
-              <div className="max-w-2xl space-y-3">
-                <span className="text-xs uppercase tracking-widest text-primary-500 font-navigation font-bold">Galeri Dokumentasi</span>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 font-sans">Koleksi Visual Kegiatan</h2>
-                <p className="text-xs text-gray-400 font-sans">Potret dokumentasi kemeriahan literasi kreatif dan ruang baca perpustakaan.</p>
+              <div className="max-w-2xl space-y-2">
+                <span className="section-eyebrow">Galeri Dokumentasi</span>
+                <h2 className="text-3xl md:text-4xl font-bold text-heading font-navigation">
+                  Koleksi Visual Kegiatan
+                </h2>
+                <p className="text-sm text-muted">Potret dokumentasi kemeriahan literasi kreatif dan ruang baca perpustakaan.</p>
               </div>
 
-              <div className="columns-1 sm:columns-2 md:columns-3 gap-4 space-y-4">
+              <div className="columns-1 sm:columns-2 md:columns-3 gap-5 space-y-5">
                 {MOCK_GALLERY.map((photo) => (
-                  <div key={photo.id} className="relative group overflow-hidden rounded-2xl border border-gray-200/50 shadow-soft break-inside-avoid">
-                    <img src={photo.url} alt={photo.caption} className="w-full h-auto object-cover transform duration-500 group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                      <p className="text-[11px] text-white font-navigation font-semibold">{photo.caption}</p>
+                  <div
+                    key={photo.id}
+                    className="relative group overflow-hidden rounded-2xl border border-border-200 shadow-soft break-inside-avoid hover:shadow-medium transition-all duration-300"
+                  >
+                    <img
+                      src={photo.url}
+                      alt={photo.caption}
+                      className="w-full h-auto object-cover transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-heading/80 via-heading/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                      <p className="text-xs text-white font-navigation font-semibold">{photo.caption}</p>
                     </div>
                   </div>
                 ))}
@@ -816,30 +803,36 @@ export default function Home() {
             </div>
           </section>
 
-          {/* FAQ SECTION (Moved to Main Page) */}
-          <section id="faq" className="py-24 bg-white border-b border-gray-200/40">
-            <div className="chapter-container max-w-4xl space-y-8">
+          {/* ===== FAQ ===== */}
+          <section id="faq" className="py-24 bg-surface-100 border-y border-border-200">
+            <div className="chapter-container max-w-4xl space-y-10">
               <div className="text-center space-y-2">
-                <span className="text-xs uppercase tracking-widest text-primary-500 font-navigation font-bold">Informasi Layanan</span>
-                <h2 className="text-3xl font-bold text-gray-900 font-sans">Pertanyaan Umum (FAQ)</h2>
-                <p className="text-xs text-gray-400 font-sans">Jawaban atas pertanyaan yang paling sering diajukan pengunjung.</p>
+                <span className="section-eyebrow">Informasi Layanan</span>
+                <h2 className="text-3xl font-bold text-heading font-navigation">
+                  Pertanyaan Umum (FAQ)
+                </h2>
+                <p className="text-sm text-muted">Jawaban atas pertanyaan yang paling sering diajukan pengunjung.</p>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {FAQS.map((faq, index) => (
-                  <div key={index} className="bg-white rounded-xl border border-gray-150 overflow-hidden shadow-soft">
+                  <div
+                    key={index}
+                    className="bg-white rounded-xl border border-border-200 overflow-hidden shadow-soft"
+                  >
                     <button
                       onClick={() => setActiveFaq(activeFaq === index ? null : index)}
-                      className="w-full text-left p-4.5 flex items-center justify-between font-navigation text-sm font-semibold text-primary-600 hover:bg-gray-50 transition-colors cursor-pointer"
+                      className="w-full text-left px-6 py-5 flex items-center justify-between font-navigation text-sm font-semibold text-heading hover:bg-surface-100 transition-colors cursor-pointer"
+                      aria-expanded={activeFaq === index}
                     >
-                      <span>{faq.q}</span>
-                      <ChevronDown 
-                        size={16} 
-                        className={`text-primary-500 transition-transform duration-300 ${activeFaq === index ? "transform rotate-180" : ""}`} 
+                      <span className="pr-4">{faq.q}</span>
+                      <ChevronDown
+                        size={18}
+                        className={`text-primary-500 transition-transform duration-300 shrink-0 ${activeFaq === index ? "rotate-180" : ""}`}
                       />
                     </button>
                     {activeFaq === index && (
-                      <div className="p-4.5 pt-0 border-t border-gray-50 text-xs text-gray-500 leading-relaxed font-sans">
+                      <div className="px-6 pb-5 border-t border-border-100 text-sm text-body leading-relaxed pt-4">
                         {faq.a}
                       </div>
                     )}
@@ -849,105 +842,130 @@ export default function Home() {
             </div>
           </section>
 
-          {/* KONTAK & MAPS SECTION (Moved to Main Page) */}
+          {/* ===== KONTAK & MAPS ===== */}
           <section id="contact" className="py-24 bg-white">
             <div className="chapter-container space-y-12">
-              <div className="max-w-2xl space-y-3">
-                <span className="text-xs uppercase tracking-widest text-primary-500 font-navigation font-bold">Bab Kontak</span>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 font-sans">Pusat Bantuan & Lokasi</h2>
-                <p className="text-xs text-gray-400 font-sans">Hubungi admin atau kunjungi gedung perpustakaan kami melalui peta rute berikut.</p>
+              <div className="max-w-2xl space-y-2">
+                <span className="section-eyebrow">Pusat Bantuan</span>
+                <h2 className="text-3xl md:text-4xl font-bold text-heading font-navigation">
+                  Hubungi & Kunjungi Kami
+                </h2>
+                <p className="text-sm text-muted">Hubungi admin atau kunjungi gedung perpustakaan kami melalui peta rute berikut.</p>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-                {/* Message Form (7 cols) */}
+                {/* Contact Form */}
                 <div className="lg:col-span-7 space-y-6">
-                  <h3 className="text-lg font-bold text-gray-900 font-navigation">Form Hubungi Kami</h3>
-                  
+                  <h3 className="text-lg font-bold text-heading font-navigation">Form Hubungi Kami</h3>
+
                   {contactSuccess ? (
-                    <div className="bg-green-50 border border-green-200 text-green-700 p-8 rounded-2xl text-center space-y-3">
-                      <CheckCircle size={32} className="mx-auto text-green-600 animate-bounce" />
-                      <h4 className="font-bold text-base">Pesan Anda Terkirim!</h4>
-                      <p className="text-xs text-green-650">Terima kasih atas laporan Anda. Hubungan Masyarakat kami akan segera merespons aduan Anda.</p>
+                    <div className="bg-success-50 border border-success-500/30 text-success-700 p-8 rounded-2xl text-center space-y-3">
+                      <CheckCircle size={36} className="mx-auto text-success-500" />
+                      <h4 className="font-bold text-base font-navigation">Pesan Anda Terkirim!</h4>
+                      <p className="text-sm text-success-700/80">Terima kasih atas laporan Anda. Tim kami akan segera merespons.</p>
                     </div>
                   ) : (
-                    <form onSubmit={handleContactSubmit} className="space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-navigation text-gray-500 font-bold uppercase">Nama Lengkap</label>
+                    <form onSubmit={handleContactSubmit} className="space-y-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                          <label className="lib-label" htmlFor="contact-name">Nama Lengkap</label>
                           <input
+                            id="contact-name"
                             type="text"
                             required
                             value={contactForm.name}
                             onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                            className="w-full px-3 py-2 bg-paper-100 border border-gray-250 rounded-lg focus:outline-none focus:border-primary-500 text-xs font-sans"
+                            className="lib-input"
+                            placeholder="Nama Anda"
                           />
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-navigation text-gray-500 font-bold uppercase">Email</label>
+                        <div>
+                          <label className="lib-label" htmlFor="contact-email">Email</label>
                           <input
+                            id="contact-email"
                             type="email"
                             required
                             value={contactForm.email}
                             onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                            className="w-full px-3 py-2 bg-paper-100 border border-gray-250 rounded-lg focus:outline-none focus:border-primary-500 text-xs font-sans"
+                            className="lib-input"
+                            placeholder="email@contoh.com"
                           />
                         </div>
                       </div>
-
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-navigation text-gray-500 font-bold uppercase">Isi Pesan</label>
+                      <div>
+                        <label className="lib-label" htmlFor="contact-message">Isi Pesan</label>
                         <textarea
+                          id="contact-message"
                           required
-                          rows={4}
+                          rows={5}
                           value={contactForm.message}
                           onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
-                          className="w-full px-3 py-2 bg-paper-100 border border-gray-250 rounded-lg focus:outline-none focus:border-primary-500 text-xs font-sans resize-none"
+                          className="lib-input resize-none"
+                          placeholder="Tulis pesan atau pertanyaan Anda..."
                         />
                       </div>
-
-                      <button
-                        type="submit"
-                        className="w-full py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-navigation text-xs font-bold transition-colors cursor-pointer"
-                      >
-                        Kirim Aduan
+                      <button type="submit" className="btn-primary w-full justify-center !py-3">
+                        Kirim Pesan
                       </button>
                     </form>
                   )}
                 </div>
 
-                {/* Maps & Medsos (5 cols) */}
-                <div className="lg:col-span-5 space-y-6">
-                  <h3 className="text-lg font-bold text-gray-900 font-navigation">Detail Kontak & Peta</h3>
-                  
-                  {/* Map box */}
-                  <div className="relative h-56 w-full rounded-2xl overflow-hidden border border-gray-150 bg-paper-100 flex flex-col justify-center items-center text-center p-4">
-                    <MapPin size={24} className="text-primary-500 animate-bounce mb-2" />
-                    <h5 className="font-navigation text-xs font-bold text-gray-800 font-semibold">Jl. Sastra Kencana No. 45, Kota Buku</h5>
-                    <p className="text-[10px] text-gray-400 max-w-xs leading-relaxed pt-1">Gedung Utama Sektor Timur (Samping Danau Kota).</p>
-                    <div className="mt-3 px-3 py-1.5 rounded bg-white text-[10px] text-primary-500 font-bold border border-primary-100 shadow-soft cursor-pointer">
-                      Tunjukkan Arah Google Maps
+                {/* Maps & Contacts */}
+                <div className="lg:col-span-5 space-y-5">
+                  <h3 className="text-lg font-bold text-heading font-navigation">Detail Kontak & Peta</h3>
+
+                  {/* Map placeholder */}
+                  <div className="relative h-56 w-full rounded-2xl overflow-hidden border border-border-200 bg-surface-100 flex flex-col justify-center items-center text-center p-6">
+                    <div className="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center mb-3">
+                      <MapPin size={24} className="text-primary-500" />
+                    </div>
+                    <h5 className="font-navigation text-sm font-bold text-heading">Jl. Sastra Kencana No. 45, Kota Buku</h5>
+                    <p className="text-xs text-muted max-w-xs leading-relaxed pt-1">Gedung Utama Sektor Timur (Samping Danau Kota).</p>
+                    <div className="mt-4">
+                      <button className="btn-secondary !py-2 !px-4 !text-xs">
+                        Lihat di Google Maps
+                      </button>
                     </div>
                   </div>
 
-                  <div className="bg-paper-100 p-5 rounded-xl border border-gray-150 space-y-3 font-sans text-xs text-gray-500">
-                    <div className="flex items-center gap-3"><Mail size={16} className="text-primary-500" /> <span>info@perpustakaankota.go.id</span></div>
-                    <div className="flex items-center gap-3"><Phone size={16} className="text-primary-500" /> <span>(021) 8899-7766</span></div>
+                  {/* Contact details */}
+                  <div className="bg-surface-100 p-5 rounded-xl border border-border-200 space-y-3">
+                    <div className="flex items-center gap-3 text-sm text-body">
+                      <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
+                        <Mail size={14} className="text-primary-500" />
+                      </div>
+                      <span>info@perpustakaankota.go.id</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-body">
+                      <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
+                        <Phone size={14} className="text-primary-500" />
+                      </div>
+                      <span>(021) 8899-7766</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-body">
+                      <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
+                        <Clock size={14} className="text-primary-500" />
+                      </div>
+                      <span>Sen–Jum: 08.00–18.00 | Sab–Min: 09.00–15.00</span>
+                    </div>
                   </div>
 
                   {/* Social media */}
-                  <div className="space-y-3">
-                    <h4 className="text-[10px] uppercase tracking-widest text-gray-400 font-navigation font-bold">Ikuti Media Sosial</h4>
-                    <div className="flex gap-4">
+                  <div>
+                    <p className="text-xs font-navigation font-bold text-muted uppercase tracking-wider mb-3">Ikuti Media Sosial</p>
+                    <div className="flex gap-3">
                       {[
-                        { icon: <Facebook size={16} />, link: "#", color: "hover:bg-[#1877F2]" },
-                        { icon: <Twitter size={16} />, link: "#", color: "hover:bg-[#1DA1F2]" },
-                        { icon: <Instagram size={16} />, link: "#", color: "hover:bg-[#E1306C]" },
-                        { icon: <Youtube size={16} />, link: "#", color: "hover:bg-[#FF0000]" }
+                        { icon: <Facebook size={16} />, link: "#", label: "Facebook" },
+                        { icon: <Twitter size={16} />, link: "#", label: "Twitter" },
+                        { icon: <Instagram size={16} />, link: "#", label: "Instagram" },
+                        { icon: <Youtube size={16} />, link: "#", label: "YouTube" }
                       ].map((soc, idx) => (
                         <a
                           key={idx}
                           href={soc.link}
-                          className={`w-9 h-9 rounded-full bg-paper-100 text-gray-400 hover:text-white flex items-center justify-center border border-gray-200 transition-all ${soc.color}`}
+                          aria-label={soc.label}
+                          className="w-10 h-10 rounded-xl bg-surface-100 border border-border-200 text-muted hover:bg-primary-500 hover:border-primary-500 hover:text-white flex items-center justify-center transition-all duration-200"
                         >
                           {soc.icon}
                         </a>
@@ -959,25 +977,73 @@ export default function Home() {
             </div>
           </section>
 
-          {/* FOOTER */}
-          <footer className="bg-white border-t border-gray-250/20 py-12 text-gray-400 font-sans text-xs">
-            <div className="chapter-container flex flex-col md:flex-row justify-between items-center gap-4 text-gray-500 text-[10px]">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded bg-primary-500 flex items-center justify-center text-white">
-                  <BookOpen size={12} />
+          {/* ===== FOOTER ===== */}
+          <footer style={{ backgroundColor: "#005BAC" }}>
+            <div className="chapter-container py-14">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
+                {/* Brand */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-lg bg-white/15 border border-white/25 flex items-center justify-center text-white">
+                      <BookOpen size={18} />
+                    </div>
+                    <span className="font-navigation font-bold text-white text-sm tracking-wide">
+                      {footerInfo.brandName}
+                    </span>
+                  </div>
+                  <p className="text-sm text-white/70 leading-relaxed">
+                    {footerInfo.description}
+                  </p>
                 </div>
-                <span className="font-navigation font-bold tracking-wider uppercase">Digital Book Experience</span>
+
+                {/* Jam Operasional */}
+                <div className="space-y-4">
+                  <h4 className="font-navigation font-bold text-white text-sm uppercase tracking-wider">Jam Operasional</h4>
+                  <div className="space-y-2 text-sm text-white/70">
+                    {footerHours.map((fh, idx) => (
+                      <div key={fh.id || idx} className="flex justify-between">
+                        <span>{fh.days}</span>
+                        <span className="font-semibold text-white">{fh.hours}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Kontak */}
+                <div className="space-y-4">
+                  <h4 className="font-navigation font-bold text-white text-sm uppercase tracking-wider">Kontak</h4>
+                  <div className="space-y-2 text-sm text-white/70">
+                    <div className="flex items-center gap-2">
+                      <MapPin size={13} className="text-white/50 shrink-0" />
+                      <span>{footerInfo.address}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Mail size={13} className="text-white/50 shrink-0" />
+                      <span>{footerInfo.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Phone size={13} className="text-white/50 shrink-0" />
+                      <span>{footerInfo.phone}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <p>© 2026 Digital Book Experience. Hak Cipta Dilindungi Undang-Undang.</p>
-              <div className="flex gap-4 font-navigation">
-                <span className="hover:underline cursor-pointer">Kebijakan Privasi</span>
-                <span className="hover:underline cursor-pointer">Ketentuan Layanan</span>
+
+              {/* Bottom bar */}
+              <div className="border-t border-white/15 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p className="text-xs text-white/60 font-navigation">
+                  {footerInfo.copyright}
+                </p>
+                <div className="flex gap-5 text-xs text-white/60 font-navigation">
+                  {footerLinks.map((fl, idx) => (
+                    <a key={fl.id || idx} href={fl.url} className="hover:text-white cursor-pointer transition-colors">
+                      {fl.label}
+                    </a>
+                  ))}
+                </div>
               </div>
             </div>
           </footer>
-        </div>
-      )}
-
     </div>
   );
 }

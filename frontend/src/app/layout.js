@@ -21,9 +21,9 @@ const playfair = Playfair_Display({
 });
 
 export const metadata = {
-  title: "Digital Book Experience | Portal Informasi Perpustakaan",
-  description: "Selamat datang di Digital Book Experience, portal informasi, berita, galeri, dan kegiatan resmi perpustakaan kami. Jelajahi ilmu pengetahuan bab demi bab.",
-  keywords: ["Perpustakaan", "Digital Book Experience", "Buku", "Informasi", "Portal Digital"],
+  title: "Portal Perpustakaan | Pusat Layanan Literasi & Informasi",
+  description: "Selamat datang di Portal Perpustakaan Kota. Temukan ribuan koleksi buku fisik, jurnal digital, dan ikuti kegiatan literasi kreatif kami secara gratis.",
+  keywords: ["Perpustakaan", "Literasi", "Koleksi Buku", "Portal Digital", "Informasi", "Akademik"],
 };
 
 export default function RootLayout({ children }) {
@@ -32,7 +32,7 @@ export default function RootLayout({ children }) {
       lang="id"
       className={`${inter.variable} ${poppins.variable} ${playfair.variable} h-full scroll-smooth antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-paper-100 text-gray-900 font-sans">
+      <body className="min-h-full flex flex-col bg-white text-body font-sans">
         {children}
       </body>
     </html>
