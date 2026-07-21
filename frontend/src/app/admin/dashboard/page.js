@@ -1562,7 +1562,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Nav Menu Items */}
+              {/* Nav Menu Items (Read-Only Display) */}
               <div className="bg-white p-6 rounded-xl border border-border-200 shadow-soft space-y-5">
                 <div className="flex items-center justify-between border-b border-border-200 pb-4">
                   <div className="flex items-center gap-2.5">
@@ -1571,16 +1571,9 @@ export default function AdminDashboard() {
                     </div>
                     <div>
                       <h3 className="font-bold text-heading font-navigation">Menu Navigasi Landing Page</h3>
-                      <p className="text-xs text-muted">Kelola daftar menu yang ditampilkan di navbar.</p>
+                      <p className="text-xs text-muted">Daftar menu navigasi utama yang ditampilkan di halaman depan.</p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => { setEditingNavMenu(null); setNavMenuForm({ label: "", target: "", order: navMenuItems.length + 1, active: true }); setShowNavMenuModal(true); }}
-                    className="btn-primary !py-2 !px-4"
-                  >
-                    <Plus size={14} />
-                    <span>Tambah Menu</span>
-                  </button>
                 </div>
 
                 {navMenuItems.length === 0 ? (
@@ -1596,7 +1589,6 @@ export default function AdminDashboard() {
                         <th>Label Menu</th>
                         <th>Link Tujuan</th>
                         <th>Status</th>
-                        <th className="text-right">Aksi</th>
                       </tr></thead>
                       <tbody>
                         {navMenuItems.sort((a, b) => a.order - b.order).map((item) => (
@@ -1609,49 +1601,11 @@ export default function AdminDashboard() {
                             <td className="font-semibold text-heading">{item.label}</td>
                             <td><code className="px-2 py-0.5 bg-surface-200 rounded text-xs text-body">{item.target}</code></td>
                             <td>
-                              <button
-                                onClick={async () => {
-                                  const newActive = !item.active;
-                                  if (offline) {
-                                    setNavMenuItems(navMenuItems.map(m => m.id === item.id ? { ...m, active: newActive } : m));
-                                    showNotification(`Menu "${item.label}" ${newActive ? 'diaktifkan' : 'dinonaktifkan'} (Offline)`);
-                                    return;
-                                  }
-                                  const token = localStorage.getItem("admin_token");
-                                  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-                                  const headers = { Authorization: `Bearer ${token}` };
-                                  try {
-                                    await axios.put(`${apiUrl}/cms/nav-menu/${item.id}`, { active: newActive }, { headers });
-                                    showNotification(`Menu "${item.label}" ${newActive ? 'diaktifkan' : 'dinonaktifkan'}.`);
-                                    fetchBackendData(token);
-                                  } catch (err) { showNotification("Gagal mengubah status: " + err.message, "error"); }
-                                }}
-                                className="cursor-pointer"
-                              >
-                                {item.active ? (
-                                  <span className="badge badge-success"><ToggleRight size={11} /> Aktif</span>
-                                ) : (
-                                  <span className="badge badge-gray"><ToggleLeft size={11} /> Nonaktif</span>
-                                )}
-                              </button>
-                            </td>
-                            <td className="text-right space-x-1.5">
-                              <button onClick={() => { setEditingNavMenu(item); setNavMenuForm({ label: item.label, target: item.target, order: item.order, active: item.active }); setShowNavMenuModal(true); }} className="p-1.5 rounded-lg bg-primary-50 hover:bg-primary-100 text-primary-600 cursor-pointer inline-flex">
-                                <Edit size={13} />
-                              </button>
-                              <button onClick={async () => {
-                                if (!confirm(`Hapus menu "${item.label}"?`)) return;
-                                if (offline) { setNavMenuItems(navMenuItems.filter(m => m.id !== item.id)); showNotification("Menu berhasil dihapus (Offline)"); return; }
-                                const token = localStorage.getItem("admin_token");
-                                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-                                const headers = { Authorization: `Bearer ${token}` };
-                                try {
-                                  await axios.delete(`${apiUrl}/cms/nav-menu/${item.id}`, { headers });
-                                  showNotification("Menu berhasil dihapus."); fetchBackendData(token);
-                                } catch (err) { showNotification("Gagal menghapus menu: " + err.message, "error"); }
-                              }} className="p-1.5 rounded-lg bg-danger-50 hover:bg-red-100 text-danger-500 cursor-pointer inline-flex">
-                                <Trash2 size={13} />
-                              </button>
+                              {item.active ? (
+                                <span className="badge badge-success"><ToggleRight size={11} /> Aktif</span>
+                              ) : (
+                                <span className="badge badge-gray"><ToggleLeft size={11} /> Nonaktif</span>
+                              )}
                             </td>
                           </tr>
                         ))}

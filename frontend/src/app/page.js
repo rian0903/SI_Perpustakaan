@@ -5,7 +5,7 @@ import {
   BookOpen, ArrowRight, Compass, Calendar, Image as ImageIcon, 
   MapPin, User, ChevronDown, X, Mail, Phone, Clock, Search, 
   AlertCircle, CheckCircle, ArrowUpRight, Facebook, Twitter, Instagram, 
-  Youtube, Info, Award, Shield, Library, Users2, Activity, Database
+  Youtube, Info, Award, Shield, Library, Users2, Activity, Database, MessageSquare, Send, Globe
 } from "lucide-react";
 import axios from "axios";
 
@@ -123,34 +123,64 @@ export default function Home() {
     { id: 5, label: "Galeri", target: "#gallery", order: 5, active: true },
     { id: 6, label: "FAQ", target: "#faq", order: 6, active: true }
   ]);
-  const [ctaButton, setCtaButton] = useState({ label: "Hubungi Kami", href: "#contact" });
   const [navLogoText, setNavLogoText] = useState("Digital Book Experience");
   const [navLogoUrl, setNavLogoUrl] = useState("");
+  const [contactList, setContactList] = useState([
+    { id: "btn-1", platform: "whatsapp", label: "WhatsApp Official", value: "6281234567890", active: true },
+    { id: "btn-2", platform: "email", label: "Email Layanan", value: "info@perpustakaan.go.id", active: true }
+  ]);
+  const [showContactModal, setShowContactModal] = useState(false);
+
+  const buildContactHref = (btn) => {
+    if (!btn || !btn.value) return "#contact";
+    const cleanVal = String(btn.value).trim();
+    switch (btn.platform) {
+      case "whatsapp": return `https://wa.me/${cleanVal.replace(/[^0-9]/g, "")}`;
+      case "instagram": return `https://instagram.com/${cleanVal.replace(/^@/, "")}`;
+      case "email": return `mailto:${cleanVal}`;
+      case "telegram": return `https://t.me/${cleanVal.replace(/^@/, "")}`;
+      case "custom": return cleanVal;
+      default: return cleanVal || "#contact";
+    }
+  };
+
+  const handleContactClick = (e) => {
+    if (e) e.preventDefault();
+    const activeButtons = contactList.filter((b) => b.active);
+
+    if (activeButtons.length === 0) {
+      const contactSec = document.querySelector("#contact");
+      if (contactSec) contactSec.scrollIntoView({ behavior: "smooth" });
+      else window.location.href = "#contact";
+    } else if (activeButtons.length === 1) {
+      const targetHref = buildContactHref(activeButtons[0]);
+      if (targetHref.startsWith("http") || targetHref.startsWith("mailto")) {
+        window.open(targetHref, "_blank", "noopener,noreferrer");
+      } else {
+        window.location.href = targetHref;
+      }
+    } else {
+      setShowContactModal(true);
+    }
+  };
 
   // Load local & CMS navbar settings
   useEffect(() => {
-    const loadLocalLogo = () => {
+    const loadLocalSettings = () => {
       const localText = localStorage.getItem("cms_navbar_logo_text");
       const localUrl = localStorage.getItem("cms_navbar_logo_url");
+      const localContacts = localStorage.getItem("cms_contact_buttons");
       if (localText) setNavLogoText(localText);
       if (localUrl !== null) setNavLogoUrl(localUrl);
-    };
-
-    loadLocalLogo();
-    window.addEventListener("storage", loadLocalLogo);
-
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-    const buildContactHref = (btn) => {
-      switch (btn.platform) {
-        case "whatsapp": return `https://wa.me/${btn.value}`;
-        case "instagram": return `https://instagram.com/${btn.value}`;
-        case "email": return `mailto:${btn.value}`;
-        case "telegram": return `https://t.me/${btn.value}`;
-        case "custom": return btn.value;
-        default: return "#contact";
+      if (localContacts) {
+        try { setContactList(JSON.parse(localContacts)); } catch (err) {}
       }
     };
 
+    loadLocalSettings();
+    window.addEventListener("storage", loadLocalSettings);
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
     Promise.all([
       axios.get(`${apiUrl}/cms/nav-menu`).catch(() => null),
       axios.get(`${apiUrl}/cms/contact-buttons`).catch(() => null),
@@ -160,10 +190,7 @@ export default function Home() {
         setNavMenu(menuRes.data.filter(m => m.active).sort((a, b) => a.order - b.order));
       }
       if (btnRes?.data?.length) {
-        const activeBtn = btnRes.data.find(b => b.active);
-        if (activeBtn) {
-          setCtaButton({ label: activeBtn.label, href: buildContactHref(activeBtn) });
-        }
+        setContactList(btnRes.data);
       }
       if (settingsRes?.data?.length) {
         const lt = settingsRes.data.find(s => s.key === "navbar_logo_text");
@@ -173,7 +200,7 @@ export default function Home() {
       }
     }).catch(() => { /* silently use defaults */ });
 
-    return () => window.removeEventListener("storage", loadLocalLogo);
+    return () => window.removeEventListener("storage", loadLocalSettings);
   }, []);
 
   const [aboutInfo, setAboutInfo] = useState({
@@ -338,14 +365,12 @@ export default function Home() {
               </nav>
 
               {/* CTA Button */}
-              <a
-                href={ctaButton.href}
-                target={ctaButton.href.startsWith("http") || ctaButton.href.startsWith("mailto:") ? "_blank" : undefined}
-                rel={ctaButton.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                className="btn-primary"
+              <button
+                onClick={handleContactClick}
+                className="btn-primary cursor-pointer font-navigation font-bold"
               >
-                {ctaButton.label}
-              </a>
+                Hubungi Kami
+              </button>
             </div>
           </header>
 
@@ -1055,6 +1080,76 @@ export default function Home() {
               </div>
             </div>
           </footer>
+
+      {/* ====== MODAL OPSI HUBUNGI KAMI (MULTI-CHANNEL) ====== */}
+      {showContactModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-all">
+          <div className="bg-white rounded-2xl border border-border-200 shadow-floating w-full max-w-md p-6 relative animate-in fade-in zoom-in duration-200">
+            <button
+              onClick={() => setShowContactModal(false)}
+              className="absolute top-4 right-4 p-2 text-muted hover:text-heading rounded-full hover:bg-surface-200 transition-colors cursor-pointer"
+              aria-label="Tutup Modal"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="text-center mb-6 space-y-2">
+              <div className="w-12 h-12 rounded-2xl bg-primary-50 text-primary-500 flex items-center justify-center mx-auto shadow-soft">
+                <Phone size={22} />
+              </div>
+              <h3 className="text-xl font-bold text-heading font-navigation">Pilih Saluran Komunikasi</h3>
+              <p className="text-xs text-muted">
+                Pilih salah satu saluran resmi di bawah ini untuk terhubung langsung dengan tim layanan perpustakaan.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {contactList.filter(b => b.active).map((btn) => {
+                const href = buildContactHref(btn);
+                let channelIcon = <Globe size={20} className="text-primary-500" />;
+                if (btn.platform === "whatsapp") channelIcon = <MessageSquare size={20} className="text-emerald-600" />;
+                if (btn.platform === "instagram") channelIcon = <Instagram size={20} className="text-pink-600" />;
+                if (btn.platform === "email") channelIcon = <Mail size={20} className="text-primary-500" />;
+                if (btn.platform === "telegram") channelIcon = <Send size={20} className="text-sky-500" />;
+                if (btn.platform === "phone") channelIcon = <Phone size={20} className="text-amber-500" />;
+
+                return (
+                  <a
+                    key={btn.id}
+                    href={href}
+                    target={href.startsWith("http") || href.startsWith("mailto") ? "_blank" : undefined}
+                    rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
+                    onClick={() => setShowContactModal(false)}
+                    className="flex items-center justify-between p-4 bg-surface-100 hover:bg-primary-50 border border-border-200 hover:border-primary-300 rounded-xl transition-all group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-soft border border-border-100 group-hover:scale-105 transition-transform shrink-0">
+                        {channelIcon}
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-heading font-navigation group-hover:text-primary-600 transition-colors">
+                          {btn.label}
+                        </h4>
+                        <p className="text-xs text-muted truncate max-w-[200px]">{btn.value}</p>
+                      </div>
+                    </div>
+                    <ArrowUpRight size={18} className="text-muted group-hover:text-primary-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </a>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-border-200 text-center">
+              <button
+                onClick={() => setShowContactModal(false)}
+                className="text-xs text-muted hover:text-body font-navigation font-medium cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
