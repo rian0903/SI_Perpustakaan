@@ -189,9 +189,24 @@ export default function AdminDashboard() {
     { id: 5, label: "Galeri", target: "#gallery", order: 5, active: true },
     { id: 6, label: "FAQ", target: "#faq", order: 6, active: true }
   ]);
-  const [contactButtons, setContactButtons] = useState([
-    { id: 1, label: "Hubungi Kami", platform: "whatsapp", value: "6281234567890", active: true }
-  ]);
+  const [contactButtons, setContactButtons] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_contact_buttons");
+      if (saved) try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [
+      { id: 1, label: "Hubungi Kami", platform: "whatsapp", value: "6281234567890", active: true },
+      { id: 2, label: "DM kami", platform: "instagram", value: "@perpustakaan.bireuen", active: false }
+    ];
+  });
+
+  const saveContactButtonsState = (newBtns) => {
+    setContactButtons(newBtns);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cms_contact_buttons", JSON.stringify(newBtns));
+      window.dispatchEvent(new Event("storage"));
+    }
+  };
   const [navMenuForm, setNavMenuForm] = useState({ label: "", target: "", order: 1, active: true });
   const [contactBtnForm, setContactBtnForm] = useState({ label: "", platform: "whatsapp", value: "", active: true });
   const [editingNavMenu, setEditingNavMenu] = useState(null);
@@ -1691,7 +1706,9 @@ export default function AdminDashboard() {
                           <div className="flex items-center gap-1.5">
                             <button onClick={async () => {
                               const newActive = !btn.active;
-                              if (offline) { setContactButtons(contactButtons.map(b => b.id === btn.id ? { ...b, active: newActive } : b)); showNotification(`Tombol "${btn.label}" diperbarui (Offline)`); return; }
+                              const updated = contactButtons.map(b => b.id === btn.id ? { ...b, active: newActive } : b);
+                              saveContactButtonsState(updated);
+                              if (offline) { showNotification(`Tombol "${btn.label}" diperbarui (Offline)`); return; }
                               const token = localStorage.getItem("admin_token");
                               const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
                               const headers = { Authorization: `Bearer ${token}` };
@@ -1702,7 +1719,9 @@ export default function AdminDashboard() {
                             <button onClick={() => { setEditingContactBtn(btn); setContactBtnForm({ label: btn.label, platform: btn.platform, value: btn.value, active: btn.active }); setShowContactBtnModal(true); }} className="p-1.5 rounded-lg hover:bg-white/60 text-blue-500 cursor-pointer"><Edit size={13} /></button>
                             <button onClick={async () => {
                               if (!confirm(`Hapus tombol "${btn.label}"?`)) return;
-                              if (offline) { setContactButtons(contactButtons.filter(b => b.id !== btn.id)); showNotification("Tombol berhasil dihapus (Offline)"); return; }
+                              const updated = contactButtons.filter(b => b.id !== btn.id);
+                              saveContactButtonsState(updated);
+                              if (offline) { showNotification("Tombol berhasil dihapus (Offline)"); return; }
                               const token = localStorage.getItem("admin_token");
                               const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
                               const headers = { Authorization: `Bearer ${token}` };
@@ -1789,9 +1808,12 @@ export default function AdminDashboard() {
             <form onSubmit={async (e) => {
               e.preventDefault();
               setShowContactBtnModal(false);
+              const updated = editingContactBtn 
+                ? contactButtons.map(b => b.id === editingContactBtn.id ? { ...b, ...contactBtnForm } : b)
+                : [...contactButtons, { id: Date.now(), ...contactBtnForm }];
+              saveContactButtonsState(updated);
               if (offline) {
-                if (editingContactBtn) { setContactButtons(contactButtons.map(b => b.id === editingContactBtn.id ? { ...b, ...contactBtnForm } : b)); showNotification("Tombol kontak diperbarui (Offline)"); }
-                else { setContactButtons([...contactButtons, { id: Date.now(), ...contactBtnForm }]); showNotification("Tombol kontak baru ditambahkan (Offline)"); }
+                showNotification(editingContactBtn ? "Tombol kontak diperbarui (Offline)" : "Tombol kontak baru ditambahkan (Offline)");
                 return;
               }
               const token = localStorage.getItem("admin_token");

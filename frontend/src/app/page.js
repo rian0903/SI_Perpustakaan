@@ -125,10 +125,16 @@ export default function Home() {
   ]);
   const [navLogoText, setNavLogoText] = useState("Digital Book Experience");
   const [navLogoUrl, setNavLogoUrl] = useState("");
-  const [contactList, setContactList] = useState([
-    { id: "btn-1", platform: "whatsapp", label: "WhatsApp Official", value: "6281234567890", active: true },
-    { id: "btn-2", platform: "email", label: "Email Layanan", value: "info@perpustakaan.go.id", active: true }
-  ]);
+  const [contactList, setContactList] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_contact_buttons");
+      if (saved) try { return JSON.parse(saved); } catch (err) {}
+    }
+    return [
+      { id: 1, label: "Hubungi Kami", platform: "whatsapp", value: "6281234567890", active: true },
+      { id: 2, label: "DM kami", platform: "instagram", value: "@perpustakaan.bireuen", active: false }
+    ];
+  });
   const [showContactModal, setShowContactModal] = useState(false);
 
   const buildContactHref = (btn) => {
@@ -146,7 +152,15 @@ export default function Home() {
 
   const handleContactClick = (e) => {
     if (e) e.preventDefault();
-    const activeButtons = contactList.filter((b) => b.active);
+    let currentList = contactList;
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_contact_buttons");
+      if (saved) {
+        try { currentList = JSON.parse(saved); } catch (err) {}
+      }
+    }
+
+    const activeButtons = currentList.filter((b) => b.active);
 
     if (activeButtons.length === 0) {
       const contactSec = document.querySelector("#contact");
