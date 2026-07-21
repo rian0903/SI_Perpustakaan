@@ -11,8 +11,6 @@ services:
       JWT_SECRET: "super-secret-jwt-key-change-in-production"
       JWT_EXPIRATION: "1d"
       CORS_ORIGIN: "*"
-    ports:
-      - "3001:3001"
     volumes:
       - sqlite-data:/app/backend/prisma
       - backend-uploads:/app/backend/uploads
@@ -28,14 +26,12 @@ services:
     environment:
       NEXT_PUBLIC_API_URL: "/api"
       PORT: 3000
-    ports:
-      - "3000:3000"
     depends_on:
       - backend
     networks:
       - library-network
 
-  # Nginx Reverse Proxy (Main Entry Point)
+  # Nginx Reverse Proxy (Main Entry Point for http://localhost)
   nginx:
     image: nginx:alpine
     restart: always
