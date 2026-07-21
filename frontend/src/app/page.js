@@ -136,6 +136,53 @@ export default function Home() {
     ];
   });
   const [showContactModal, setShowContactModal] = useState(false);
+  const [heroInfo, setHeroInfo] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_hero_info");
+      if (saved) try { return JSON.parse(saved); } catch (err) {}
+    }
+    return {
+      badge: "PORTAL LITERASI KOTA",
+      title: "Membuka Lembaran Baru",
+      titleHighlight: "Ilmu Pengetahuan.",
+      subtitle: "Selamat datang di portal perpustakaan kota. Akses ribuan koleksi buku fisik, jurnal digital, dan ikuti kegiatan literasi kreatif kami — gratis untuk semua.",
+      cta1Label: "Profil Perpustakaan",
+      cta1Link: "#about",
+      cta2Label: "Berita Terbaru",
+      cta2Link: "#news"
+    };
+  });
+
+  const [openStatus, setOpenStatus] = useState({ isOpen: true, text: "Buka Sekarang", dotColor: "bg-emerald-500" });
+
+  const updateOpeningStatus = () => {
+    const now = new Date();
+    const day = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+    const timeVal = hour + minute / 60;
+
+    // Sunday (Tutup)
+    if (day === 0) {
+      setOpenStatus({ isOpen: false, text: "Tutup Hari Ini", dotColor: "bg-red-500 animate-pulse" });
+      return;
+    }
+    // Saturday (08:00 - 12:00)
+    if (day === 6) {
+      if (timeVal >= 8 && timeVal < 12) {
+        setOpenStatus({ isOpen: true, text: "Buka Sekarang", dotColor: "bg-emerald-500" });
+      } else {
+        setOpenStatus({ isOpen: false, text: "Tutup Sekarang", dotColor: "bg-red-500 animate-pulse" });
+      }
+      return;
+    }
+    // Weekdays (Monday - Friday: 08:00 - 16:00)
+    if (timeVal >= 8 && timeVal < 16) {
+      setOpenStatus({ isOpen: true, text: "Buka Sekarang", dotColor: "bg-emerald-500" });
+    } else {
+      setOpenStatus({ isOpen: false, text: "Tutup Sekarang", dotColor: "bg-red-500 animate-pulse" });
+    }
+  };
 
   const buildContactHref = (btn) => {
     if (!btn || !btn.value) return "#contact";
@@ -184,14 +231,21 @@ export default function Home() {
       const localText = localStorage.getItem("cms_navbar_logo_text");
       const localUrl = localStorage.getItem("cms_navbar_logo_url");
       const localContacts = localStorage.getItem("cms_contact_buttons");
+      const localHero = localStorage.getItem("cms_hero_info");
       if (localText) setNavLogoText(localText);
       if (localUrl !== null) setNavLogoUrl(localUrl);
       if (localContacts) {
         try { setContactList(JSON.parse(localContacts)); } catch (err) {}
       }
+      if (localHero) {
+        try { setHeroInfo(JSON.parse(localHero)); } catch (err) {}
+      }
     };
 
     loadLocalSettings();
+    updateOpeningStatus();
+    const intervalTimer = setInterval(updateOpeningStatus, 60000);
+
     window.addEventListener("storage", loadLocalSettings);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
@@ -214,7 +268,10 @@ export default function Home() {
       }
     }).catch(() => { /* silently use defaults */ });
 
-    return () => window.removeEventListener("storage", loadLocalSettings);
+    return () => {
+      window.removeEventListener("storage", loadLocalSettings);
+      clearInterval(intervalTimer);
+    };
   }, []);
 
   const [aboutInfo, setAboutInfo] = useState({
@@ -407,26 +464,26 @@ export default function Home() {
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gold-50 border border-gold-200">
                     <Compass size={13} className="text-gold-500" />
                     <span className="text-xs font-navigation font-bold text-gold-600 uppercase tracking-widest">
-                      Portal Literasi Kota
+                      {heroInfo.badge || "PORTAL LITERASI KOTA"}
                     </span>
                   </div>
 
                   <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-heading font-navigation leading-tight">
-                    Membuka Lembaran Baru{" "}
-                    <span className="text-primary-500">Ilmu Pengetahuan.</span>
+                    {heroInfo.title || "Membuka Lembaran Baru"}{" "}
+                    <span className="text-primary-500">{heroInfo.titleHighlight || "Ilmu Pengetahuan."}</span>
                   </h1>
 
                   <p className="text-base text-body leading-relaxed max-w-lg">
-                    Selamat datang di portal perpustakaan kota. Akses ribuan koleksi buku fisik, jurnal digital, dan ikuti kegiatan literasi kreatif kami — gratis untuk semua.
+                    {heroInfo.subtitle}
                   </p>
 
                   <div className="flex flex-wrap gap-4 pt-2">
-                    <a href="#about" className="btn-primary">
-                      <span>Profil Perpustakaan</span>
+                    <a href={heroInfo.cta1Link || "#about"} className="btn-primary">
+                      <span>{heroInfo.cta1Label || "Profil Perpustakaan"}</span>
                       <ArrowRight size={15} />
                     </a>
-                    <a href="#news" className="btn-secondary">
-                      Berita Terbaru
+                    <a href={heroInfo.cta2Link || "#news"} className="btn-secondary">
+                      {heroInfo.cta2Label || "Berita Terbaru"}
                     </a>
                   </div>
 
@@ -455,9 +512,9 @@ export default function Home() {
                       </div>
                     </div>
                     {/* Floating decorative badges */}
-                    <div className="absolute top-6 right-4 bg-white rounded-xl shadow-soft border border-border-200 px-3 py-2 flex items-center gap-1.5">
-                      <div className="w-2 h-2 rounded-full bg-success-500" />
-                      <span className="text-xs font-navigation font-bold text-heading">Buka Sekarang</span>
+                    <div className="absolute top-6 right-4 bg-white rounded-xl shadow-soft border border-border-200 px-3.5 py-2 flex items-center gap-2">
+                      <div className={`w-2.5 h-2.5 rounded-full ${openStatus.dotColor}`} />
+                      <span className="text-xs font-navigation font-bold text-heading">{openStatus.text}</span>
                     </div>
                     <div className="absolute bottom-8 left-2 bg-white rounded-xl shadow-soft border border-border-200 px-3 py-2">
                       <div className="text-xs font-navigation font-bold text-primary-500">

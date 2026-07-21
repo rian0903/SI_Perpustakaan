@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { 
   BookOpen, LayoutDashboard, FileText, Calendar, Image as ImageIcon, 
   Settings, Users, HelpCircle, LogOut, Plus, Trash2, Edit, CheckCircle, 
-  X, AlertCircle, Eye, EyeOff, User as UserIcon, ShieldAlert, Sliders,
+  X, AlertCircle, Eye, EyeOff, User as UserIcon, ShieldAlert, Sliders, Compass,
   Mail, MapPin, Phone, MessageSquare, Clock, Globe, ShieldCheck, Loader2,
   Navigation, Link2, Send, ArrowUp, ArrowDown, ToggleLeft, ToggleRight,
   ChevronRight, ChevronDown, ExternalLink, Info, Activity, Database, Menu, Upload
@@ -226,6 +226,25 @@ export default function AdminDashboard() {
       if (saved !== null) return saved;
     }
     return "";
+  });
+
+  const INITIAL_HERO = {
+    badge: "PORTAL LITERASI KOTA",
+    title: "Membuka Lembaran Baru",
+    titleHighlight: "Ilmu Pengetahuan.",
+    subtitle: "Selamat datang di portal perpustakaan kota. Akses ribuan koleksi buku fisik, jurnal digital, dan ikuti kegiatan literasi kreatif kami — gratis untuk semua.",
+    cta1Label: "Profil Perpustakaan",
+    cta1Link: "#about",
+    cta2Label: "Berita Terbaru",
+    cta2Link: "#news"
+  };
+
+  const [heroInfo, setHeroInfo] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_hero_info");
+      if (saved) try { return JSON.parse(saved); } catch (e) {}
+    }
+    return INITIAL_HERO;
   });
 
   // Form Modals / Input States
@@ -594,6 +613,7 @@ export default function AdminDashboard() {
   // Tab page title map
   const TAB_TITLES = {
     overview: "Ringkasan Dashboard",
+    hero: "Kelola Teks & Banner Hero Halaman Utama",
     about: "Kelola Section Tentang Kami",
     stats: "Kelola Section Statistik",
     news: "Kelola Artikel Berita",
@@ -609,6 +629,7 @@ export default function AdminDashboard() {
 
   const SIDEBAR_MENU = [
     { id: "overview", label: "Ringkasan", icon: <LayoutDashboard size={16} />, role: "ADMIN" },
+    { id: "hero", label: "Kelola Hero", icon: <Compass size={16} />, role: "ADMIN" },
     { id: "about", label: "Kelola Tentang", icon: <Info size={16} />, role: "ADMIN" },
     { id: "stats", label: "Kelola Statistik", icon: <Activity size={16} />, role: "ADMIN" },
     { id: "news", label: "Kelola Berita", icon: <FileText size={16} />, role: "ADMIN" },
@@ -837,6 +858,113 @@ export default function AdminDashboard() {
                       )}
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ====== KELOLA HERO TAB ====== */}
+          {activeTab === "hero" && (
+            <div className="space-y-6">
+              <div className="bg-white p-6 rounded-xl border border-border-200 shadow-soft space-y-5">
+                <div className="flex items-center gap-2.5 border-b border-border-200 pb-4">
+                  <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center">
+                    <Compass size={16} className="text-primary-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-heading font-navigation">Teks & Tombol Hero Halaman Utama</h3>
+                    <p className="text-xs text-muted">Ubah teks judul, deskripsi, dan tombol CTA pada bagian paling atas halaman depan.</p>
+                  </div>
+                </div>
+
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  if (typeof window !== "undefined") {
+                    localStorage.setItem("cms_hero_info", JSON.stringify(heroInfo));
+                    window.dispatchEvent(new Event("storage"));
+                  }
+                  showNotification("Teks Hero Halaman Utama berhasil disimpan!");
+                }} className="space-y-4">
+                  <FormInput
+                    label="Badge Teks Eyebrow"
+                    value={heroInfo.badge}
+                    onChange={(e) => setHeroInfo({ ...heroInfo, badge: e.target.value })}
+                    placeholder="PORTAL LITERASI KOTA"
+                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormInput
+                      label="Judul Utama (Teks Biasa)"
+                      value={heroInfo.title}
+                      onChange={(e) => setHeroInfo({ ...heroInfo, title: e.target.value })}
+                      placeholder="Membuka Lembaran Baru"
+                    />
+                    <FormInput
+                      label="Sorotan Judul (Teks Biru)"
+                      value={heroInfo.titleHighlight}
+                      onChange={(e) => setHeroInfo({ ...heroInfo, titleHighlight: e.target.value })}
+                      placeholder="Ilmu Pengetahuan."
+                    />
+                  </div>
+
+                  <FormTextarea
+                    label="Subjudul / Deskripsi Hero"
+                    rows={3}
+                    value={heroInfo.subtitle}
+                    onChange={(e) => setHeroInfo({ ...heroInfo, subtitle: e.target.value })}
+                    placeholder="Selamat datang di portal perpustakaan kota. Akses ribuan..."
+                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border-200">
+                    <FormInput
+                      label="Label Tombol Utama (CTA 1)"
+                      value={heroInfo.cta1Label}
+                      onChange={(e) => setHeroInfo({ ...heroInfo, cta1Label: e.target.value })}
+                    />
+                    <FormInput
+                      label="Link Tujuan Tombol Utama"
+                      value={heroInfo.cta1Link}
+                      onChange={(e) => setHeroInfo({ ...heroInfo, cta1Link: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormInput
+                      label="Label Tombol Sekunder (CTA 2)"
+                      value={heroInfo.cta2Label}
+                      onChange={(e) => setHeroInfo({ ...heroInfo, cta2Label: e.target.value })}
+                    />
+                    <FormInput
+                      label="Link Tujuan Tombol Sekunder"
+                      value={heroInfo.cta2Link}
+                      onChange={(e) => setHeroInfo({ ...heroInfo, cta2Link: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <button type="submit" className="btn-primary !py-2.5 !px-6">Simpan Teks Hero</button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Preview Hero Card */}
+              <div className="bg-white p-6 rounded-xl border border-border-200 shadow-soft space-y-3">
+                <p className="text-xs font-navigation font-bold text-muted uppercase tracking-wider">Live Preview Teks Hero</p>
+                <div className="p-6 bg-surface-100 rounded-xl border border-border-200 space-y-4">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-50 border border-gold-200 text-gold-600 font-bold text-xs">
+                    {heroInfo.badge || "PORTAL LITERASI KOTA"}
+                  </div>
+                  <h2 className="text-2xl font-bold text-heading font-navigation leading-tight">
+                    {heroInfo.title}{" "}
+                    <span className="text-primary-500">{heroInfo.titleHighlight}</span>
+                  </h2>
+                  <p className="text-xs text-body leading-relaxed max-w-lg">
+                    {heroInfo.subtitle}
+                  </p>
+                  <div className="flex gap-3 pt-1">
+                    <span className="btn-primary !py-1.5 !px-3 text-xs">{heroInfo.cta1Label}</span>
+                    <span className="btn-secondary !py-1.5 !px-3 text-xs">{heroInfo.cta2Label}</span>
+                  </div>
                 </div>
               </div>
             </div>
