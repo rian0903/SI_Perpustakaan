@@ -364,7 +364,8 @@ export default function AdminDashboard() {
   const [settings, setSettings] = useState([
     { key: "site_address", value: "Jl. Sastra Kencana No. 45, Kota Buku" },
     { key: "site_email", value: "info@perpustakaankota.go.id" },
-    { key: "site_phone", value: "(021) 8899-7766" }
+    { key: "site_phone", value: "(021) 8899-7766" },
+    { key: "site_maps_url", value: "https://maps.google.com" }
   ]);
   const [socials, setSocials] = useState([
     { platform: "facebook", url: "https://facebook.com" },
@@ -1734,6 +1735,7 @@ export default function AdminDashboard() {
                       {set.key === "site_address" && "Alamat Fisik Gedung"}
                       {set.key === "site_email" && "Email Kantor Humas"}
                       {set.key === "site_phone" && "Nomor Telepon Sekretariat"}
+                      {set.key === "site_maps_url" && "Link URL Google Maps (Peta)"}
                     </label>
                     <div className="flex gap-2">
                       <input name={set.key} type="text" defaultValue={set.value} className="lib-input flex-1" />

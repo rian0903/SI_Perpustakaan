@@ -301,6 +301,11 @@ export default function Home() {
     }
   };
 
+  const [siteAddress, setSiteAddress] = useState("Jl. Sastra Kencana No. 45, Kota Buku");
+  const [siteEmail, setSiteEmail] = useState("info@perpustakaankota.go.id");
+  const [sitePhone, setSitePhone] = useState("(021) 8899-7766");
+  const [siteMapsUrl, setSiteMapsUrl] = useState("https://maps.google.com");
+
   // Load local & CMS navbar settings
   useEffect(() => {
     const loadLocalSettings = () => {
@@ -354,8 +359,16 @@ export default function Home() {
       if (settingsRes?.data?.length) {
         const lt = settingsRes.data.find(s => s.key === "navbar_logo_text");
         const lu = settingsRes.data.find(s => s.key === "navbar_logo_url");
+        const sa = settingsRes.data.find(s => s.key === "site_address");
+        const se = settingsRes.data.find(s => s.key === "site_email");
+        const sp = settingsRes.data.find(s => s.key === "site_phone");
+        const sm = settingsRes.data.find(s => s.key === "site_maps_url");
         if (lt?.value && !localStorage.getItem("cms_navbar_logo_text")) setNavLogoText(lt.value);
         if (lu?.value && !localStorage.getItem("cms_navbar_logo_url")) setNavLogoUrl(lu.value);
+        if (sa?.value) setSiteAddress(sa.value);
+        if (se?.value) setSiteEmail(se.value);
+        if (sp?.value) setSitePhone(sp.value);
+        if (sm?.value) setSiteMapsUrl(sm.value);
       }
       if (bannerRes?.data?.length) {
         setBanners(bannerRes.data);
@@ -1220,16 +1233,22 @@ export default function Home() {
                   <h3 className="text-lg font-bold text-heading font-navigation">Detail Kontak & Peta</h3>
 
                   {/* Map placeholder */}
-                  <div className="relative h-56 w-full rounded-2xl overflow-hidden border border-border-200 bg-surface-100 flex flex-col justify-center items-center text-center p-6">
+                  <div className="relative h-56 w-full rounded-2xl overflow-hidden border border-border-200 bg-surface-100 flex flex-col justify-center items-center text-center p-6 shadow-soft">
                     <div className="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center mb-3">
                       <MapPin size={24} className="text-primary-500" />
                     </div>
-                    <h5 className="font-navigation text-sm font-bold text-heading">Jl. Sastra Kencana No. 45, Kota Buku</h5>
+                    <h5 className="font-navigation text-sm font-bold text-heading">{siteAddress}</h5>
                     <p className="text-xs text-muted max-w-xs leading-relaxed pt-1">Gedung Utama Sektor Timur (Samping Danau Kota).</p>
                     <div className="mt-4">
-                      <button className="btn-secondary !py-2 !px-4 !text-xs">
-                        Lihat di Google Maps
-                      </button>
+                      <a
+                        href={siteMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-secondary !py-2 !px-4 !text-xs inline-flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <span>Lihat di Google Maps</span>
+                        <ArrowUpRight size={13} />
+                      </a>
                     </div>
                   </div>
 
@@ -1239,13 +1258,13 @@ export default function Home() {
                       <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
                         <Mail size={14} className="text-primary-500" />
                       </div>
-                      <span>info@perpustakaankota.go.id</span>
+                      <span>{siteEmail}</span>
                     </div>
                     <div className="flex items-center gap-3 text-sm text-body">
                       <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
                         <Phone size={14} className="text-primary-500" />
                       </div>
-                      <span>(021) 8899-7766</span>
+                      <span>{sitePhone}</span>
                     </div>
                     <div className="flex items-center gap-3 text-sm text-body">
                       <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
