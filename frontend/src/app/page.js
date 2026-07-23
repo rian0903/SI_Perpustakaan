@@ -619,10 +619,16 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/50 to-slate-900/20 flex flex-col justify-between p-6">
                         {/* Top Badge & Open Status */}
                         <div className="flex items-center justify-between gap-2">
-                          <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-bold text-[11px] font-navigation tracking-wide border border-white/30 shadow-sm">
+                          <span
+                            className="px-3 py-1 rounded-full bg-slate-900/60 backdrop-blur-md text-white font-bold text-[11px] font-navigation tracking-wide border border-white/40 shadow-md"
+                            style={{ color: "#ffffff", textShadow: "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000" }}
+                          >
                             {activeBanners[currentBannerIndex]?.badge || "SOROTAN"} ({currentBannerIndex + 1}/{activeBanners.length})
                           </span>
-                          <div className="bg-white/20 backdrop-blur-md rounded-xl px-3 py-1.5 flex items-center gap-2 border border-white/30 shadow-sm">
+                          <div
+                            className="bg-slate-900/60 backdrop-blur-md rounded-xl px-3 py-1.5 flex items-center gap-2 border border-white/40 shadow-md"
+                            style={{ color: "#ffffff", textShadow: "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000" }}
+                          >
                             <div className={`w-2 h-2 rounded-full ${openStatus.dotColor}`} />
                             <span className="text-[11px] font-navigation font-bold text-white">{openStatus.text}</span>
                           </div>
@@ -630,11 +636,25 @@ export default function Home() {
 
                         {/* Banner Content & CTA */}
                         <div className="space-y-3">
-                          <h3 className="text-xl sm:text-2xl font-bold text-white font-navigation leading-tight drop-shadow-md">
+                          <h3
+                            className="text-xl sm:text-2xl font-bold font-navigation leading-tight !text-white"
+                            style={{
+                              color: "#ffffff",
+                              textShadow: "-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000, 0 4px 12px rgba(0,0,0,0.95)",
+                              WebkitTextStroke: "0.4px #000000"
+                            }}
+                          >
                             {activeBanners[currentBannerIndex]?.title}
                           </h3>
                           {activeBanners[currentBannerIndex]?.subtitle && (
-                            <p className="text-xs sm:text-sm text-white font-normal line-clamp-2 leading-relaxed opacity-95 drop-shadow">
+                            <p
+                              className="text-xs sm:text-sm font-semibold line-clamp-2 leading-relaxed !text-white"
+                              style={{
+                                color: "#ffffff",
+                                textShadow: "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 6px rgba(0,0,0,0.9)",
+                                WebkitTextStroke: "0.2px #000000"
+                              }}
+                            >
                               {activeBanners[currentBannerIndex].subtitle}
                             </p>
                           )}
