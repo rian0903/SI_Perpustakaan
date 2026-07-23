@@ -351,7 +351,13 @@ export default function AdminDashboard() {
   const [news, setNews] = useState(INITIAL_NEWS);
   const [events, setEvents] = useState(INITIAL_EVENTS);
   const [faqs, setFaqs] = useState(INITIAL_FAQS);
-  const [banners, setBanners] = useState(INITIAL_BANNERS);
+  const [banners, setBanners] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_banners");
+      if (saved) try { return JSON.parse(saved); } catch (e) {}
+    }
+    return INITIAL_BANNERS;
+  });
   const [gallery, setGallery] = useState(INITIAL_GALLERY);
   const [contacts, setContacts] = useState(INITIAL_CONTACTS);
   const [users, setUsers] = useState(INITIAL_USERS);
@@ -390,6 +396,14 @@ export default function AdminDashboard() {
     setContactButtons(newBtns);
     if (typeof window !== "undefined") {
       localStorage.setItem("cms_contact_buttons", JSON.stringify(newBtns));
+      window.dispatchEvent(new Event("storage"));
+    }
+  };
+
+  const saveBannersState = (newBanners) => {
+    setBanners(newBanners);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cms_banners", JSON.stringify(newBanners));
       window.dispatchEvent(new Event("storage"));
     }
   };
@@ -548,7 +562,7 @@ export default function AdminDashboard() {
       if (resNews.data) setNews(resNews.data);
       if (resEvents.data) setEvents(resEvents.data);
       if (resFaq.data) setFaqs(resFaq.data);
-      if (resBanners.data) setBanners(resBanners.data);
+      if (resBanners.data) saveBannersState(resBanners.data);
       if (resGallery.data) setGallery(resGallery.data);
       if (resContacts.data) setContacts(resContacts.data);
       if (resUsers.data) setUsers(resUsers.data);
@@ -634,7 +648,7 @@ export default function AdminDashboard() {
       if (activeTab === "news") setNews(news.filter(n => n.id !== id));
       else if (activeTab === "events") setEvents(events.filter(e => e.id !== id));
       else if (activeTab === "faq") setFaqs(faqs.filter(f => f.id !== id));
-      else if (activeTab === "banner") setBanners(banners.filter(b => b.id !== id));
+      else if (activeTab === "banner") saveBannersState(banners.filter(b => b.id !== id));
       else if (activeTab === "gallery") setGallery(gallery.filter(g => g.id !== id));
       else if (activeTab === "user") setUsers(users.filter(u => u.id !== id));
       showNotification("Data berhasil dihapus (Offline)");
@@ -684,13 +698,15 @@ export default function AdminDashboard() {
           showNotification("FAQ baru berhasil ditambahkan (Offline)");
         }
       } else if (activeTab === "banner") {
+        let updated;
         if (editingItem) {
-          setBanners(banners.map(b => b.id === editingItem.id ? { ...b, ...bannerForm } : b));
+          updated = banners.map(b => b.id === editingItem.id ? { ...b, ...bannerForm } : b);
           showNotification("Banner berhasil diperbarui (Offline)");
         } else {
-          setBanners([...banners, { id: Date.now(), ...bannerForm }]);
+          updated = [...banners, { id: Date.now(), ...bannerForm }];
           showNotification("Banner baru berhasil ditambahkan (Offline)");
         }
+        saveBannersState(updated);
       } else if (activeTab === "gallery") {
         setGallery([...gallery, { id: `gal-${Date.now()}`, ...galleryForm, images: [] }]);
         showNotification("Album galeri baru berhasil ditambahkan (Offline)");

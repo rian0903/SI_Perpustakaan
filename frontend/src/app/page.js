@@ -170,7 +170,13 @@ export default function Home() {
   });
 
   const [openStatus, setOpenStatus] = useState({ isOpen: true, text: "Buka Sekarang", dotColor: "bg-emerald-500" });
-  const [banners, setBanners] = useState(MOCK_BANNERS);
+  const [banners, setBanners] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_banners");
+      if (saved) try { return JSON.parse(saved); } catch (e) {}
+    }
+    return MOCK_BANNERS;
+  });
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
 
   const activeBanners = banners.filter((b) => b.active).sort((a, b) => a.order - b.order);
@@ -260,6 +266,7 @@ export default function Home() {
       const localUrl = localStorage.getItem("cms_navbar_logo_url");
       const localContacts = localStorage.getItem("cms_contact_buttons");
       const localHero = localStorage.getItem("cms_hero_info");
+      const localBanners = localStorage.getItem("cms_banners");
       if (localText) setNavLogoText(localText);
       if (localUrl !== null) setNavLogoUrl(localUrl);
       if (localContacts) {
@@ -267,6 +274,9 @@ export default function Home() {
       }
       if (localHero) {
         try { setHeroInfo(JSON.parse(localHero)); } catch (err) {}
+      }
+      if (localBanners) {
+        try { setBanners(JSON.parse(localBanners)); } catch (err) {}
       }
     };
 
@@ -552,7 +562,7 @@ export default function Home() {
                         {/* Top Badge & Open Status */}
                         <div className="flex items-center justify-between">
                           <span className="badge badge-gold !text-[11px] font-bold">
-                            Banner Banner CMS ({currentBannerIndex + 1}/{activeBanners.length})
+                            Banner CMS ({currentBannerIndex + 1}/{activeBanners.length})
                           </span>
                           <div className="bg-white/90 backdrop-blur-md rounded-xl px-3 py-1.5 flex items-center gap-2 shadow-soft border border-white/40">
                             <div className={`w-2 h-2 rounded-full ${openStatus.dotColor}`} />
