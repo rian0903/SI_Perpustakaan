@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { 
   BookOpen, ArrowRight, Compass, Calendar, Image as ImageIcon, 
-  MapPin, User, ChevronDown, X, Mail, Phone, Clock, Search, 
+  MapPin, User, ChevronDown, ChevronLeft, ChevronRight, X, Mail, Phone, Clock, Search, 
   AlertCircle, CheckCircle, ArrowUpRight, Facebook, Twitter, Instagram, 
   Youtube, Info, Award, Shield, Library, Users2, Activity, Database, MessageSquare, Send, Globe
 } from "lucide-react";
@@ -18,6 +18,12 @@ const getImageUrl = (url) => {
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || (typeof window !== "undefined" ? `${window.location.protocol}//${window.location.hostname}:3001` : "http://localhost:3001");
   return `${backendUrl}${url.startsWith("/") ? "" : "/"}${url}`;
 };
+
+// Mock Banners Data
+const MOCK_BANNERS = [
+  { id: 1, title: "Membuka Lembaran Baru Ilmu Pengetahuan", subtitle: "Akses ribuan buku fisik dan jurnal digital secara gratis", imageUrl: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=1200&auto=format&fit=crop", order: 1, active: true, linkUrl: "#about" },
+  { id: 2, title: "Festival Literasi Kota 2026", subtitle: "Ikuti bedah buku, workshop kreatif, dan pameran literasi", imageUrl: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=1200&auto=format&fit=crop", order: 2, active: true, linkUrl: "#events" }
+];
 
 // Mock Data
 const MOCK_NEWS = [
@@ -164,6 +170,18 @@ export default function Home() {
   });
 
   const [openStatus, setOpenStatus] = useState({ isOpen: true, text: "Buka Sekarang", dotColor: "bg-emerald-500" });
+  const [banners, setBanners] = useState(MOCK_BANNERS);
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+
+  const activeBanners = banners.filter((b) => b.active).sort((a, b) => a.order - b.order);
+
+  useEffect(() => {
+    if (activeBanners.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentBannerIndex((prev) => (prev + 1) % activeBanners.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [activeBanners.length]);
 
   const updateOpeningStatus = () => {
     const now = new Date();
@@ -262,8 +280,9 @@ export default function Home() {
     Promise.all([
       axios.get(`${apiUrl}/cms/nav-menu`).catch(() => null),
       axios.get(`${apiUrl}/cms/contact-buttons`).catch(() => null),
-      axios.get(`${apiUrl}/cms/settings`).catch(() => null)
-    ]).then(([menuRes, btnRes, settingsRes]) => {
+      axios.get(`${apiUrl}/cms/settings`).catch(() => null),
+      axios.get(`${apiUrl}/cms/banners`).catch(() => null)
+    ]).then(([menuRes, btnRes, settingsRes, bannerRes]) => {
       if (menuRes?.data?.length) {
         setNavMenu(menuRes.data.filter(m => m.active).sort((a, b) => a.order - b.order));
       }
@@ -275,6 +294,9 @@ export default function Home() {
         const lu = settingsRes.data.find(s => s.key === "navbar_logo_url");
         if (lt?.value && !localStorage.getItem("cms_navbar_logo_text")) setNavLogoText(lt.value);
         if (lu?.value && !localStorage.getItem("cms_navbar_logo_url")) setNavLogoUrl(lu.value);
+      }
+      if (bannerRes?.data?.length) {
+        setBanners(bannerRes.data);
       }
     }).catch(() => { /* silently use defaults */ });
 
@@ -508,30 +530,107 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Right — Illustration */}
-                <div className="flex justify-center lg:justify-end">
-                  <div className="relative w-72 h-72 md:w-80 md:h-80 lg:w-96 lg:h-96">
-                    {/* Soft circular background */}
-                    <div className="absolute inset-0 rounded-full bg-primary-50 border border-primary-100" />
-                    {/* Dashed orbit ring */}
-                    <div className="absolute inset-6 rounded-full border-2 border-dashed border-primary-200 animate-spin" style={{ animationDuration: "20s" }} />
-                    {/* Center icon */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-28 h-28 rounded-2xl bg-white shadow-medium flex items-center justify-center border border-border-200">
-                        <Library size={52} className="text-primary-500" />
+                {/* Right — Interactive CMS Banner Slider */}
+                <div className="flex flex-col items-center lg:items-end w-full">
+                  {activeBanners.length > 0 ? (
+                    <div className="relative w-full max-w-lg h-80 sm:h-96 rounded-2xl overflow-hidden shadow-medium border border-border-200 group bg-surface-200">
+                      {/* Banner Image */}
+                      {activeBanners[currentBannerIndex]?.imageUrl ? (
+                        <img
+                          src={getImageUrl(activeBanners[currentBannerIndex].imageUrl)}
+                          alt={activeBanners[currentBannerIndex].title}
+                          className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-primary-900 flex items-center justify-center">
+                          <Library size={64} className="text-white/20" />
+                        </div>
+                      )}
+
+                      {/* Dark Gradient Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/40 to-transparent flex flex-col justify-between p-6">
+                        {/* Top Badge & Open Status */}
+                        <div className="flex items-center justify-between">
+                          <span className="badge badge-gold !text-[11px] font-bold">
+                            Banner Banner CMS ({currentBannerIndex + 1}/{activeBanners.length})
+                          </span>
+                          <div className="bg-white/90 backdrop-blur-md rounded-xl px-3 py-1.5 flex items-center gap-2 shadow-soft border border-white/40">
+                            <div className={`w-2 h-2 rounded-full ${openStatus.dotColor}`} />
+                            <span className="text-[11px] font-navigation font-bold text-heading">{openStatus.text}</span>
+                          </div>
+                        </div>
+
+                        {/* Banner Content & CTA */}
+                        <div className="space-y-3">
+                          <h3 className="text-xl sm:text-2xl font-bold text-white font-navigation leading-tight drop-shadow-md">
+                            {activeBanners[currentBannerIndex]?.title}
+                          </h3>
+                          {activeBanners[currentBannerIndex]?.subtitle && (
+                            <p className="text-xs sm:text-sm text-white/80 line-clamp-2 leading-relaxed">
+                              {activeBanners[currentBannerIndex].subtitle}
+                            </p>
+                          )}
+                          <div className="pt-1 flex items-center justify-between">
+                            <a
+                              href={activeBanners[currentBannerIndex]?.linkUrl || "#news"}
+                              className="btn-primary !py-2 !px-4 !text-xs shadow-medium inline-flex items-center gap-1.5"
+                            >
+                              <span>Lihat Detail</span>
+                              <ArrowRight size={13} />
+                            </a>
+
+                            {/* Prev / Next Arrows */}
+                            {activeBanners.length > 1 && (
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => setCurrentBannerIndex((prev) => (prev - 1 + activeBanners.length) % activeBanners.length)}
+                                  className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-md flex items-center justify-center transition-all cursor-pointer"
+                                  title="Banner Sebelumnya"
+                                >
+                                  <ChevronLeft size={16} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setCurrentBannerIndex((prev) => (prev + 1) % activeBanners.length)}
+                                  className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-md flex items-center justify-center transition-all cursor-pointer"
+                                  title="Banner Selanjutnya"
+                                >
+                                  <ChevronRight size={16} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Pagination Dots */}
+                      {activeBanners.length > 1 && (
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
+                          {activeBanners.map((b, idx) => (
+                            <button
+                              key={b.id || idx}
+                              type="button"
+                              onClick={() => setCurrentBannerIndex(idx)}
+                              className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                                idx === currentBannerIndex ? "w-6 bg-white" : "w-1.5 bg-white/40 hover:bg-white/70"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="relative w-72 h-72 md:w-80 md:h-80 lg:w-96 lg:h-96">
+                      <div className="absolute inset-0 rounded-full bg-primary-50 border border-primary-100" />
+                      <div className="absolute inset-6 rounded-full border-2 border-dashed border-primary-200 animate-spin" style={{ animationDuration: "20s" }} />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-28 h-28 rounded-2xl bg-white shadow-medium flex items-center justify-center border border-border-200">
+                          <Library size={52} className="text-primary-500" />
+                        </div>
                       </div>
                     </div>
-                    {/* Floating decorative badges */}
-                    <div className="absolute top-6 right-4 bg-white rounded-xl shadow-soft border border-border-200 px-3.5 py-2 flex items-center gap-2">
-                      <div className={`w-2.5 h-2.5 rounded-full ${openStatus.dotColor}`} />
-                      <span className="text-xs font-navigation font-bold text-heading">{openStatus.text}</span>
-                    </div>
-                    <div className="absolute bottom-8 left-2 bg-white rounded-xl shadow-soft border border-border-200 px-3 py-2">
-                      <div className="text-xs font-navigation font-bold text-primary-500">
-                        {statsList[3] ? `${statsList[3].value} ${statsList[3].label}` : "5.000+ E-Journal"}
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
