@@ -169,6 +169,21 @@ export default function Home() {
     };
   });
 
+  const [newsList, setNewsList] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_news");
+      if (saved) try { return JSON.parse(saved); } catch (e) {}
+    }
+    return MOCK_NEWS;
+  });
+  const [eventsList, setEventsList] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_events");
+      if (saved) try { return JSON.parse(saved); } catch (e) {}
+    }
+    return MOCK_EVENTS;
+  });
+
   const [openStatus, setOpenStatus] = useState({ isOpen: true, text: "Buka Sekarang", dotColor: "bg-emerald-500" });
   const [banners, setBanners] = useState(() => {
     if (typeof window !== "undefined") {
@@ -179,7 +194,34 @@ export default function Home() {
   });
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
 
-  const activeBanners = banners.filter((b) => b.active).sort((a, b) => a.order - b.order);
+  const newsBanners = (newsList || []).slice(0, 3).map((item) => ({
+    id: `news-${item.id}`,
+    title: item.title,
+    subtitle: item.content ? (item.content.length > 90 ? item.content.substring(0, 90) + "..." : item.content) : "Berita Terbaru Perpustakaan",
+    imageUrl: item.thumbnail,
+    badge: `BERITA · ${item.category?.name || item.category || "Berita"}`,
+    linkUrl: "#news"
+  }));
+
+  const eventBanners = (eventsList || []).slice(0, 3).map((item) => ({
+    id: `event-${item.id}`,
+    title: item.title,
+    subtitle: item.description ? (item.description.length > 90 ? item.description.substring(0, 90) + "..." : item.description) : `Agenda pada ${item.date || ""}`,
+    imageUrl: item.thumbnail,
+    badge: `KEGIATAN · ${item.date || "Agenda"}`,
+    linkUrl: "#events"
+  }));
+
+  const customBanners = (banners || []).filter((b) => b.active).map((item) => ({
+    id: `custom-${item.id}`,
+    title: item.title,
+    subtitle: item.subtitle,
+    imageUrl: item.imageUrl,
+    badge: "BANNER UTAMA",
+    linkUrl: item.linkUrl || "#about"
+  }));
+
+  const activeBanners = [...newsBanners, ...eventBanners, ...customBanners];
 
   useEffect(() => {
     if (activeBanners.length <= 1) return;
@@ -267,6 +309,8 @@ export default function Home() {
       const localContacts = localStorage.getItem("cms_contact_buttons");
       const localHero = localStorage.getItem("cms_hero_info");
       const localBanners = localStorage.getItem("cms_banners");
+      const localNews = localStorage.getItem("cms_news");
+      const localEvents = localStorage.getItem("cms_events");
       if (localText) setNavLogoText(localText);
       if (localUrl !== null) setNavLogoUrl(localUrl);
       if (localContacts) {
@@ -277,6 +321,12 @@ export default function Home() {
       }
       if (localBanners) {
         try { setBanners(JSON.parse(localBanners)); } catch (err) {}
+      }
+      if (localNews) {
+        try { setNewsList(JSON.parse(localNews)); } catch (err) {}
+      }
+      if (localEvents) {
+        try { setEventsList(JSON.parse(localEvents)); } catch (err) {}
       }
     };
 
@@ -291,8 +341,10 @@ export default function Home() {
       axios.get(`${apiUrl}/cms/nav-menu`).catch(() => null),
       axios.get(`${apiUrl}/cms/contact-buttons`).catch(() => null),
       axios.get(`${apiUrl}/cms/settings`).catch(() => null),
-      axios.get(`${apiUrl}/cms/banners`).catch(() => null)
-    ]).then(([menuRes, btnRes, settingsRes, bannerRes]) => {
+      axios.get(`${apiUrl}/cms/banners`).catch(() => null),
+      axios.get(`${apiUrl}/cms/news`).catch(() => null),
+      axios.get(`${apiUrl}/cms/events`).catch(() => null)
+    ]).then(([menuRes, btnRes, settingsRes, bannerRes, newsRes, eventRes]) => {
       if (menuRes?.data?.length) {
         setNavMenu(menuRes.data.filter(m => m.active).sort((a, b) => a.order - b.order));
       }
@@ -307,6 +359,12 @@ export default function Home() {
       }
       if (bannerRes?.data?.length) {
         setBanners(bannerRes.data);
+      }
+      if (newsRes?.data?.length) {
+        setNewsList(newsRes.data);
+      }
+      if (eventRes?.data?.length) {
+        setEventsList(eventRes.data);
       }
     }).catch(() => { /* silently use defaults */ });
 
@@ -558,15 +616,15 @@ export default function Home() {
                       )}
 
                       {/* Dark Gradient Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/40 to-transparent flex flex-col justify-between p-6">
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/50 to-slate-900/20 flex flex-col justify-between p-6">
                         {/* Top Badge & Open Status */}
-                        <div className="flex items-center justify-between">
-                          <span className="badge badge-gold !text-[11px] font-bold">
-                            Banner CMS ({currentBannerIndex + 1}/{activeBanners.length})
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-bold text-[11px] font-navigation tracking-wide border border-white/30 shadow-sm">
+                            {activeBanners[currentBannerIndex]?.badge || "SOROTAN"} ({currentBannerIndex + 1}/{activeBanners.length})
                           </span>
-                          <div className="bg-white/90 backdrop-blur-md rounded-xl px-3 py-1.5 flex items-center gap-2 shadow-soft border border-white/40">
+                          <div className="bg-white/20 backdrop-blur-md rounded-xl px-3 py-1.5 flex items-center gap-2 border border-white/30 shadow-sm">
                             <div className={`w-2 h-2 rounded-full ${openStatus.dotColor}`} />
-                            <span className="text-[11px] font-navigation font-bold text-heading">{openStatus.text}</span>
+                            <span className="text-[11px] font-navigation font-bold text-white">{openStatus.text}</span>
                           </div>
                         </div>
 
@@ -576,17 +634,17 @@ export default function Home() {
                             {activeBanners[currentBannerIndex]?.title}
                           </h3>
                           {activeBanners[currentBannerIndex]?.subtitle && (
-                            <p className="text-xs sm:text-sm text-white/80 line-clamp-2 leading-relaxed">
+                            <p className="text-xs sm:text-sm text-white font-normal line-clamp-2 leading-relaxed opacity-95 drop-shadow">
                               {activeBanners[currentBannerIndex].subtitle}
                             </p>
                           )}
                           <div className="pt-1 flex items-center justify-between">
                             <a
                               href={activeBanners[currentBannerIndex]?.linkUrl || "#news"}
-                              className="btn-primary !py-2 !px-4 !text-xs shadow-medium inline-flex items-center gap-1.5"
+                              className="btn-primary !bg-white !text-primary-700 hover:!bg-white/90 !py-2 !px-4 !text-xs font-bold shadow-medium inline-flex items-center gap-1.5 transition-all cursor-pointer"
                             >
                               <span>Lihat Detail</span>
-                              <ArrowRight size={13} />
+                              <ArrowRight size={13} className="text-primary-700" />
                             </a>
 
                             {/* Prev / Next Arrows */}
@@ -595,7 +653,7 @@ export default function Home() {
                                 <button
                                   type="button"
                                   onClick={() => setCurrentBannerIndex((prev) => (prev - 1 + activeBanners.length) % activeBanners.length)}
-                                  className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-md flex items-center justify-center transition-all cursor-pointer"
+                                  className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-md border border-white/30 flex items-center justify-center transition-all cursor-pointer"
                                   title="Banner Sebelumnya"
                                 >
                                   <ChevronLeft size={16} />
@@ -603,7 +661,7 @@ export default function Home() {
                                 <button
                                   type="button"
                                   onClick={() => setCurrentBannerIndex((prev) => (prev + 1) % activeBanners.length)}
-                                  className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-md flex items-center justify-center transition-all cursor-pointer"
+                                  className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-md border border-white/30 flex items-center justify-center transition-all cursor-pointer"
                                   title="Banner Selanjutnya"
                                 >
                                   <ChevronRight size={16} />
