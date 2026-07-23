@@ -11,7 +11,13 @@ import {
   Request,
   Query,
   ParseIntPipe,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { CmsService } from './cms.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -21,6 +27,60 @@ import { Role } from '@prisma/client';
 @Controller('cms')
 export class CmsController {
   constructor(private cmsService: CmsService) {}
+
+  // ==========================================
+  // FILE UPLOADS (ADMIN / SUPER_ADMIN) - MAX 12MB
+  // ==========================================
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Post('upload')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req: any, file: any, callback: any) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          const name = file.originalname
+            .replace(ext, '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, '-');
+          callback(null, `${name}-${uniqueSuffix}${ext}`);
+        },
+      }),
+      limits: {
+        fileSize: 12 * 1024 * 1024, // 12MB Limit
+      },
+      fileFilter: (req: any, file: any, callback: any) => {
+        const allowedTypes = /jpeg|jpg|png|gif|webp|svg|pdf|doc|docx|xls|xlsx|txt|zip/;
+        const extName = allowedTypes.test(extname(file.originalname).toLowerCase());
+        const mimeType = allowedTypes.test(file.mimetype) || file.mimetype === 'application/octet-stream';
+        if (extName || mimeType) {
+          return callback(null, true);
+        }
+        callback(
+          new BadRequestException(
+            'Tipe file tidak didukung! Format yang diperbolehkan: Gambar (JPG, PNG, WEBP, GIF, SVG) atau Dokumen (PDF, DOC, XLS, TXT, ZIP).',
+          ),
+          false,
+        );
+      },
+    }),
+  )
+  async uploadFile(@UploadedFile() file: any) {
+    if (!file) {
+      throw new BadRequestException('File tidak ditemukan atau ukuran melebihi batas 12MB!');
+    }
+    const fileUrl = `/uploads/${file.filename}`;
+    return {
+      url: fileUrl,
+      filename: file.filename,
+      originalName: file.originalname,
+      size: file.size,
+      mimetype: file.mimetype,
+    };
+  }
+
 
   // ==========================================
   // USERS MANAGEMENT (SUPER_ADMIN ONLY)

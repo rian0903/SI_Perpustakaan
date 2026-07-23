@@ -9,6 +9,16 @@ import {
 } from "lucide-react";
 import axios from "axios";
 
+// ---- Helper to resolve image URL ----
+const getImageUrl = (url) => {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
+    return url;
+  }
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || (typeof window !== "undefined" ? `${window.location.protocol}//${window.location.hostname}:3001` : "http://localhost:3001");
+  return `${backendUrl}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
 // Mock Data
 const MOCK_NEWS = [
   {
@@ -411,7 +421,7 @@ export default function Home() {
               {/* Logo */}
               <div className="flex items-center gap-2.5">
                 {navLogoUrl ? (
-                  <img src={navLogoUrl} alt="Logo" className="w-9 h-9 rounded-lg object-cover shadow-soft" />
+                  <img src={getImageUrl(navLogoUrl)} alt="Logo" className="w-9 h-9 rounded-lg object-cover shadow-soft" />
                 ) : (
                   <div className="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center text-white shadow-soft shrink-0">
                     <BookOpen size={18} />
@@ -552,7 +562,7 @@ export default function Home() {
                 </div>
                 <div className="relative h-64 rounded-2xl overflow-hidden border border-border-200 shadow-medium">
                   <img
-                    src={aboutInfo.historyImageUrl}
+                    src={getImageUrl(aboutInfo.historyImageUrl)}
                     alt="Ruang perpustakaan"
                     className="w-full h-full object-cover"
                     loading="lazy"
@@ -740,7 +750,7 @@ export default function Home() {
                     >
                       <div className="h-48 overflow-hidden relative">
                         <img
-                          src={news.thumbnail}
+                          src={getImageUrl(news.thumbnail)}
                           alt={news.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           loading="lazy"
@@ -799,7 +809,7 @@ export default function Home() {
                     {/* Image */}
                     <div className="lg:col-span-4 h-52 lg:h-full relative min-h-48">
                       <img
-                        src={event.thumbnail}
+                        src={getImageUrl(event.thumbnail)}
                         alt={event.title}
                         className="w-full h-full object-cover"
                         loading="lazy"
@@ -896,7 +906,7 @@ export default function Home() {
                     className="relative group overflow-hidden rounded-2xl border border-border-200 shadow-soft break-inside-avoid hover:shadow-medium transition-all duration-300"
                   >
                     <img
-                      src={photo.url}
+                      src={getImageUrl(photo.url)}
                       alt={photo.caption}
                       className="w-full h-auto object-cover transform duration-500 group-hover:scale-105"
                       loading="lazy"

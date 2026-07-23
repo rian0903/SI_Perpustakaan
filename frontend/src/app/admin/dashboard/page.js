@@ -100,6 +100,192 @@ const INITIAL_FOOTER_LINKS = [
   { id: "fl-2", label: "Ketentuan Layanan", url: "#terms" }
 ];
 
+// ---- Helper to resolve image URL ----
+const getImageUrl = (url) => {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
+    return url;
+  }
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || (typeof window !== "undefined" ? `${window.location.protocol}//${window.location.hostname}:3001` : "http://localhost:3001");
+  return `${backendUrl}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
+// ---- Reusable File & Image Upload Input (Max 12MB, Dual Upload File & URL Mode) ----
+const FileUploadInput = ({ label, value, onChange, placeholder = "https://...", accept = "image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip", onError }) => {
+  const [mode, setMode] = useState("file");
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Client-side 12MB limit validation
+    const maxSizeBytes = 12 * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      const msg = `Ukuran file "${file.name}" (${(file.size / (1024 * 1024)).toFixed(2)}MB) melebihi batas maksimal 12MB!`;
+      if (onError) onError(msg);
+      alert(msg);
+      e.target.value = "";
+      return;
+    }
+
+    setUploading(true);
+
+    const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+
+    if (token) {
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await axios.post(`${apiUrl}/cms/upload`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        if (response.data && response.data.url) {
+          onChange(response.data.url);
+          setUploading(false);
+          return;
+        }
+      } catch (err) {
+        console.warn("Backend upload endpoint failed/offline, using Base64 fallback:", err.message);
+      }
+    }
+
+    // Base64 Offline Fallback
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result;
+      if (result) {
+        onChange(result);
+      }
+      setUploading(false);
+    };
+    reader.onerror = () => {
+      setUploading(false);
+      if (onError) onError("Gagal membaca file lokal!");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const isImage = value && (value.startsWith("data:image/") || /\.(jpg|jpeg|png|webp|gif|svg)(\?.*)?$/i.test(value) || value.includes("/uploads/"));
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        {label && <label className="lib-label">{label}</label>}
+        <div className="flex items-center gap-1 bg-surface-200 p-0.5 rounded-lg text-[11px] font-navigation font-bold">
+          <button
+            type="button"
+            onClick={() => setMode("file")}
+            className={`px-2 py-0.5 rounded-md transition-colors cursor-pointer ${mode === "file" ? "bg-white text-primary-600 shadow-soft" : "text-muted hover:text-body"}`}
+          >
+            Upload File
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("url")}
+            className={`px-2 py-0.5 rounded-md transition-colors cursor-pointer ${mode === "url" ? "bg-white text-primary-600 shadow-soft" : "text-muted hover:text-body"}`}
+          >
+            Link URL
+          </button>
+        </div>
+      </div>
+
+      {mode === "file" ? (
+        <div className="space-y-2">
+          {value ? (
+            <div className="relative group border border-border-200 rounded-xl p-3 bg-surface-100 flex items-center gap-3">
+              {isImage ? (
+                <img
+                  src={getImageUrl(value)}
+                  alt="Preview"
+                  className="w-14 h-14 object-cover rounded-lg border border-border-200 shadow-soft shrink-0 bg-white"
+                  onError={(e) => { e.target.style.display = "none"; }}
+                />
+              ) : (
+                <div className="w-14 h-14 rounded-lg bg-primary-50 text-primary-600 border border-border-200 flex items-center justify-center font-bold text-xs shrink-0">
+                  FILE
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-heading truncate font-navigation">
+                  {value.startsWith("data:") ? "File Lokal (Base64)" : value.split("/").pop()}
+                </p>
+                <p className="text-[11px] text-muted truncate mt-0.5 font-mono">{value}</p>
+                <span className="inline-block mt-1 badge badge-success text-[10px]">Tersimpan</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => onChange("")}
+                className="p-1.5 bg-danger-50 hover:bg-red-100 text-danger-500 rounded-lg cursor-pointer transition-colors shrink-0"
+                title="Hapus / Ganti File"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center gap-2 p-4 bg-white hover:bg-primary-50/50 border-2 border-dashed border-border-300 hover:border-primary-400 rounded-xl cursor-pointer transition-all text-center group">
+              {uploading ? (
+                <div className="flex items-center gap-2 text-primary-600 font-navigation font-bold text-xs">
+                  <Loader2 size={18} className="animate-spin" />
+                  <span>Mengunggah file (Maks 12MB)...</span>
+                </div>
+              ) : (
+                <>
+                  <div className="w-10 h-10 rounded-full bg-primary-50 group-hover:bg-primary-100 flex items-center justify-center text-primary-600 transition-colors">
+                    <Upload size={18} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-heading font-navigation group-hover:text-primary-600 transition-colors">
+                      Klik untuk Pilih File (Gambar / Dokumen)
+                    </p>
+                    <p className="text-[11px] text-muted mt-0.5">
+                      Ukuran file maksimal: <span className="font-bold text-primary-600">12MB</span> (JPG, PNG, WEBP, PDF, DOC, dll.)
+                    </p>
+                  </div>
+                </>
+              )}
+              <input
+                type="file"
+                accept={accept}
+                disabled={uploading}
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </label>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          <input
+            type="text"
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className="lib-input text-sm"
+          />
+          {value && (
+            <div className="flex items-center gap-2 mt-1">
+              <img
+                src={getImageUrl(value)}
+                alt="Preview Link"
+                className="w-8 h-8 object-cover rounded-md border border-border-200"
+                onError={(e) => { e.target.style.display = "none"; }}
+              />
+              <span className="text-[11px] text-muted truncate font-mono">{value}</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ---- Reusable styled form input ----
 const FormInput = ({ label, ...props }) => (
   <div className="space-y-1.5">
@@ -418,11 +604,11 @@ export default function AdminDashboard() {
   // ==========================================
   const handleOpenAddModal = () => {
     setEditingItem(null);
-    setNewsForm({ title: "", category: "Berita", content: "", published: true, thumbnail: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=600&auto=format&fit=crop" });
-    setEventForm({ title: "", description: "", date: "", time: "09:00 - 12:00 WIB", location: "Gedung Ruang Multi-Media", speaker: "", capacity: 50, thumbnail: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=600&auto=format&fit=crop" });
+    setNewsForm({ title: "", category: "Berita", content: "", published: true, thumbnail: "" });
+    setEventForm({ title: "", description: "", date: "", time: "09:00 - 12:00 WIB", location: "Gedung Ruang Multi-Media", speaker: "", capacity: 50, thumbnail: "" });
     setFaqForm({ question: "", answer: "", order: faqs.length + 1 });
-    setBannerForm({ title: "", subtitle: "", imageUrl: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=600&auto=format&fit=crop", linkUrl: "#", order: banners.length + 1, active: true });
-    setGalleryForm({ title: "", description: "", thumbnail: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=500&auto=format&fit=crop" });
+    setBannerForm({ title: "", subtitle: "", imageUrl: "", linkUrl: "#", order: banners.length + 1, active: true });
+    setGalleryForm({ title: "", description: "", thumbnail: "" });
     setUserForm({ name: "", email: "", password: "", role: "ADMIN" });
     setShowModal(true);
   };
@@ -1003,7 +1189,7 @@ export default function AdminDashboard() {
                     <FormTextarea label="Paragraf Sejarah 2" rows={3} value={aboutInfo.historyP2} onChange={(e) => setAboutInfo({ ...aboutInfo, historyP2: e.target.value })} />
                   </div>
 
-                  <FormInput label="URL Foto Sejarah" value={aboutInfo.historyImageUrl} onChange={(e) => setAboutInfo({ ...aboutInfo, historyImageUrl: e.target.value })} />
+                  <FileUploadInput label="Foto Sejarah Perpustakaan" value={aboutInfo.historyImageUrl} onChange={(val) => setAboutInfo({ ...aboutInfo, historyImageUrl: val })} onError={(msg) => showNotification(msg, "error")} />
 
                   <div className="flex justify-end pt-2">
                     <button type="submit" className="btn-primary !py-2 !px-5">Simpan Profil Utama</button>
@@ -1620,94 +1806,27 @@ export default function AdminDashboard() {
                     </div>
                   </form>
 
-                  {/* Manual File Upload Form */}
-                  <div className="space-y-1.5">
-                    <label className="lib-label">Upload File Gambar Logo (PNG, JPG, SVG, WebP)</label>
-                    <div className="flex items-center gap-2">
-                      <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-surface-100 hover:bg-primary-50 text-body hover:text-primary-600 border border-dashed border-border-300 rounded-xl cursor-pointer transition-all text-xs font-navigation font-bold">
-                        <Upload size={14} className="text-primary-500" />
-                        <span>Pilih File Gambar Logo</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-
-                            if (file.size > 3 * 1024 * 1024) {
-                              showNotification("Ukuran file terlalu besar (maksimal 3MB).", "error");
-                              return;
-                            }
-
-                            const reader = new FileReader();
-                            reader.onload = async (event) => {
-                              const base64Url = event.target?.result;
-                              if (base64Url) {
-                                setLogoUrl(base64Url);
-                                localStorage.setItem("cms_navbar_logo_url", base64Url);
-                                window.dispatchEvent(new Event("storage"));
-
-                                const token = localStorage.getItem("admin_token");
-                                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-                                if (token) {
-                                  try {
-                                    await axios.post(`${apiUrl}/cms/settings`, { key: "navbar_logo_url", value: base64Url }, { headers: { Authorization: `Bearer ${token}` } });
-                                  } catch (err) { /* silent fallback */ }
-                                }
-                                showNotification("File gambar logo berhasil diunggah!");
-                              }
-                            };
-                            reader.readAsDataURL(file);
-                          }}
-                        />
-                      </label>
-                      {logoUrl && (
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            setLogoUrl("");
-                            localStorage.removeItem("cms_navbar_logo_url");
-                            window.dispatchEvent(new Event("storage"));
-                            const token = localStorage.getItem("admin_token");
-                            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-                            if (token) {
-                              try {
-                                await axios.post(`${apiUrl}/cms/settings`, { key: "navbar_logo_url", value: "" }, { headers: { Authorization: `Bearer ${token}` } });
-                              } catch (err) { /* silent fallback */ }
-                            }
-                            showNotification("Gambar logo dihapus.");
-                          }}
-                          className="btn-danger !py-2 !px-3 shrink-0"
-                          title="Hapus Logo Gambar"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                  {/* File / URL Upload for Logo */}
+                  <FileUploadInput
+                    label="File / Gambar Logo Navbar (Maks 12MB)"
+                    value={logoUrl}
+                    onChange={async (newUrl) => {
+                      setLogoUrl(newUrl);
+                      localStorage.setItem("cms_navbar_logo_url", newUrl);
+                      window.dispatchEvent(new Event("storage"));
+                      if (offline) { showNotification("Gambar logo navbar diperbarui."); return; }
+                      const token = localStorage.getItem("admin_token");
+                      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+                      if (token) {
+                        try {
+                          await axios.post(`${apiUrl}/cms/settings`, { key: "navbar_logo_url", value: newUrl }, { headers: { Authorization: `Bearer ${token}` } });
+                          showNotification("Gambar logo navbar berhasil diperbarui!");
+                        } catch (err) { showNotification("Gambar logo disimpan di browser local."); }
+                      }
+                    }}
+                    onError={(msg) => showNotification(msg, "error")}
+                  />
                 </div>
-
-                {/* Direct URL Fallback Form */}
-                <form onSubmit={async (e) => {
-                  e.preventDefault();
-                  localStorage.setItem("cms_navbar_logo_url", logoUrl);
-                  window.dispatchEvent(new Event("storage"));
-                  if (offline) { showNotification("URL logo berhasil disimpan."); return; }
-                  const token = localStorage.getItem("admin_token");
-                  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-                  const headers = { Authorization: `Bearer ${token}` };
-                  try {
-                    await axios.post(`${apiUrl}/cms/settings`, { key: "navbar_logo_url", value: logoUrl }, { headers });
-                    showNotification("URL logo navbar berhasil disimpan.");
-                  } catch (err) { showNotification("URL logo disimpan di browser local."); }
-                }} className="space-y-1.5 pt-2 border-t border-border-200">
-                  <label className="lib-label">Atau Masukkan Direct URL Gambar Logo (Opsional)</label>
-                  <div className="flex gap-2">
-                    <input type="text" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://example.com/logo.png" className="lib-input flex-1" />
-                    <button type="submit" className="btn-secondary !py-2 !px-4 shrink-0">Simpan URL</button>
-                  </div>
-                </form>
 
                 {/* Live Preview Card */}
                 <div className="bg-surface-100 rounded-xl border border-border-200 p-4 flex items-center justify-between">
@@ -1715,7 +1834,7 @@ export default function AdminDashboard() {
                     <p className="text-xs font-navigation font-bold text-muted uppercase tracking-wider mb-2">Live Preview Logo</p>
                     <div className="flex items-center gap-2.5">
                       {logoUrl ? (
-                        <img src={logoUrl} alt="Logo" className="w-9 h-9 rounded-lg object-cover shadow-soft border border-border-200" />
+                        <img src={getImageUrl(logoUrl)} alt="Logo" className="w-9 h-9 rounded-lg object-cover shadow-soft border border-border-200" />
                       ) : (
                         <div className="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center text-white shadow-soft">
                           <BookOpen size={18} />
@@ -2037,7 +2156,7 @@ export default function AdminDashboard() {
                         </select>
                       </div>
                     </div>
-                    <div className="space-y-1.5"><label className="lib-label">Thumbnail URL</label><input type="text" value={newsForm.thumbnail} onChange={(e) => setNewsForm({ ...newsForm, thumbnail: e.target.value })} className="lib-input" /></div>
+                    <FileUploadInput label="Thumbnail Gambar Artikel" value={newsForm.thumbnail} onChange={(val) => setNewsForm({ ...newsForm, thumbnail: val })} onError={(msg) => showNotification(msg, "error")} />
                     <div className="space-y-1.5"><label className="lib-label">Isi Konten Artikel</label><textarea required rows={5} value={newsForm.content} onChange={(e) => setNewsForm({ ...newsForm, content: e.target.value })} className="lib-input resize-none" /></div>
                   </>
                 )}
@@ -2055,6 +2174,7 @@ export default function AdminDashboard() {
                       <div className="space-y-1.5"><label className="lib-label">Kapasitas Kursi</label><input type="number" required value={eventForm.capacity} onChange={(e) => setEventForm({ ...eventForm, capacity: parseInt(e.target.value, 10) })} className="lib-input" /></div>
                     </div>
                     <div className="space-y-1.5"><label className="lib-label">Pembicara / Speaker</label><input type="text" value={eventForm.speaker} onChange={(e) => setEventForm({ ...eventForm, speaker: e.target.value })} className="lib-input" /></div>
+                    <FileUploadInput label="Thumbnail Gambar Agenda/Event" value={eventForm.thumbnail} onChange={(val) => setEventForm({ ...eventForm, thumbnail: val })} onError={(msg) => showNotification(msg, "error")} />
                     <div className="space-y-1.5"><label className="lib-label">Deskripsi Kegiatan</label><textarea required rows={3} value={eventForm.description} onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })} className="lib-input resize-none" /></div>
                   </>
                 )}
@@ -2083,7 +2203,7 @@ export default function AdminDashboard() {
                         </select>
                       </div>
                     </div>
-                    <div className="space-y-1.5"><label className="lib-label">Gambar URL</label><input type="text" required value={bannerForm.imageUrl} onChange={(e) => setBannerForm({ ...bannerForm, imageUrl: e.target.value })} className="lib-input" /></div>
+                    <FileUploadInput label="Gambar Banner Hero" value={bannerForm.imageUrl} onChange={(val) => setBannerForm({ ...bannerForm, imageUrl: val })} onError={(msg) => showNotification(msg, "error")} />
                   </>
                 )}
 
@@ -2091,7 +2211,7 @@ export default function AdminDashboard() {
                 {activeTab === "gallery" && (
                   <>
                     <div className="space-y-1.5"><label className="lib-label">Judul Album</label><input type="text" required value={galleryForm.title} onChange={(e) => setGalleryForm({ ...galleryForm, title: e.target.value })} className="lib-input" /></div>
-                    <div className="space-y-1.5"><label className="lib-label">Gambar Cover URL</label><input type="text" required value={galleryForm.thumbnail} onChange={(e) => setGalleryForm({ ...galleryForm, thumbnail: e.target.value })} className="lib-input" /></div>
+                    <FileUploadInput label="Gambar Cover Album Dokumentasi" value={galleryForm.thumbnail} onChange={(val) => setGalleryForm({ ...galleryForm, thumbnail: val })} onError={(msg) => showNotification(msg, "error")} />
                     <div className="space-y-1.5"><label className="lib-label">Deskripsi Singkat</label><textarea required rows={3} value={galleryForm.description} onChange={(e) => setGalleryForm({ ...galleryForm, description: e.target.value })} className="lib-input resize-none" /></div>
                   </>
                 )}
