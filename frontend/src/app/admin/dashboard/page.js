@@ -367,10 +367,10 @@ export default function AdminDashboard() {
       if (saved) try { return JSON.parse(saved); } catch (e) {}
     }
     return [
-      { key: "site_address", value: "Jl. Sastra Kencana No. 45, Kota Buku" },
+      { key: "site_address", value: "Jl. Raya Bireuen - Takengon, Bireun Meunasah Capa, Kec. Kota Juang, Kabupaten Bireuen, Aceh 24261" },
       { key: "site_email", value: "info@perpustakaankota.go.id" },
       { key: "site_phone", value: "(021) 8899-7766" },
-      { key: "site_maps_url", value: "https://maps.google.com" }
+      { key: "site_maps_url", value: "https://maps.app.goo.gl/XEp4LbgLnwjMhZHE7" }
     ];
   });
   const [socials, setSocials] = useState([

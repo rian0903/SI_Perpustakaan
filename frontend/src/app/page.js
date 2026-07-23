@@ -301,17 +301,76 @@ export default function Home() {
     }
   };
 
-  const [siteAddress, setSiteAddress] = useState("Jl. Sastra Kencana No. 45, Kota Buku");
-  const [siteEmail, setSiteEmail] = useState("info@perpustakaankota.go.id");
-  const [sitePhone, setSitePhone] = useState("(021) 8899-7766");
-  const [siteMapsUrl, setSiteMapsUrl] = useState("https://maps.google.com");
+  const [siteAddress, setSiteAddress] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_site_address");
+      if (saved) return saved;
+      const settings = localStorage.getItem("cms_settings");
+      if (settings) {
+        try {
+          const parsed = JSON.parse(settings);
+          const found = parsed.find(s => s.key === "site_address");
+          if (found?.value) return found.value;
+        } catch(e) {}
+      }
+    }
+    return "Jl. Raya Bireuen - Takengon, Bireun Meunasah Capa, Kec. Kota Juang, Kabupaten Bireuen, Aceh 24261";
+  });
+
+  const [siteEmail, setSiteEmail] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_site_email");
+      if (saved) return saved;
+      const settings = localStorage.getItem("cms_settings");
+      if (settings) {
+        try {
+          const parsed = JSON.parse(settings);
+          const found = parsed.find(s => s.key === "site_email");
+          if (found?.value) return found.value;
+        } catch(e) {}
+      }
+    }
+    return "info@perpustakaankota.go.id";
+  });
+
+  const [sitePhone, setSitePhone] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_site_phone");
+      if (saved) return saved;
+      const settings = localStorage.getItem("cms_settings");
+      if (settings) {
+        try {
+          const parsed = JSON.parse(settings);
+          const found = parsed.find(s => s.key === "site_phone");
+          if (found?.value) return found.value;
+        } catch(e) {}
+      }
+    }
+    return "(021) 8899-7766";
+  });
+
+  const [siteMapsUrl, setSiteMapsUrl] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_site_maps_url");
+      if (saved) return saved;
+      const settings = localStorage.getItem("cms_settings");
+      if (settings) {
+        try {
+          const parsed = JSON.parse(settings);
+          const found = parsed.find(s => s.key === "site_maps_url");
+          if (found?.value) return found.value;
+        } catch(e) {}
+      }
+    }
+    return "https://maps.app.goo.gl/XEp4LbgLnwjMhZHE7";
+  });
 
   const getEmbedMapsUrl = (address, mapsUrl) => {
     if (mapsUrl && (mapsUrl.includes("google.com/maps/embed") || mapsUrl.includes("pb="))) {
       return mapsUrl;
     }
-    const query = encodeURIComponent(address || "Perpustakaan Kabupaten Bireuen");
-    return `https://www.google.com/maps?q=${query}&output=embed`;
+    const cleanAddress = address || "Jl. Raya Bireuen - Takengon, Bireun Meunasah Capa, Kec. Kota Juang, Kabupaten Bireuen, Aceh";
+    return `https://www.google.com/maps?q=${encodeURIComponent(cleanAddress)}&output=embed`;
   };
 
   // Load local & CMS navbar settings
@@ -324,6 +383,12 @@ export default function Home() {
       const localBanners = localStorage.getItem("cms_banners");
       const localNews = localStorage.getItem("cms_news");
       const localEvents = localStorage.getItem("cms_events");
+      const localAddress = localStorage.getItem("cms_site_address");
+      const localEmail = localStorage.getItem("cms_site_email");
+      const localPhone = localStorage.getItem("cms_site_phone");
+      const localMaps = localStorage.getItem("cms_site_maps_url");
+      const localSettings = localStorage.getItem("cms_settings");
+
       if (localText) setNavLogoText(localText);
       if (localUrl !== null) setNavLogoUrl(localUrl);
       if (localContacts) {
@@ -340,6 +405,24 @@ export default function Home() {
       }
       if (localEvents) {
         try { setEventsList(JSON.parse(localEvents)); } catch (err) {}
+      }
+      if (localAddress) setSiteAddress(localAddress);
+      if (localEmail) setSiteEmail(localEmail);
+      if (localPhone) setSitePhone(localPhone);
+      if (localMaps) setSiteMapsUrl(localMaps);
+
+      if (localSettings) {
+        try {
+          const parsed = JSON.parse(localSettings);
+          const sa = parsed.find(s => s.key === "site_address");
+          const se = parsed.find(s => s.key === "site_email");
+          const sp = parsed.find(s => s.key === "site_phone");
+          const sm = parsed.find(s => s.key === "site_maps_url");
+          if (sa?.value) setSiteAddress(sa.value);
+          if (se?.value) setSiteEmail(se.value);
+          if (sp?.value) setSitePhone(sp.value);
+          if (sm?.value) setSiteMapsUrl(sm.value);
+        } catch(e) {}
       }
     };
 
