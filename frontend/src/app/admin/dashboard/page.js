@@ -361,12 +361,18 @@ export default function AdminDashboard() {
   const [gallery, setGallery] = useState(INITIAL_GALLERY);
   const [contacts, setContacts] = useState(INITIAL_CONTACTS);
   const [users, setUsers] = useState(INITIAL_USERS);
-  const [settings, setSettings] = useState([
-    { key: "site_address", value: "Jl. Sastra Kencana No. 45, Kota Buku" },
-    { key: "site_email", value: "info@perpustakaankota.go.id" },
-    { key: "site_phone", value: "(021) 8899-7766" },
-    { key: "site_maps_url", value: "https://maps.google.com" }
-  ]);
+  const [settings, setSettings] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_settings");
+      if (saved) try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [
+      { key: "site_address", value: "Jl. Sastra Kencana No. 45, Kota Buku" },
+      { key: "site_email", value: "info@perpustakaankota.go.id" },
+      { key: "site_phone", value: "(021) 8899-7766" },
+      { key: "site_maps_url", value: "https://maps.google.com" }
+    ];
+  });
   const [socials, setSocials] = useState([
     { platform: "facebook", url: "https://facebook.com" },
     { platform: "twitter", url: "https://twitter.com" },
@@ -405,6 +411,21 @@ export default function AdminDashboard() {
     setBanners(newBanners);
     if (typeof window !== "undefined") {
       localStorage.setItem("cms_banners", JSON.stringify(newBanners));
+      window.dispatchEvent(new Event("storage"));
+    }
+  };
+
+  const saveSettingsState = (newSettings, key, val) => {
+    setSettings(newSettings);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cms_settings", JSON.stringify(newSettings));
+      if (key && val) {
+        localStorage.setItem(`cms_${key}`, val);
+      } else if (Array.isArray(newSettings)) {
+        newSettings.forEach(s => {
+          if (s.key && s.value) localStorage.setItem(`cms_${s.key}`, s.value);
+        });
+      }
       window.dispatchEvent(new Event("storage"));
     }
   };
@@ -568,7 +589,7 @@ export default function AdminDashboard() {
       if (resContacts.data) setContacts(resContacts.data);
       if (resUsers.data) setUsers(resUsers.data);
       if (resSettings.data && resSettings.data.length > 0) {
-        setSettings(resSettings.data);
+        saveSettingsState(resSettings.data);
         const lt = resSettings.data.find(s => s.key === "navbar_logo_text");
         const lu = resSettings.data.find(s => s.key === "navbar_logo_url");
         if (lt) setLogoText(lt.value);
@@ -780,8 +801,13 @@ export default function AdminDashboard() {
       return;
     }
 
+    const updatedSettings = settings.some(s => s.key === key)
+      ? settings.map(s => s.key === key ? { ...s, value: val } : s)
+      : [...settings, { key, value: val }];
+
+    saveSettingsState(updatedSettings, key, val);
+
     if (offline) {
-      setSettings(settings.map(s => s.key === key ? { ...s, value: val } : s));
       showNotification("Pengaturan disimpan (Offline)");
       return;
     }
@@ -795,7 +821,7 @@ export default function AdminDashboard() {
       showNotification("Pengaturan berhasil disimpan.");
       fetchBackendData(token);
     } catch (err) {
-      showNotification("Gagal menyimpan pengaturan: " + err.message, "error");
+      showNotification("Gagal menyimpan pengaturan ke API: " + err.message, "error");
     }
   };
 

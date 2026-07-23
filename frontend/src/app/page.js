@@ -306,6 +306,14 @@ export default function Home() {
   const [sitePhone, setSitePhone] = useState("(021) 8899-7766");
   const [siteMapsUrl, setSiteMapsUrl] = useState("https://maps.google.com");
 
+  const getEmbedMapsUrl = (address, mapsUrl) => {
+    if (mapsUrl && (mapsUrl.includes("google.com/maps/embed") || mapsUrl.includes("pb="))) {
+      return mapsUrl;
+    }
+    const query = encodeURIComponent(address || "Perpustakaan Kabupaten Bireuen");
+    return `https://www.google.com/maps?q=${query}&output=embed`;
+  };
+
   // Load local & CMS navbar settings
   useEffect(() => {
     const loadLocalSettings = () => {
@@ -1232,22 +1240,38 @@ export default function Home() {
                 <div className="lg:col-span-5 space-y-5">
                   <h3 className="text-lg font-bold text-heading font-navigation">Detail Kontak & Peta</h3>
 
-                  {/* Map placeholder */}
-                  <div className="relative h-56 w-full rounded-2xl overflow-hidden border border-border-200 bg-surface-100 flex flex-col justify-center items-center text-center p-6 shadow-soft">
-                    <div className="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center mb-3">
-                      <MapPin size={24} className="text-primary-500" />
-                    </div>
-                    <h5 className="font-navigation text-sm font-bold text-heading">{siteAddress}</h5>
-                    <p className="text-xs text-muted max-w-xs leading-relaxed pt-1">Gedung Utama Sektor Timur (Samping Danau Kota).</p>
-                    <div className="mt-4">
+                  {/* Live Google Map Container */}
+                  <div className="relative h-64 w-full rounded-2xl overflow-hidden border border-border-200 shadow-soft group bg-surface-100">
+                    <iframe
+                      title="Google Maps Location"
+                      src={getEmbedMapsUrl(siteAddress, siteMapsUrl)}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen=""
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      className="w-full h-full"
+                    />
+
+                    {/* Floating Bottom Bar with Direct Link Button */}
+                    <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md rounded-xl p-3 border border-white/60 shadow-medium flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        <div className="w-7 h-7 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
+                          <MapPin size={14} className="text-primary-500" />
+                        </div>
+                        <span className="text-xs font-navigation font-bold text-heading truncate">
+                          {siteAddress}
+                        </span>
+                      </div>
                       <a
-                        href={siteMapsUrl}
+                        href={siteMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(siteAddress)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="btn-secondary !py-2 !px-4 !text-xs inline-flex items-center gap-1.5 cursor-pointer"
+                        className="btn-primary !py-1.5 !px-3 !text-[11px] shrink-0 inline-flex items-center gap-1 shadow-sm cursor-pointer"
                       >
-                        <span>Lihat di Google Maps</span>
-                        <ArrowUpRight size={13} />
+                        <span>Buka Peta Full</span>
+                        <ArrowUpRight size={12} />
                       </a>
                     </div>
                   </div>
