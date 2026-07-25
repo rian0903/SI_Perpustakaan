@@ -367,7 +367,7 @@ export default function AdminDashboard() {
       if (saved) try { return JSON.parse(saved); } catch (e) {}
     }
     return [
-      { key: "site_address", value: "Jl. Raya Bireuen - Takengon, Bireun Meunasah Capa, Kec. Kota Juang, Kabupaten Bireuen, Aceh 24261" },
+      { key: "site_address", value: "Dinas Perpustakaan dan Kearsipan Kabupaten Bireuen, Bireun Meunasah Capa, Kec. Kota Juang, Kabupaten Bireuen, Aceh 24261" },
       { key: "site_email", value: "info@perpustakaankota.go.id" },
       { key: "site_phone", value: "(021) 8899-7766" },
       { key: "site_maps_url", value: "https://maps.app.goo.gl/XEp4LbgLnwjMhZHE7" }
@@ -1763,6 +1763,9 @@ export default function AdminDashboard() {
                       {set.key === "site_phone" && "Nomor Telepon Sekretariat"}
                       {set.key === "site_maps_url" && "Link URL Google Maps (Peta)"}
                     </label>
+                    {set.key === "site_maps_url" && (
+                      <p className="text-[11px] text-muted -mt-1">Dapat berupa link share Maps, link tempat lokasi, query alamat, atau kode HTML &lt;iframe ...&gt;</p>
+                    )}
                     <div className="flex gap-2">
                       <input name={set.key} type="text" defaultValue={set.value} className="lib-input flex-1" />
                       <button type="submit" className="btn-primary !py-2 !px-4 shrink-0">Simpan</button>

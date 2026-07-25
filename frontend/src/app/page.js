@@ -366,11 +366,60 @@ export default function Home() {
   });
 
   const getEmbedMapsUrl = (address, mapsUrl) => {
-    if (mapsUrl && (mapsUrl.includes("google.com/maps/embed") || mapsUrl.includes("pb="))) {
-      return mapsUrl;
+    if (mapsUrl) {
+      let cleanUrl = String(mapsUrl).trim();
+
+      // Extract src if user pasted an HTML <iframe ... src="..."> tag
+      if (cleanUrl.includes("<iframe") || cleanUrl.includes("src=")) {
+        const match = cleanUrl.match(/src=["']([^"']+)["']/i);
+        if (match && match[1]) {
+          cleanUrl = match[1].trim();
+        }
+      }
+
+      // If already a valid embed URL
+      if (cleanUrl.includes("google.com/maps/embed") || cleanUrl.includes("pb=") || cleanUrl.includes("output=embed")) {
+        return cleanUrl;
+      }
+
+      // If Google Maps place link: /maps/place/Place+Name/...
+      if (cleanUrl.includes("google.com/maps/place/")) {
+        const placeMatch = cleanUrl.match(/\/maps\/place\/([^/@?]+)/i);
+        if (placeMatch && placeMatch[1]) {
+          const placeName = decodeURIComponent(placeMatch[1].replace(/\+/g, " "));
+          return `https://www.google.com/maps?q=${encodeURIComponent(placeName)}&output=embed`;
+        }
+      }
+
+      // If it's a URL (share link, shortlink, search link)
+      if (cleanUrl.startsWith("http://") || cleanUrl.startsWith("https://")) {
+        if (address && address.trim()) {
+          return `https://www.google.com/maps?q=${encodeURIComponent(address.trim())}&output=embed`;
+        }
+        return `https://www.google.com/maps?q=${encodeURIComponent(cleanUrl)}&output=embed`;
+      }
+
+      if (cleanUrl.length > 0) {
+        return `https://www.google.com/maps?q=${encodeURIComponent(cleanUrl)}&output=embed`;
+      }
     }
-    const cleanAddress = address || "Jl. Raya Bireuen - Takengon, Bireun Meunasah Capa, Kec. Kota Juang, Kabupaten Bireuen, Aceh";
+
+    const cleanAddress = address ? address.trim() : "Dinas Perpustakaan dan Kearsipan Kabupaten Bireuen";
     return `https://www.google.com/maps?q=${encodeURIComponent(cleanAddress)}&output=embed`;
+  };
+
+  const getDirectMapsUrl = (address, mapsUrl) => {
+    if (!mapsUrl) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address || "Dinas Perpustakaan dan Kearsipan Kabupaten Bireuen")}`;
+    }
+    let cleanUrl = String(mapsUrl).trim();
+    if (cleanUrl.includes("<iframe") || cleanUrl.includes("src=")) {
+      const match = cleanUrl.match(/src=["']([^"']+)["']/i);
+      if (match && match[1]) {
+        cleanUrl = match[1].trim();
+      }
+    }
+    return cleanUrl;
   };
 
   // Load local & CMS navbar settings
@@ -1348,7 +1397,7 @@ export default function Home() {
                         </span>
                       </div>
                       <a
-                        href={siteMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(siteAddress)}`}
+                        href={getDirectMapsUrl(siteAddress, siteMapsUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn-primary !py-1.5 !px-3 !text-[11px] shrink-0 inline-flex items-center gap-1 shadow-sm cursor-pointer"
