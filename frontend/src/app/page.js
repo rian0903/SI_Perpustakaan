@@ -349,20 +349,36 @@ export default function Home() {
     return "(021) 8899-7766";
   });
 
-  const [siteMapsUrl, setSiteMapsUrl] = useState(() => {
+  const [siteMapsEmbedUrl, setSiteMapsEmbedUrl] = useState(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cms_site_maps_url");
+      const saved = localStorage.getItem("cms_site_maps_embed_url") || localStorage.getItem("cms_site_maps_url");
       if (saved) return saved;
       const settings = localStorage.getItem("cms_settings");
       if (settings) {
         try {
           const parsed = JSON.parse(settings);
-          const found = parsed.find(s => s.key === "site_maps_url");
+          const found = parsed.find(s => s.key === "site_maps_embed_url" || s.key === "site_maps_url");
           if (found?.value) return found.value;
         } catch(e) {}
       }
     }
-    return "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4889.152930111425!2d96.69954017581388!3d5.198572637138711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x304743005639fd1d%3A0x505cc2739b6d2e38!2sPerpustakaan%20Daerah%20Kabupaten%20Bireuen!5e1!3m2!1sid!2sid!4v1785000925170!5m2!1sid!2sid";
+    return `<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4889.152930111425!2d96.69954017581388!3d5.198572637138711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x304743005639fd1d%3A0x505cc2739b6d2e38!2sPerpustakaan%20Daerah%20Kabupaten%20Bireuen!5e1!3m2!1sid!2sid!4v1785000925170!5m2!1sid!2sid" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+  });
+
+  const [siteMapsDirectUrl, setSiteMapsDirectUrl] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_site_maps_direct_url");
+      if (saved) return saved;
+      const settings = localStorage.getItem("cms_settings");
+      if (settings) {
+        try {
+          const parsed = JSON.parse(settings);
+          const found = parsed.find(s => s.key === "site_maps_direct_url");
+          if (found?.value) return found.value;
+        } catch(e) {}
+      }
+    }
+    return "https://maps.app.goo.gl/XEp4LbgLnwjMhZHE7";
   });
 
   const getEmbedMapsUrl = (address, mapsUrl) => {
@@ -435,7 +451,8 @@ export default function Home() {
       const localAddress = localStorage.getItem("cms_site_address");
       const localEmail = localStorage.getItem("cms_site_email");
       const localPhone = localStorage.getItem("cms_site_phone");
-      const localMaps = localStorage.getItem("cms_site_maps_url");
+      const localEmbedMaps = localStorage.getItem("cms_site_maps_embed_url") || localStorage.getItem("cms_site_maps_url");
+      const localDirectMaps = localStorage.getItem("cms_site_maps_direct_url");
       const localSettings = localStorage.getItem("cms_settings");
 
       if (localText) setNavLogoText(localText);
@@ -458,7 +475,8 @@ export default function Home() {
       if (localAddress) setSiteAddress(localAddress);
       if (localEmail) setSiteEmail(localEmail);
       if (localPhone) setSitePhone(localPhone);
-      if (localMaps) setSiteMapsUrl(localMaps);
+      if (localEmbedMaps) setSiteMapsEmbedUrl(localEmbedMaps);
+      if (localDirectMaps) setSiteMapsDirectUrl(localDirectMaps);
 
       if (localSettings) {
         try {
@@ -466,11 +484,13 @@ export default function Home() {
           const sa = parsed.find(s => s.key === "site_address");
           const se = parsed.find(s => s.key === "site_email");
           const sp = parsed.find(s => s.key === "site_phone");
-          const sm = parsed.find(s => s.key === "site_maps_url");
+          const sme = parsed.find(s => s.key === "site_maps_embed_url" || s.key === "site_maps_url");
+          const smd = parsed.find(s => s.key === "site_maps_direct_url");
           if (sa?.value) setSiteAddress(sa.value);
           if (se?.value) setSiteEmail(se.value);
           if (sp?.value) setSitePhone(sp.value);
-          if (sm?.value) setSiteMapsUrl(sm.value);
+          if (sme?.value) setSiteMapsEmbedUrl(sme.value);
+          if (smd?.value) setSiteMapsDirectUrl(smd.value);
         } catch(e) {}
       }
     };
@@ -502,13 +522,15 @@ export default function Home() {
         const sa = settingsRes.data.find(s => s.key === "site_address");
         const se = settingsRes.data.find(s => s.key === "site_email");
         const sp = settingsRes.data.find(s => s.key === "site_phone");
-        const sm = settingsRes.data.find(s => s.key === "site_maps_url");
+        const sme = settingsRes.data.find(s => s.key === "site_maps_embed_url" || s.key === "site_maps_url");
+        const smd = settingsRes.data.find(s => s.key === "site_maps_direct_url");
         if (lt?.value && !localStorage.getItem("cms_navbar_logo_text")) setNavLogoText(lt.value);
         if (lu?.value && !localStorage.getItem("cms_navbar_logo_url")) setNavLogoUrl(lu.value);
         if (sa?.value) setSiteAddress(sa.value);
         if (se?.value) setSiteEmail(se.value);
         if (sp?.value) setSitePhone(sp.value);
-        if (sm?.value) setSiteMapsUrl(sm.value);
+        if (sme?.value) setSiteMapsEmbedUrl(sme.value);
+        if (smd?.value) setSiteMapsDirectUrl(smd.value);
       }
       if (bannerRes?.data?.length) {
         setBanners(bannerRes.data);
@@ -1376,7 +1398,7 @@ export default function Home() {
                   <div className="relative h-64 w-full rounded-2xl overflow-hidden border border-border-200 shadow-soft group bg-surface-100">
                     <iframe
                       title="Google Maps Location"
-                      src={getEmbedMapsUrl(siteAddress, siteMapsUrl)}
+                      src={getEmbedMapsUrl(siteAddress, siteMapsEmbedUrl)}
                       width="100%"
                       height="100%"
                       style={{ border: 0 }}
@@ -1397,7 +1419,7 @@ export default function Home() {
                         </span>
                       </div>
                       <a
-                        href={getDirectMapsUrl(siteAddress, siteMapsUrl)}
+                        href={getDirectMapsUrl(siteAddress, siteMapsDirectUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn-primary !py-1.5 !px-3 !text-[11px] shrink-0 inline-flex items-center gap-1 shadow-sm cursor-pointer"

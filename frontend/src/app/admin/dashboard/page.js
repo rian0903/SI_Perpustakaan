@@ -8,7 +8,7 @@ import {
   X, AlertCircle, Eye, EyeOff, User as UserIcon, ShieldAlert, Sliders, Compass,
   Mail, MapPin, Phone, MessageSquare, Clock, Globe, ShieldCheck, Loader2,
   Navigation, Link2, Send, ArrowUp, ArrowDown, ToggleLeft, ToggleRight,
-  ChevronRight, ChevronDown, ExternalLink, Info, Activity, Database, Menu, Upload
+  ChevronRight, ChevronDown, ExternalLink, Info, Activity, Database, Menu, Upload, Code
 } from "lucide-react";
 import axios from "axios";
 
@@ -370,7 +370,8 @@ export default function AdminDashboard() {
       { key: "site_address", value: "Dinas Perpustakaan dan Kearsipan Kabupaten Bireuen, Bireun Meunasah Capa, Kec. Kota Juang, Kabupaten Bireuen, Aceh 24261" },
       { key: "site_email", value: "info@perpustakaankota.go.id" },
       { key: "site_phone", value: "(021) 8899-7766" },
-      { key: "site_maps_url", value: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4889.152930111425!2d96.69954017581388!3d5.198572637138711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x304743005639fd1d%3A0x505cc2739b6d2e38!2sPerpustakaan%20Daerah%20Kabupaten%20Bireuen!5e1!3m2!1sid!2sid!4v1785000925170!5m2!1sid!2sid" }
+      { key: "site_maps_embed_url", value: `<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4889.152930111425!2d96.69954017581388!3d5.198572637138711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x304743005639fd1d%3A0x505cc2739b6d2e38!2sPerpustakaan%20Daerah%20Kabupaten%20Bireuen!5e1!3m2!1sid!2sid!4v1785000925170!5m2!1sid!2sid" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>` },
+      { key: "site_maps_direct_url", value: "https://maps.app.goo.gl/XEp4LbgLnwjMhZHE7" }
     ];
   });
   const [socials, setSocials] = useState([
@@ -467,6 +468,20 @@ export default function AdminDashboard() {
 
     const cleanAddress = address ? address.trim() : "Dinas Perpustakaan dan Kearsipan Kabupaten Bireuen";
     return `https://www.google.com/maps?q=${encodeURIComponent(cleanAddress)}&output=embed`;
+  };
+
+  const getDirectMapsUrl = (address, mapsUrl) => {
+    if (!mapsUrl) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address || "Dinas Perpustakaan dan Kearsipan Kabupaten Bireuen")}`;
+    }
+    let cleanUrl = String(mapsUrl).trim();
+    if (cleanUrl.includes("<iframe") || cleanUrl.includes("src=")) {
+      const match = cleanUrl.match(/src=["']([^"']+)["']/i);
+      if (match && match[1]) {
+        cleanUrl = match[1].trim();
+      }
+    }
+    return cleanUrl;
   };
   const [navMenuForm, setNavMenuForm] = useState({ label: "", target: "", order: 1, active: true });
   const [contactBtnForm, setContactBtnForm] = useState({ label: "", platform: "whatsapp", value: "", active: true });
@@ -1809,69 +1824,155 @@ export default function AdminDashboard() {
                 ))}
               </div>
 
-              {/* Dedicated Google Maps Configuration Card */}
-              <div className="bg-white p-6 rounded-xl border border-border-200 shadow-soft space-y-5">
+              {/* Dedicated Google Maps Configuration Card with 2 Menus */}
+              <div className="bg-white p-6 rounded-xl border border-border-200 shadow-soft space-y-6 md:col-span-2">
                 <div className="flex items-center gap-2.5 border-b border-border-200 pb-4">
                   <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center">
                     <MapPin size={15} className="text-primary-500" />
                   </div>
                   <div>
                     <h3 className="font-bold text-heading font-navigation">Pengaturan Peta Google Maps</h3>
-                    <p className="text-xs text-muted">Input kode embed HTML iframe atau URL lokasi peta</p>
+                    <p className="text-xs text-muted">Kelola tampilan frame peta di web dan link Google Maps lengkap untuk pengunjung</p>
                   </div>
                 </div>
 
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const val = e.target.elements.site_maps_url.value;
-                    handleUpdateSettings(e, "site_maps_url", val);
-                  }}
-                  className="space-y-3"
-                >
-                  <div className="space-y-1.5">
-                    <label className="lib-label">Kode Iframe / Link Google Maps</label>
-                    <p className="text-[11px] text-muted">
-                      Anda bisa menempelkan langsung kode <b>&lt;iframe src="..." ...&gt;</b> dari Google Maps atau link share tempat.
-                    </p>
-                    <textarea
-                      name="site_maps_url"
-                      rows={3}
-                      defaultValue={settings.find(s => s.key === "site_maps_url")?.value || ""}
-                      className="lib-input font-mono text-xs w-full resize-y"
-                      placeholder='<iframe src="https://www.google.com/maps/embed?pb=..." width="600" height="450"></iframe>'
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* MENU 1: KODE FRAME / EMBED PETA */}
+                  <div className="space-y-4 p-4 rounded-xl border border-border-200 bg-surface-50 flex flex-col justify-between">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between border-b border-border-200 pb-2">
+                        <span className="font-bold text-xs text-heading font-navigation flex items-center gap-1.5">
+                          <Code size={14} className="text-primary-500" />
+                          Menu 1: Kode Frame / Embed Peta (Tampilan Web)
+                        </span>
+                      </div>
+
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          const val = e.target.elements.site_maps_embed_url.value;
+                          handleUpdateSettings(e, "site_maps_embed_url", val);
+                          handleUpdateSettings(e, "site_maps_url", val);
+                        }}
+                        className="space-y-3"
+                      >
+                        <div className="space-y-1.5">
+                          <label className="lib-label text-xs">Kode &lt;iframe ...&gt; atau URL Embed Peta</label>
+                          <p className="text-[11px] text-muted">
+                            Tempelkan kode HTML <b>&lt;iframe src="..." ...&gt;</b> dari Google Maps untuk menampilkan peta di website.
+                          </p>
+                          <textarea
+                            name="site_maps_embed_url"
+                            rows={4}
+                            defaultValue={
+                              settings.find(s => s.key === "site_maps_embed_url")?.value ||
+                              settings.find(s => s.key === "site_maps_url")?.value || ""
+                            }
+                            className="lib-input font-mono text-xs w-full resize-y"
+                            placeholder='<iframe src="https://www.google.com/maps/embed?pb=..." width="600" height="450"></iframe>'
+                          />
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              const form = e.target.closest("form");
+                              if (form && form.elements.site_maps_embed_url) {
+                                form.elements.site_maps_embed_url.value = `<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4889.152930111425!2d96.69954017581388!3d5.198572637138711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x304743005639fd1d%3A0x505cc2739b6d2e38!2sPerpustakaan%20Daerah%20Kabupaten%20Bireuen!5e1!3m2!1sid!2sid!4v1785000925170!5m2!1sid!2sid" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+                              }
+                            }}
+                            className="btn-outline !py-1.5 !px-2.5 !text-[11px]"
+                          >
+                            Tempel Frame Perpustakaan Bireuen
+                          </button>
+
+                          <button type="submit" className="btn-primary !py-2 !px-4 text-xs">
+                            Simpan Frame Peta
+                          </button>
+                        </div>
+                      </form>
+                    </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        const form = e.target.closest("form");
-                        if (form && form.elements.site_maps_url) {
-                          form.elements.site_maps_url.value = `<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4889.152930111425!2d96.69954017581388!3d5.198572637138711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x304743005639fd1d%3A0x505cc2739b6d2e38!2sPerpustakaan%20Daerah%20Kabupaten%20Bireuen!5e1!3m2!1sid!2sid!4v1785000925170!5m2!1sid!2sid" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
-                        }
-                      }}
-                      className="btn-outline !py-1.5 !px-2.5 !text-[11px]"
-                    >
-                      Tempel Iframe Perpustakaan Bireuen
-                    </button>
+                  {/* MENU 2: LINK GOOGLE MAPS FULL (DIRECT LINK) */}
+                  <div className="space-y-4 p-4 rounded-xl border border-border-200 bg-surface-50 flex flex-col justify-between">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between border-b border-border-200 pb-2">
+                        <span className="font-bold text-xs text-heading font-navigation flex items-center gap-1.5">
+                          <ExternalLink size={14} className="text-primary-500" />
+                          Menu 2: Link Google Maps Full (Tombol "Buka Peta Full")
+                        </span>
+                      </div>
 
-                    <button type="submit" className="btn-primary !py-2 !px-5 text-xs">
-                      Simpan Peta
-                    </button>
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          const val = e.target.elements.site_maps_direct_url.value;
+                          handleUpdateSettings(e, "site_maps_direct_url", val);
+                        }}
+                        className="space-y-3"
+                      >
+                        <div className="space-y-1.5">
+                          <label className="lib-label text-xs">Link Direct / Link Share Google Maps</label>
+                          <p className="text-[11px] text-muted">
+                            Tempelkan link share lokasi (contoh: <b>https://maps.app.goo.gl/...</b>) yang akan dibuka saat tombol <b>"Buka Peta Full"</b> diklik.
+                          </p>
+                          <input
+                            name="site_maps_direct_url"
+                            type="text"
+                            defaultValue={settings.find(s => s.key === "site_maps_direct_url")?.value || "https://maps.app.goo.gl/XEp4LbgLnwjMhZHE7"}
+                            className="lib-input font-mono text-xs w-full"
+                            placeholder="https://maps.app.goo.gl/..."
+                          />
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              const form = e.target.closest("form");
+                              if (form && form.elements.site_maps_direct_url) {
+                                form.elements.site_maps_direct_url.value = "https://maps.app.goo.gl/XEp4LbgLnwjMhZHE7";
+                              }
+                            }}
+                            className="btn-outline !py-1.5 !px-2.5 !text-[11px]"
+                          >
+                            Tempel Link Share Contoh
+                          </button>
+
+                          <button type="submit" className="btn-primary !py-2 !px-4 text-xs">
+                            Simpan Link Full
+                          </button>
+                        </div>
+                      </form>
+                    </div>
                   </div>
-                </form>
+                </div>
 
                 {/* Live Preview */}
-                <div className="space-y-1.5 pt-3 border-t border-border-200">
-                  <span className="text-xs font-bold text-heading font-navigation">Preview Tampilan Peta Live:</span>
-                  <div className="h-44 w-full rounded-lg overflow-hidden border border-border-200 shadow-inner bg-surface-100 relative">
+                <div className="space-y-2 pt-3 border-t border-border-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-heading font-navigation">Preview Tampilan Peta Live:</span>
+                    <a
+                      href={getDirectMapsUrl(
+                        settings.find(s => s.key === "site_address")?.value,
+                        settings.find(s => s.key === "site_maps_direct_url")?.value
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-primary-600 hover:underline inline-flex items-center gap-1 font-navigation font-bold"
+                    >
+                      <span>Tes Klik: Buka Peta Full</span>
+                      <ArrowUpRight size={12} />
+                    </a>
+                  </div>
+                  <div className="h-52 w-full rounded-xl overflow-hidden border border-border-200 shadow-inner bg-surface-100 relative">
                     <iframe
                       title="Preview Google Maps"
                       src={getEmbedMapsUrl(
                         settings.find(s => s.key === "site_address")?.value,
-                        settings.find(s => s.key === "site_maps_url")?.value
+                        settings.find(s => s.key === "site_maps_embed_url")?.value || settings.find(s => s.key === "site_maps_url")?.value
                       )}
                       width="100%"
                       height="100%"
