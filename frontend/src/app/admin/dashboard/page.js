@@ -2006,7 +2006,11 @@ export default function AdminDashboard() {
                   </div>
                   <h3 className="font-bold text-heading font-navigation">Kanal Media Sosial</h3>
                 </div>
-                {socials.map((soc) => (
+                {(Array.isArray(socials) && socials.length > 0 ? socials : [
+                  { platform: "facebook", url: "https://facebook.com" },
+                  { platform: "twitter", url: "https://twitter.com" },
+                  { platform: "instagram", url: "https://instagram.com" }
+                ]).map((soc) => (
                   <form
                     key={soc.platform}
                     onSubmit={async (e) => {
