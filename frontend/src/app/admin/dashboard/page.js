@@ -362,17 +362,23 @@ export default function AdminDashboard() {
   const [contacts, setContacts] = useState(INITIAL_CONTACTS);
   const [users, setUsers] = useState(INITIAL_USERS);
   const [settings, setSettings] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cms_settings");
-      if (saved) try { return JSON.parse(saved); } catch (e) {}
-    }
-    return [
+    const defaultSettings = [
       { key: "site_address", value: "Dinas Perpustakaan dan Kearsipan Kabupaten Bireuen, Bireun Meunasah Capa, Kec. Kota Juang, Kabupaten Bireuen, Aceh 24261" },
       { key: "site_email", value: "info@perpustakaankota.go.id" },
       { key: "site_phone", value: "(021) 8899-7766" },
       { key: "site_maps_embed_url", value: `<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4889.152930111425!2d96.69954017581388!3d5.198572637138711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x304743005639fd1d%3A0x505cc2739b6d2e38!2sPerpustakaan%20Daerah%20Kabupaten%20Bireuen!5e1!3m2!1sid!2sid!4v1785000925170!5m2!1sid!2sid" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>` },
       { key: "site_maps_direct_url", value: "https://maps.app.goo.gl/XEp4LbgLnwjMhZHE7" }
     ];
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cms_settings");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch (e) {}
+      }
+    }
+    return defaultSettings;
   });
   const [socials, setSocials] = useState([
     { platform: "facebook", url: "https://facebook.com" },
@@ -482,6 +488,12 @@ export default function AdminDashboard() {
       }
     }
     return cleanUrl;
+  };
+
+  const getSettingValue = (key, fallback = "") => {
+    if (!Array.isArray(settings)) return fallback;
+    const found = settings.find(s => s?.key === key);
+    return found?.value ?? fallback;
   };
   const [navMenuForm, setNavMenuForm] = useState({ label: "", target: "", order: 1, active: true });
   const [contactBtnForm, setContactBtnForm] = useState({ label: "", platform: "whatsapp", value: "", active: true });
@@ -855,9 +867,10 @@ export default function AdminDashboard() {
       return;
     }
 
-    const updatedSettings = settings.some(s => s.key === key)
-      ? settings.map(s => s.key === key ? { ...s, value: val } : s)
-      : [...settings, { key, value: val }];
+    const currentSettings = Array.isArray(settings) ? settings : [];
+    const updatedSettings = currentSettings.some(s => s?.key === key)
+      ? currentSettings.map(s => s?.key === key ? { ...s, value: val } : s)
+      : [...currentSettings, { key, value: val }];
 
     saveSettingsState(updatedSettings, key, val);
 
@@ -1809,7 +1822,7 @@ export default function AdminDashboard() {
                   </div>
                   <h3 className="font-bold text-heading font-navigation">Detail Profil Sekretariat</h3>
                 </div>
-                {settings.filter(s => ["site_address", "site_email", "site_phone"].includes(s.key)).map((set) => (
+                {(Array.isArray(settings) ? settings : []).filter(s => s?.key && ["site_address", "site_email", "site_phone"].includes(s.key)).map((set) => (
                   <form key={set.key} onSubmit={(e) => handleUpdateSettings(e, set.key, e.target.elements[set.key].value)} className="space-y-1.5">
                     <label className="lib-label">
                       {set.key === "site_address" && "Alamat Fisik Gedung"}
@@ -1865,8 +1878,8 @@ export default function AdminDashboard() {
                             name="site_maps_embed_url"
                             rows={4}
                             defaultValue={
-                              settings.find(s => s.key === "site_maps_embed_url")?.value ||
-                              settings.find(s => s.key === "site_maps_url")?.value || ""
+                              getSettingValue("site_maps_embed_url") ||
+                              getSettingValue("site_maps_url")
                             }
                             className="lib-input font-mono text-xs w-full resize-y"
                             placeholder='<iframe src="https://www.google.com/maps/embed?pb=..." width="600" height="450"></iframe>'
@@ -1921,7 +1934,7 @@ export default function AdminDashboard() {
                           <input
                             name="site_maps_direct_url"
                             type="text"
-                            defaultValue={settings.find(s => s.key === "site_maps_direct_url")?.value || "https://maps.app.goo.gl/XEp4LbgLnwjMhZHE7"}
+                            defaultValue={getSettingValue("site_maps_direct_url", "https://maps.app.goo.gl/XEp4LbgLnwjMhZHE7")}
                             className="lib-input font-mono text-xs w-full"
                             placeholder="https://maps.app.goo.gl/..."
                           />
@@ -1956,8 +1969,8 @@ export default function AdminDashboard() {
                     <span className="text-xs font-bold text-heading font-navigation">Preview Tampilan Peta Live:</span>
                     <a
                       href={getDirectMapsUrl(
-                        settings.find(s => s.key === "site_address")?.value,
-                        settings.find(s => s.key === "site_maps_direct_url")?.value
+                        getSettingValue("site_address"),
+                        getSettingValue("site_maps_direct_url")
                       )}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -1971,8 +1984,8 @@ export default function AdminDashboard() {
                     <iframe
                       title="Preview Google Maps"
                       src={getEmbedMapsUrl(
-                        settings.find(s => s.key === "site_address")?.value,
-                        settings.find(s => s.key === "site_maps_embed_url")?.value || settings.find(s => s.key === "site_maps_url")?.value
+                        getSettingValue("site_address"),
+                        getSettingValue("site_maps_embed_url", getSettingValue("site_maps_url"))
                       )}
                       width="100%"
                       height="100%"
