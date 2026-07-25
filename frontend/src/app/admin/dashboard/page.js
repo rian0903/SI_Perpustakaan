@@ -370,7 +370,7 @@ export default function AdminDashboard() {
       { key: "site_address", value: "Dinas Perpustakaan dan Kearsipan Kabupaten Bireuen, Bireun Meunasah Capa, Kec. Kota Juang, Kabupaten Bireuen, Aceh 24261" },
       { key: "site_email", value: "info@perpustakaankota.go.id" },
       { key: "site_phone", value: "(021) 8899-7766" },
-      { key: "site_maps_url", value: "https://maps.app.goo.gl/XEp4LbgLnwjMhZHE7" }
+      { key: "site_maps_url", value: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4889.152930111425!2d96.69954017581388!3d5.198572637138711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x304743005639fd1d%3A0x505cc2739b6d2e38!2sPerpustakaan%20Daerah%20Kabupaten%20Bireuen!5e1!3m2!1sid!2sid!4v1785000925170!5m2!1sid!2sid" }
     ];
   });
   const [socials, setSocials] = useState([
@@ -428,6 +428,45 @@ export default function AdminDashboard() {
       }
       window.dispatchEvent(new Event("storage"));
     }
+  };
+
+  const getEmbedMapsUrl = (address, mapsUrl) => {
+    if (mapsUrl) {
+      let cleanUrl = String(mapsUrl).trim();
+
+      if (cleanUrl.includes("<iframe") || cleanUrl.includes("src=")) {
+        const match = cleanUrl.match(/src=["']([^"']+)["']/i);
+        if (match && match[1]) {
+          cleanUrl = match[1].trim();
+        }
+      }
+
+      if (cleanUrl.includes("google.com/maps/embed") || cleanUrl.includes("pb=") || cleanUrl.includes("output=embed")) {
+        return cleanUrl;
+      }
+
+      if (cleanUrl.includes("google.com/maps/place/")) {
+        const placeMatch = cleanUrl.match(/\/maps\/place\/([^/@?]+)/i);
+        if (placeMatch && placeMatch[1]) {
+          const placeName = decodeURIComponent(placeMatch[1].replace(/\+/g, " "));
+          return `https://www.google.com/maps?q=${encodeURIComponent(placeName)}&output=embed`;
+        }
+      }
+
+      if (cleanUrl.startsWith("http://") || cleanUrl.startsWith("https://")) {
+        if (address && address.trim()) {
+          return `https://www.google.com/maps?q=${encodeURIComponent(address.trim())}&output=embed`;
+        }
+        return `https://www.google.com/maps?q=${encodeURIComponent(cleanUrl)}&output=embed`;
+      }
+
+      if (cleanUrl.length > 0) {
+        return `https://www.google.com/maps?q=${encodeURIComponent(cleanUrl)}&output=embed`;
+      }
+    }
+
+    const cleanAddress = address ? address.trim() : "Dinas Perpustakaan dan Kearsipan Kabupaten Bireuen";
+    return `https://www.google.com/maps?q=${encodeURIComponent(cleanAddress)}&output=embed`;
   };
   const [navMenuForm, setNavMenuForm] = useState({ label: "", target: "", order: 1, active: true });
   const [contactBtnForm, setContactBtnForm] = useState({ label: "", platform: "whatsapp", value: "", active: true });
@@ -1755,23 +1794,94 @@ export default function AdminDashboard() {
                   </div>
                   <h3 className="font-bold text-heading font-navigation">Detail Profil Sekretariat</h3>
                 </div>
-                {settings.map((set) => (
+                {settings.filter(s => s.key !== "site_maps_url").map((set) => (
                   <form key={set.key} onSubmit={(e) => handleUpdateSettings(e, set.key, e.target.elements[set.key].value)} className="space-y-1.5">
                     <label className="lib-label">
                       {set.key === "site_address" && "Alamat Fisik Gedung"}
                       {set.key === "site_email" && "Email Kantor Humas"}
                       {set.key === "site_phone" && "Nomor Telepon Sekretariat"}
-                      {set.key === "site_maps_url" && "Link URL Google Maps (Peta)"}
                     </label>
-                    {set.key === "site_maps_url" && (
-                      <p className="text-[11px] text-muted -mt-1">Dapat berupa link share Maps, link tempat lokasi, query alamat, atau kode HTML &lt;iframe ...&gt;</p>
-                    )}
                     <div className="flex gap-2">
                       <input name={set.key} type="text" defaultValue={set.value} className="lib-input flex-1" />
                       <button type="submit" className="btn-primary !py-2 !px-4 shrink-0">Simpan</button>
                     </div>
                   </form>
                 ))}
+              </div>
+
+              {/* Dedicated Google Maps Configuration Card */}
+              <div className="bg-white p-6 rounded-xl border border-border-200 shadow-soft space-y-5">
+                <div className="flex items-center gap-2.5 border-b border-border-200 pb-4">
+                  <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center">
+                    <MapPin size={15} className="text-primary-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-heading font-navigation">Pengaturan Peta Google Maps</h3>
+                    <p className="text-xs text-muted">Input kode embed HTML iframe atau URL lokasi peta</p>
+                  </div>
+                </div>
+
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const val = e.target.elements.site_maps_url.value;
+                    handleUpdateSettings(e, "site_maps_url", val);
+                  }}
+                  className="space-y-3"
+                >
+                  <div className="space-y-1.5">
+                    <label className="lib-label">Kode Iframe / Link Google Maps</label>
+                    <p className="text-[11px] text-muted">
+                      Anda bisa menempelkan langsung kode <b>&lt;iframe src="..." ...&gt;</b> dari Google Maps atau link share tempat.
+                    </p>
+                    <textarea
+                      name="site_maps_url"
+                      rows={3}
+                      defaultValue={settings.find(s => s.key === "site_maps_url")?.value || ""}
+                      className="lib-input font-mono text-xs w-full resize-y"
+                      placeholder='<iframe src="https://www.google.com/maps/embed?pb=..." width="600" height="450"></iframe>'
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        const form = e.target.closest("form");
+                        if (form && form.elements.site_maps_url) {
+                          form.elements.site_maps_url.value = `<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4889.152930111425!2d96.69954017581388!3d5.198572637138711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x304743005639fd1d%3A0x505cc2739b6d2e38!2sPerpustakaan%20Daerah%20Kabupaten%20Bireuen!5e1!3m2!1sid!2sid!4v1785000925170!5m2!1sid!2sid" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+                        }
+                      }}
+                      className="btn-outline !py-1.5 !px-2.5 !text-[11px]"
+                    >
+                      Tempel Iframe Perpustakaan Bireuen
+                    </button>
+
+                    <button type="submit" className="btn-primary !py-2 !px-5 text-xs">
+                      Simpan Peta
+                    </button>
+                  </div>
+                </form>
+
+                {/* Live Preview */}
+                <div className="space-y-1.5 pt-3 border-t border-border-200">
+                  <span className="text-xs font-bold text-heading font-navigation">Preview Tampilan Peta Live:</span>
+                  <div className="h-44 w-full rounded-lg overflow-hidden border border-border-200 shadow-inner bg-surface-100 relative">
+                    <iframe
+                      title="Preview Google Maps"
+                      src={getEmbedMapsUrl(
+                        settings.find(s => s.key === "site_address")?.value,
+                        settings.find(s => s.key === "site_maps_url")?.value
+                      )}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen=""
+                      loading="lazy"
+                      className="w-full h-full"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Social Media */}

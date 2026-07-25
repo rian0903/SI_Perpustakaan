@@ -362,7 +362,7 @@ export default function Home() {
         } catch(e) {}
       }
     }
-    return "https://maps.app.goo.gl/XEp4LbgLnwjMhZHE7";
+    return "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4889.152930111425!2d96.69954017581388!3d5.198572637138711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x304743005639fd1d%3A0x505cc2739b6d2e38!2sPerpustakaan%20Daerah%20Kabupaten%20Bireuen!5e1!3m2!1sid!2sid!4v1785000925170!5m2!1sid!2sid";
   });
 
   const getEmbedMapsUrl = (address, mapsUrl) => {
