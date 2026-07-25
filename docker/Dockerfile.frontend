@@ -17,7 +17,7 @@ COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
 COPY . .
 
 # Set environment variables for build time
-ENV NEXT_PUBLIC_API_URL=http://localhost:3001/api
+ENV NEXT_PUBLIC_API_URL=/api
 
 # Build Next.js project
 RUN npm run build --workspace=frontend

@@ -15,8 +15,10 @@ const getImageUrl = (url) => {
   if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
     return url;
   }
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || (typeof window !== "undefined" ? `${window.location.protocol}//${window.location.hostname}:3001` : "http://localhost:3001");
-  return `${backendUrl}${url.startsWith("/") ? "" : "/"}${url}`;
+  if (process.env.NEXT_PUBLIC_BACKEND_URL) {
+    return `${process.env.NEXT_PUBLIC_BACKEND_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+  }
+  return url.startsWith("/") ? url : `/${url}`;
 };
 
 // Mock Banners Data
