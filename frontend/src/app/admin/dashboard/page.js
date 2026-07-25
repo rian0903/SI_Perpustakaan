@@ -8,7 +8,7 @@ import {
   X, AlertCircle, Eye, EyeOff, User as UserIcon, ShieldAlert, Sliders, Compass,
   Mail, MapPin, Phone, MessageSquare, Clock, Globe, ShieldCheck, Loader2,
   Navigation, Link2, Send, ArrowUp, ArrowDown, ToggleLeft, ToggleRight,
-  ChevronRight, ChevronDown, ExternalLink, Info, Activity, Database, Menu, Upload, Code
+  ChevronRight, ChevronDown, ExternalLink, Info, Activity, Database, Menu, Upload, Code, ArrowUpRight
 } from "lucide-react";
 import axios from "axios";
 
@@ -440,8 +440,11 @@ export default function AdminDashboard() {
   };
 
   const getEmbedMapsUrl = (address, mapsUrl) => {
-    if (mapsUrl) {
-      let cleanUrl = String(mapsUrl).trim();
+    const safeAddress = typeof address === "string" ? address.trim() : (address ? String(address) : "");
+    const safeMapsUrl = typeof mapsUrl === "string" ? mapsUrl.trim() : (mapsUrl ? String(mapsUrl) : "");
+
+    if (safeMapsUrl) {
+      let cleanUrl = safeMapsUrl;
 
       if (cleanUrl.includes("<iframe") || cleanUrl.includes("src=")) {
         const match = cleanUrl.match(/src=["']([^"']+)["']/i);
@@ -463,8 +466,8 @@ export default function AdminDashboard() {
       }
 
       if (cleanUrl.startsWith("http://") || cleanUrl.startsWith("https://")) {
-        if (address && address.trim()) {
-          return `https://www.google.com/maps?q=${encodeURIComponent(address.trim())}&output=embed`;
+        if (safeAddress) {
+          return `https://www.google.com/maps?q=${encodeURIComponent(safeAddress)}&output=embed`;
         }
         return `https://www.google.com/maps?q=${encodeURIComponent(cleanUrl)}&output=embed`;
       }
@@ -474,15 +477,18 @@ export default function AdminDashboard() {
       }
     }
 
-    const cleanAddress = address ? address.trim() : "Dinas Perpustakaan dan Kearsipan Kabupaten Bireuen";
+    const cleanAddress = safeAddress || "Dinas Perpustakaan dan Kearsipan Kabupaten Bireuen";
     return `https://www.google.com/maps?q=${encodeURIComponent(cleanAddress)}&output=embed`;
   };
 
   const getDirectMapsUrl = (address, mapsUrl) => {
-    if (!mapsUrl) {
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address || "Dinas Perpustakaan dan Kearsipan Kabupaten Bireuen")}`;
+    const safeAddress = typeof address === "string" ? address.trim() : (address ? String(address) : "");
+    const safeMapsUrl = typeof mapsUrl === "string" ? mapsUrl.trim() : (mapsUrl ? String(mapsUrl) : "");
+
+    if (!safeMapsUrl) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(safeAddress || "Dinas Perpustakaan dan Kearsipan Kabupaten Bireuen")}`;
     }
-    let cleanUrl = String(mapsUrl).trim();
+    let cleanUrl = safeMapsUrl;
     if (cleanUrl.includes("<iframe") || cleanUrl.includes("src=")) {
       const match = cleanUrl.match(/src=["']([^"']+)["']/i);
       if (match && match[1]) {
