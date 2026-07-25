@@ -862,8 +862,8 @@ export default function AdminDashboard() {
 
   const handleUpdateSettings = async (e, key, val) => {
     e.preventDefault();
-    if (user?.role !== "SUPER_ADMIN") {
-      showNotification("Hanya Super Admin yang dapat mengubah pengaturan.", "error");
+    if (!user) {
+      showNotification("Sesi login tidak ditemukan.", "error");
       return;
     }
 

@@ -300,7 +300,7 @@ export class CmsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @Post('settings')
   async updateSetting(
     @Body() body: { key: string; value: string; description?: string },
