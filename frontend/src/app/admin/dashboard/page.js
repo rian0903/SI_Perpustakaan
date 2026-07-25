@@ -1809,7 +1809,7 @@ export default function AdminDashboard() {
                   </div>
                   <h3 className="font-bold text-heading font-navigation">Detail Profil Sekretariat</h3>
                 </div>
-                {settings.filter(s => s.key !== "site_maps_url").map((set) => (
+                {settings.filter(s => ["site_address", "site_email", "site_phone"].includes(s.key)).map((set) => (
                   <form key={set.key} onSubmit={(e) => handleUpdateSettings(e, set.key, e.target.elements[set.key].value)} className="space-y-1.5">
                     <label className="lib-label">
                       {set.key === "site_address" && "Alamat Fisik Gedung"}
@@ -2019,7 +2019,7 @@ export default function AdminDashboard() {
                   >
                     <label className="lib-label capitalize">{soc.platform}</label>
                     <div className="flex gap-2">
-                      <input name="url" type="url" defaultValue={soc.url} className="lib-input flex-1" />
+                      <input name="url" type="text" defaultValue={soc.url} className="lib-input flex-1" placeholder={`Link ${soc.platform}`} />
                       <button type="submit" className="btn-primary !py-2 !px-4 shrink-0">Simpan</button>
                     </div>
                   </form>
