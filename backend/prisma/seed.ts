@@ -65,8 +65,9 @@ async function main() {
     { label: 'Berita', target: '/#news', order: 3, active: true },
     { label: 'Agenda', target: '/#events', order: 4, active: true },
     { label: 'Galeri', target: '/#gallery', order: 5, active: true },
-    { label: 'Layanan', target: '/#services', order: 6, active: true },
-    { label: 'Kontak', target: '/#contact', order: 7, active: true },
+    { label: 'Keanggotaan', target: '/membership', order: 6, active: true },
+    { label: 'Cek Status', target: '/membership/status', order: 7, active: true },
+    { label: 'FAQ', target: '/#faq', order: 8, active: true },
   ];
 
   const existingNavs = await prisma.navMenuItem.count();

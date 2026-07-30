@@ -139,7 +139,9 @@ export default function Home() {
     { id: 3, label: "Berita", target: "#news", order: 3, active: true },
     { id: 4, label: "Kegiatan", target: "#events", order: 4, active: true },
     { id: 5, label: "Galeri", target: "#gallery", order: 5, active: true },
-    { id: 6, label: "FAQ", target: "#faq", order: 6, active: true }
+    { id: 6, label: "Keanggotaan", target: "/membership", order: 6, active: true },
+    { id: 7, label: "Cek Status", target: "/membership/status", order: 7, active: true },
+    { id: 8, label: "FAQ", target: "#faq", order: 8, active: true }
   ]);
   const [navLogoText, setNavLogoText] = useState("Digital Book Experience");
   const [navLogoUrl, setNavLogoUrl] = useState("");
@@ -1248,6 +1250,39 @@ export default function Home() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ===== KEANGGOTAAN PERPUSTAKAAN SECTION ===== */}
+          <section id="membership" className="py-20 bg-slate-900 text-white relative overflow-hidden">
+            <div className="chapter-container relative z-10">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div className="lg:col-span-8 space-y-4">
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-primary-500/20 text-primary-300 border border-primary-500/30">
+                    ⭐ Pendaftaran Online 100% Gratis
+                  </span>
+                  <h2 className="text-3xl md:text-4xl font-bold font-navigation leading-tight">
+                    Bergabung Jadi Anggota Resmi Perpustakaan
+                  </h2>
+                  <p className="text-slate-300 text-sm md:text-base leading-relaxed max-w-2xl">
+                    Dapatkan akses peminjaman ribuan koleksi buku fisik, fasilitas kartu anggota cetak eksklusif, serta perpanjangan peminjaman secara online.
+                  </p>
+                </div>
+                <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-3 justify-end">
+                  <a
+                    href="/membership"
+                    className="px-6 py-3.5 bg-primary-500 hover:bg-primary-600 text-white font-bold font-navigation text-sm rounded-xl text-center shadow-lg transition-all"
+                  >
+                    Daftar Anggota Online
+                  </a>
+                  <a
+                    href="/membership/status"
+                    className="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium font-navigation text-sm rounded-xl text-center border border-slate-700 transition-all"
+                  >
+                    Cek Status Pendaftaran
+                  </a>
+                </div>
               </div>
             </div>
           </section>
