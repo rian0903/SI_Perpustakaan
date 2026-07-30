@@ -12,9 +12,9 @@ async function bootstrap() {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
 
-  const dataDir = join(process.cwd(), 'data');
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
+  const dbDir = join(process.cwd(), 'prisma', 'db');
+  if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
   }
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);

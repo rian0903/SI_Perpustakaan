@@ -41,4 +41,4 @@ COPY --from=builder /app/backend /app/backend
 EXPOSE 3001
 
 # Create required directories, run database push/migrations and start NestJS server
-CMD ["sh", "-c", "mkdir -p /app/backend/data /app/backend/uploads && npx prisma db push --accept-data-loss && node dist/main.js"]
+CMD ["sh", "-c", "mkdir -p /app/backend/prisma/db /app/backend/uploads && npx prisma db push --accept-data-loss && node dist/main.js"]

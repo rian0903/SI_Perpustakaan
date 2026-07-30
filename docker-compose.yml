@@ -6,13 +6,13 @@ services:
       dockerfile: ./docker/Dockerfile.backend
     restart: always
     environment:
-      DATABASE_URL: "file:../data/dev.db"
+      DATABASE_URL: "file:./db/dev.db"
       PORT: 3001
       JWT_SECRET: "super-secret-jwt-key-change-in-production"
       JWT_EXPIRATION: "1d"
       CORS_ORIGIN: "*"
     volumes:
-      - sqlite-data:/app/backend/data
+      - sqlite-data:/app/backend/prisma/db
       - backend-uploads:/app/backend/uploads
     networks:
       - library-network
