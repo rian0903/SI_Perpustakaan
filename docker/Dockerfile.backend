@@ -26,21 +26,16 @@ RUN npm run build
 
 # Stage 3: Production runner
 FROM node:22-alpine AS runner
-WORKDIR /app
+WORKDIR /app/backend
 
 ENV NODE_ENV=production
 ENV PORT=3001
 
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/backend/package.json ./backend/package.json
-COPY --from=builder /app/backend/dist ./backend/dist
-COPY --from=builder /app/backend/node_modules ./backend/node_modules
-COPY --from=builder /app/backend/prisma ./backend/prisma
+COPY --from=builder /app/package.json /app/package.json
+COPY --from=builder /app/node_modules /app/node_modules
+COPY --from=builder /app/backend /app/backend
 
 EXPOSE 3001
 
-WORKDIR /app/backend
-
-# Run database push/migrations and start the NestJS production server
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/main.js"]
+# Create required directories, run database push/migrations and start NestJS server
+CMD ["sh", "-c", "mkdir -p /app/backend/data /app/backend/uploads && npx prisma db push --accept-data-loss && node dist/main.js"]
