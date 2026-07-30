@@ -9,7 +9,7 @@ import {
   Mail, MapPin, Phone, MessageSquare, Clock, Globe, ShieldCheck, Loader2,
   Navigation, Link2, Send, ArrowUp, ArrowDown, ToggleLeft, ToggleRight,
   ChevronRight, ChevronDown, ExternalLink, Info, Activity, Database, Menu, Upload, Code, ArrowUpRight,
-  IdCard, Printer, CheckCircle2
+  IdCard, Printer, CheckCircle2, Search, UserCheck, FileSpreadsheet, Filter
 } from "lucide-react";
 import axios from "axios";
 
