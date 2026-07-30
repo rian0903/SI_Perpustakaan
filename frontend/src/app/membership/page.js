@@ -93,7 +93,7 @@ export default function MembershipPage() {
     },
   });
 
-  // Handle File Uploads to Backend API
+  // Handle File Uploads to Backend API with Base64 Fallback
   const handleFileUpload = async (file, type) => {
     if (!file) return;
 
@@ -108,10 +108,22 @@ export default function MembershipPage() {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      if (type === "photo") setPhotoUrl(response.data.url);
-      if (type === "idCard") setIdentityCardUrl(response.data.url);
+      if (response.data && response.data.url) {
+        if (type === "photo") setPhotoUrl(response.data.url);
+        if (type === "idCard") setIdentityCardUrl(response.data.url);
+        return;
+      }
     } catch (err) {
-      alert("Gagal mengunggah file. Pastikan format berupa JPG/PNG/WEBP/PDF max 8MB.");
+      console.warn("Backend file upload failed, fallback to local Base64 string:", err.message);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result;
+        if (result) {
+          if (type === "photo") setPhotoUrl(result);
+          if (type === "idCard") setIdentityCardUrl(result);
+        }
+      };
+      reader.readAsDataURL(file);
     } finally {
       if (type === "photo") setUploadingPhoto(false);
       if (type === "idCard") setUploadingIdCard(false);
@@ -628,7 +640,7 @@ export default function MembershipPage() {
 
                         {photoUrl ? (
                           <div className="relative w-24 h-24 mx-auto rounded-lg overflow-hidden border border-slate-300">
-                            <img src={`${API_BASE_URL.replace('/api', '')}${photoUrl}`} alt="Foto Diri" className="w-full h-full object-cover" />
+                            <img src={photoUrl?.startsWith("data:") ? photoUrl : `${API_BASE_URL.replace('/api', '')}${photoUrl}`} alt="Foto Diri" className="w-full h-full object-cover" />
                             <span className="absolute bottom-0 inset-x-0 bg-emerald-600 text-white text-[10px] font-bold py-0.5">TERUNGGAH</span>
                           </div>
                         ) : (

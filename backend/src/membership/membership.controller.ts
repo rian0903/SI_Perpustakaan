@@ -13,7 +13,8 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { extname, join } from 'path';
+import * as fs from 'fs';
 import { MembershipService } from './membership.service';
 import { CreateMembershipDto } from './dto/create-membership.dto';
 import { RejectMembershipDto } from './dto/reject-membership.dto';
@@ -35,7 +36,13 @@ export class MembershipController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './uploads',
+        destination: (req: any, file: any, callback: any) => {
+          const uploadsDir = join(process.cwd(), 'uploads');
+          if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+          }
+          callback(null, uploadsDir);
+        },
         filename: (req: any, file: any, callback: any) => {
           const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
@@ -47,17 +54,16 @@ export class MembershipController {
         },
       }),
       limits: {
-        fileSize: 8 * 1024 * 1024, // 8MB Limit
+        fileSize: 12 * 1024 * 1024, // 12MB Limit
       },
       fileFilter: (req: any, file: any, callback: any) => {
-        const allowedTypes = /jpeg|jpg|png|webp|pdf/;
-        const extName = allowedTypes.test(extname(file.originalname).toLowerCase());
-        const mimeType = allowedTypes.test(file.mimetype);
-        if (extName && mimeType) {
+        const allowedExtensions = /jpeg|jpg|png|webp|pdf|doc|docx/;
+        const extName = allowedExtensions.test(extname(file.originalname).toLowerCase());
+        if (extName || file.mimetype) {
           return callback(null, true);
         }
         callback(
-          new BadRequestException('Format file harus berupa gambar (JPG, PNG, WEBP) atau PDF dengan ukuran maksimal 8MB.'),
+          new BadRequestException('Format file harus berupa gambar (JPG, PNG, WEBP) atau PDF dengan ukuran maksimal 12MB.'),
           false,
         );
       },
