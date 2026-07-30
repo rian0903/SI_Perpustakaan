@@ -361,35 +361,17 @@ export default function AdminDashboard() {
   const [news, setNews] = useState(INITIAL_NEWS);
   const [events, setEvents] = useState(INITIAL_EVENTS);
   const [faqs, setFaqs] = useState(INITIAL_FAQS);
-  const [banners, setBanners] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cms_banners");
-      if (saved) try { return JSON.parse(saved); } catch (e) {}
-    }
-    return INITIAL_BANNERS;
-  });
+  const [banners, setBanners] = useState(INITIAL_BANNERS);
   const [gallery, setGallery] = useState(INITIAL_GALLERY);
   const [contacts, setContacts] = useState(INITIAL_CONTACTS);
   const [users, setUsers] = useState(INITIAL_USERS);
-  const [settings, setSettings] = useState(() => {
-    const defaultSettings = [
-      { key: "site_address", value: "Dinas Perpustakaan dan Kearsipan Kabupaten Bireuen, Bireun Meunasah Capa, Kec. Kota Juang, Kabupaten Bireuen, Aceh 24261" },
-      { key: "site_email", value: "info@perpustakaankota.go.id" },
-      { key: "site_phone", value: "(021) 8899-7766" },
-      { key: "site_maps_embed_url", value: `<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4889.152930111425!2d96.69954017581388!3d5.198572637138711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x304743005639fd1d%3A0x505cc2739b6d2e38!2sPerpustakaan%20Daerah%20Kabupaten%20Bireuen!5e1!3m2!1sid!2sid!4v1785000925170!5m2!1sid!2sid" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>` },
-      { key: "site_maps_direct_url", value: "https://maps.app.goo.gl/XEp4LbgLnwjMhZHE7" }
-    ];
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cms_settings");
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        } catch (e) {}
-      }
-    }
-    return defaultSettings;
-  });
+  const [settings, setSettings] = useState([
+    { key: "site_address", value: "Dinas Perpustakaan dan Kearsipan Kabupaten Bireuen, Bireun Meunasah Capa, Kec. Kota Juang, Kabupaten Bireuen, Aceh 24261" },
+    { key: "site_email", value: "info@perpustakaankota.go.id" },
+    { key: "site_phone", value: "(021) 8899-7766" },
+    { key: "site_maps_embed_url", value: `<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4889.152930111425!2d96.69954017581388!3d5.198572637138711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x304743005639fd1d%3A0x505cc2739b6d2e38!2sPerpustakaan%20Daerah%20Kabupaten%20Bireuen!5e1!3m2!1sid!2sid!4v1785000925170!5m2!1sid!2sid" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>` },
+    { key: "site_maps_direct_url", value: "https://maps.app.goo.gl/XEp4LbgLnwjMhZHE7" }
+  ]);
   const [socials, setSocials] = useState([
     { platform: "facebook", url: "https://facebook.com" },
     { platform: "twitter", url: "https://twitter.com" },
@@ -403,18 +385,14 @@ export default function AdminDashboard() {
     { id: 3, label: "Berita", target: "#news", order: 3, active: true },
     { id: 4, label: "Kegiatan", target: "#events", order: 4, active: true },
     { id: 5, label: "Galeri", target: "#gallery", order: 5, active: true },
-    { id: 6, label: "FAQ", target: "#faq", order: 6, active: true }
+    { id: 6, label: "Keanggotaan", target: "/membership", order: 6, active: true },
+    { id: 7, label: "Cek Status", target: "/membership/status", order: 7, active: true },
+    { id: 8, label: "FAQ", target: "#faq", order: 8, active: true }
   ]);
-  const [contactButtons, setContactButtons] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cms_contact_buttons");
-      if (saved) try { return JSON.parse(saved); } catch (e) {}
-    }
-    return [
-      { id: 1, label: "Hubungi Kami", platform: "whatsapp", value: "6281234567890", active: true },
-      { id: 2, label: "DM kami", platform: "instagram", value: "@perpustakaan.bireuen", active: false }
-    ];
-  });
+  const [contactButtons, setContactButtons] = useState([
+    { id: 1, label: "Hubungi Kami", platform: "whatsapp", value: "6281234567890", active: true },
+    { id: 2, label: "DM kami", platform: "instagram", value: "@perpustakaan.bireuen", active: false }
+  ]);
 
   const saveContactButtonsState = (newBtns) => {
     setContactButtons(newBtns);
@@ -517,20 +495,8 @@ export default function AdminDashboard() {
   const [editingContactBtn, setEditingContactBtn] = useState(null);
   const [showNavMenuModal, setShowNavMenuModal] = useState(false);
   const [showContactBtnModal, setShowContactBtnModal] = useState(false);
-  const [logoText, setLogoText] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cms_navbar_logo_text");
-      if (saved) return saved;
-    }
-    return "Digital Book Experience";
-  });
-  const [logoUrl, setLogoUrl] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cms_navbar_logo_url");
-      if (saved !== null) return saved;
-    }
-    return "";
-  });
+  const [logoText, setLogoText] = useState("Digital Book Experience");
+  const [logoUrl, setLogoUrl] = useState("");
 
   const INITIAL_HERO = {
     badge: "PORTAL LITERASI KOTA",
@@ -543,13 +509,7 @@ export default function AdminDashboard() {
     cta2Link: "#news"
   };
 
-  const [heroInfo, setHeroInfo] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cms_hero_info");
-      if (saved) try { return JSON.parse(saved); } catch (e) {}
-    }
-    return INITIAL_HERO;
-  });
+  const [heroInfo, setHeroInfo] = useState(INITIAL_HERO);
 
   // Form Modals / Input States
   const [showModal, setShowModal] = useState(false);
@@ -564,34 +524,10 @@ export default function AdminDashboard() {
   const [userForm, setUserForm] = useState({ name: "", email: "", password: "", role: "ADMIN" });
 
   // Tentang & Statistik CRUD States
-  const [aboutInfo, setAboutInfo] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cms_about_info");
-      if (saved) try { return JSON.parse(saved); } catch(e) {}
-    }
-    return INITIAL_ABOUT;
-  });
-  const [teamList, setTeamList] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cms_team_list");
-      if (saved) try { return JSON.parse(saved); } catch(e) {}
-    }
-    return INITIAL_TEAM;
-  });
-  const [facilityList, setFacilityList] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cms_facility_list");
-      if (saved) try { return JSON.parse(saved); } catch(e) {}
-    }
-    return INITIAL_FACILITIES;
-  });
-  const [statsList, setStatsList] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cms_stats_list");
-      if (saved) try { return JSON.parse(saved); } catch(e) {}
-    }
-    return INITIAL_STATS;
-  });
+  const [aboutInfo, setAboutInfo] = useState(INITIAL_ABOUT);
+  const [teamList, setTeamList] = useState(INITIAL_TEAM);
+  const [facilityList, setFacilityList] = useState(INITIAL_FACILITIES);
+  const [statsList, setStatsList] = useState(INITIAL_STATS);
 
   // Modal Forms for CRUD
   const [showTeamModal, setShowTeamModal] = useState(false);
@@ -607,27 +543,9 @@ export default function AdminDashboard() {
   const [statForm, setStatForm] = useState({ value: "", label: "" });
 
   // Footer CRUD States
-  const [footerInfo, setFooterInfo] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cms_footer_info");
-      if (saved) try { return JSON.parse(saved); } catch(e) {}
-    }
-    return INITIAL_FOOTER_INFO;
-  });
-  const [footerHours, setFooterHours] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cms_footer_hours");
-      if (saved) try { return JSON.parse(saved); } catch(e) {}
-    }
-    return INITIAL_FOOTER_HOURS;
-  });
-  const [footerLinks, setFooterLinks] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("cms_footer_links");
-      if (saved) try { return JSON.parse(saved); } catch(e) {}
-    }
-    return INITIAL_FOOTER_LINKS;
-  });
+  const [footerInfo, setFooterInfo] = useState(INITIAL_FOOTER_INFO);
+  const [footerHours, setFooterHours] = useState(INITIAL_FOOTER_HOURS);
+  const [footerLinks, setFooterLinks] = useState(INITIAL_FOOTER_LINKS);
 
   const [showFooterHoursModal, setShowFooterHoursModal] = useState(false);
   const [editingFooterHours, setEditingFooterHours] = useState(null);
@@ -821,6 +739,35 @@ export default function AdminDashboard() {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
         setOffline(offlineMode);
+
+        // Populate local CMS settings safely after mounting to prevent SSR hydration errors
+        try {
+          const savedBanners = localStorage.getItem("cms_banners");
+          if (savedBanners) setBanners(JSON.parse(savedBanners));
+          const savedHero = localStorage.getItem("cms_hero_info");
+          if (savedHero) setHeroInfo(JSON.parse(savedHero));
+          const savedAbout = localStorage.getItem("cms_about_info");
+          if (savedAbout) setAboutInfo(JSON.parse(savedAbout));
+          const savedTeam = localStorage.getItem("cms_team_list");
+          if (savedTeam) setTeamList(JSON.parse(savedTeam));
+          const savedFac = localStorage.getItem("cms_facility_list");
+          if (savedFac) setFacilityList(JSON.parse(savedFac));
+          const savedStats = localStorage.getItem("cms_stats_list");
+          if (savedStats) setStatsList(JSON.parse(savedStats));
+          const savedFooterInfo = localStorage.getItem("cms_footer_info");
+          if (savedFooterInfo) setFooterInfo(JSON.parse(savedFooterInfo));
+          const savedFooterHours = localStorage.getItem("cms_footer_hours");
+          if (savedFooterHours) setFooterHours(JSON.parse(savedFooterHours));
+          const savedFooterLinks = localStorage.getItem("cms_footer_links");
+          if (savedFooterLinks) setFooterLinks(JSON.parse(savedFooterLinks));
+          const savedLogoText = localStorage.getItem("cms_navbar_logo_text");
+          if (savedLogoText) setLogoText(savedLogoText);
+          const savedLogoUrl = localStorage.getItem("cms_navbar_logo_url");
+          if (savedLogoUrl) setLogoUrl(savedLogoUrl);
+          const savedContactBtns = localStorage.getItem("cms_contact_buttons");
+          if (savedContactBtns) setContactButtons(JSON.parse(savedContactBtns));
+        } catch (e) {}
+
         if (!offlineMode) {
           await fetchBackendData(token);
         }
