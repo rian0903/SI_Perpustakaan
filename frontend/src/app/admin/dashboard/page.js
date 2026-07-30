@@ -347,6 +347,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("overview");
   const [user, setUser] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // Membership States
   const [memberships, setMemberships] = useState([]);
   const [membershipStats, setMembershipStats] = useState({ total: 0, pending: 0, approved: 0, readyForPickup: 0, active: 0, rejected: 0 });
