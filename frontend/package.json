@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.5.7",
     "animejs": "^3.2.2",
     "axios": "^1.7.9",
     "gsap": "^3.15.0",

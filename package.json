@@ -16,6 +16,7 @@
     "lint": "npm run lint:frontend && npm run lint:backend",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "db:push": "npx prisma db push --schema=backend/prisma/schema.prisma",
+    "db:seed": "npm run db:seed --workspace=backend",
     "db:migrate": "npx prisma migrate dev --schema=backend/prisma/schema.prisma",
     "db:studio": "npx prisma studio --schema=backend/prisma/schema.prisma",
     "db:generate": "npx prisma generate --schema=backend/prisma/schema.prisma"

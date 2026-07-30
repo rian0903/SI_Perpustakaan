@@ -138,3 +138,24 @@ Perintah-perintah berikut dapat dijalankan dari direktori root:
   # Build NestJS
   npm run build:backend
   ```
+
+---
+
+## 🗄️ Perintah Database Prisma & Kompatibilitas WSL Debian
+
+Aplikasi ini menggunakan **Prisma ORM** dengan database SQLite yang fully-compatible dengan lingkungan **Windows** maupun **WSL Debian (Linux)**.
+
+### Perintah Prisma CLI
+- **Generate Client:** `npm run db:generate`
+- **Push Database Schema:** `npm run db:push`
+- **Seed Data Awal:** `npm run db:seed`
+- **Prisma Studio (GUI):** `npm run db:studio`
+
+### Menjalankan di WSL Debian
+Untuk panduan lengkap setup dan migrasi database di lingkungan **WSL Debian**, silakan baca [WSL_DEBIAN_GUIDE.md](file:///c:/Users/ASUS/Downloads/testing/website/WSL_DEBIAN_GUIDE.md) atau jalankan script otomatis:
+
+```bash
+chmod +x ./scripts/wsl-setup.sh
+./scripts/wsl-setup.sh
+```
+

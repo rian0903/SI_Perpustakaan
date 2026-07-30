@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x", "linux-musl", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -201,3 +202,53 @@ model ContactButton {
 
   @@map("contact_buttons")
 }
+
+// 15. Membership Status Enumeration
+enum MembershipStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  READY_FOR_PICKUP
+  ACTIVE
+}
+
+// 16. Membership Registration Model
+model Membership {
+  id                 String           @id @default(uuid())
+
+  registrationNumber String           @unique
+  membershipNumber   String?          @unique
+
+  fullName           String
+  gender             String
+
+  birthPlace         String?
+  birthDate          DateTime?
+
+  nik                String?          @unique
+  nisn               String?
+
+  address            String?
+  phone              String
+
+  email              String
+
+  institution        String?
+  occupation         String?
+
+  photoUrl           String?
+  identityCardUrl    String?
+
+  status             MembershipStatus @default(PENDING)
+  rejectionReason    String?
+
+  approvedAt         DateTime?
+  pickupReadyAt      DateTime?
+  collectedAt        DateTime?
+
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@map("memberships")
+}
+

@@ -8,7 +8,8 @@ import {
   X, AlertCircle, Eye, EyeOff, User as UserIcon, ShieldAlert, Sliders, Compass,
   Mail, MapPin, Phone, MessageSquare, Clock, Globe, ShieldCheck, Loader2,
   Navigation, Link2, Send, ArrowUp, ArrowDown, ToggleLeft, ToggleRight,
-  ChevronRight, ChevronDown, ExternalLink, Info, Activity, Database, Menu, Upload, Code, ArrowUpRight
+  ChevronRight, ChevronDown, ExternalLink, Info, Activity, Database, Menu, Upload, Code, ArrowUpRight,
+  IdCard, Printer, CheckCircle2
 } from "lucide-react";
 import axios from "axios";
 
@@ -346,8 +347,15 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("overview");
   const [user, setUser] = useState(null);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [offline, setOffline] = useState(false);
+  // Membership States
+  const [memberships, setMemberships] = useState([]);
+  const [membershipStats, setMembershipStats] = useState({ total: 0, pending: 0, approved: 0, readyForPickup: 0, active: 0, rejected: 0 });
+  const [membershipFilter, setMembershipFilter] = useState("ALL");
+  const [membershipSearch, setMembershipSearch] = useState("");
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [rejectingMember, setRejectingMember] = useState(null);
+  const [rejectionReasonInput, setRejectionReasonInput] = useState("");
+  const [membershipActionLoading, setMembershipActionLoading] = useState(false);
 
   // CMS Content States
   const [news, setNews] = useState(INITIAL_NEWS);
@@ -678,6 +686,112 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchMemberships = async (token) => {
+    const authToken = token || (typeof window !== "undefined" ? localStorage.getItem("admin_token") : null);
+    if (!authToken) return;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+    const headers = { Authorization: `Bearer ${authToken}` };
+
+    try {
+      const params = {};
+      if (membershipFilter !== "ALL") params.status = membershipFilter;
+      if (membershipSearch.trim()) params.search = membershipSearch.trim();
+
+      const [resList, resStats] = await Promise.all([
+        axios.get(`${apiUrl}/admin/membership`, { headers, params }),
+        axios.get(`${apiUrl}/admin/membership/stats`, { headers }),
+      ]);
+
+      if (resList.data && resList.data.items) {
+        setMemberships(resList.data.items);
+      }
+      if (resStats.data) {
+        setMembershipStats(resStats.data);
+      }
+    } catch (err) {
+      console.warn("Failed to fetch membership data:", err.message);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "membership" && user) {
+      fetchMemberships();
+    }
+  }, [activeTab, membershipFilter, membershipSearch, user]);
+
+  const handleApproveMembership = async (id) => {
+    if (!confirm("Apakah Anda yakin ingin menyetujui pendaftaran ini? Nomor anggota resmi (LIB-xxxxxx) dan email konfirmasi akan dibuat.")) return;
+    setMembershipActionLoading(true);
+    const token = localStorage.getItem("admin_token");
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+    try {
+      await axios.patch(`${apiUrl}/admin/membership/${id}/approve`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      showNotification("Pendaftaran disetujui! Nomor anggota dan email konfirmasi berhasil dikirim.");
+      if (selectedMember && selectedMember.id === id) setSelectedMember(null);
+      fetchMemberships(token);
+    } catch (err) {
+      showNotification("Gagal menyetujui pendaftaran: " + (err.response?.data?.message || err.message), "error");
+    } finally {
+      setMembershipActionLoading(false);
+    }
+  };
+
+  const handleRejectMembership = async (id, reason) => {
+    if (!reason || !reason.trim()) {
+      alert("Alasan penolakan wajib diisi!");
+      return;
+    }
+    setMembershipActionLoading(true);
+    const token = localStorage.getItem("admin_token");
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+    try {
+      await axios.patch(`${apiUrl}/admin/membership/${id}/reject`, { rejectionReason: reason.trim() }, { headers: { Authorization: `Bearer ${token}` } });
+      showNotification("Pendaftaran ditolak. Email pemberitahuan penolakan telah dikirim.");
+      setRejectingMember(null);
+      setRejectionReasonInput("");
+      if (selectedMember && selectedMember.id === id) setSelectedMember(null);
+      fetchMemberships(token);
+    } catch (err) {
+      showNotification("Gagal menolak pendaftaran: " + (err.response?.data?.message || err.message), "error");
+    } finally {
+      setMembershipActionLoading(false);
+    }
+  };
+
+  const handleReadyForPickupMembership = async (id) => {
+    if (!confirm("Tandai kartu keanggotaan ini telah selesai dicetak & siap diambil di perpustakaan? Email notifikasi akan dikirim.")) return;
+    setMembershipActionLoading(true);
+    const token = localStorage.getItem("admin_token");
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+    try {
+      await axios.patch(`${apiUrl}/admin/membership/${id}/ready-for-pickup`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      showNotification("Status diperbarui menjadi SIAP DIAMBIL (READY_FOR_PICKUP). Notifikasi email telah dikirim.");
+      if (selectedMember && selectedMember.id === id) setSelectedMember(null);
+      fetchMemberships(token);
+    } catch (err) {
+      showNotification("Gagal memperbarui status: " + (err.response?.data?.message || err.message), "error");
+    } finally {
+      setMembershipActionLoading(false);
+    }
+  };
+
+  const handleActivateMembership = async (id) => {
+    if (!confirm("Tandai kartu keanggotaan fisik telah diambil oleh anggota dan resmi AKTIF?")) return;
+    setMembershipActionLoading(true);
+    const token = localStorage.getItem("admin_token");
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+    try {
+      await axios.patch(`${apiUrl}/admin/membership/${id}/activate`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      showNotification("Keanggotaan resmi DIAKTIFKAN!");
+      if (selectedMember && selectedMember.id === id) setSelectedMember(null);
+      fetchMemberships(token);
+    } catch (err) {
+      showNotification("Gagal mengaktifkan keanggotaan: " + (err.response?.data?.message || err.message), "error");
+    } finally {
+      setMembershipActionLoading(false);
+    }
+  };
+
   // Auth Protection and API Data Loading
   useEffect(() => {
     const initAuth = async () => {
@@ -917,6 +1031,7 @@ export default function AdminDashboard() {
   // Tab page title map
   const TAB_TITLES = {
     overview: "Ringkasan Dashboard",
+    membership: "Manajemen Keanggotaan Perpustakaan",
     hero: "Kelola Teks & Banner Hero Halaman Utama",
     about: "Kelola Section Tentang Kami",
     stats: "Kelola Section Statistik",
@@ -933,6 +1048,7 @@ export default function AdminDashboard() {
 
   const SIDEBAR_MENU = [
     { id: "overview", label: "Ringkasan", icon: <LayoutDashboard size={16} />, role: "ADMIN" },
+    { id: "membership", label: "Keanggotaan", icon: <IdCard size={16} />, role: "ADMIN" },
     { id: "hero", label: "Kelola Hero", icon: <Compass size={16} />, role: "ADMIN" },
     { id: "about", label: "Kelola Tentang", icon: <Info size={16} />, role: "ADMIN" },
     { id: "stats", label: "Kelola Statistik", icon: <Activity size={16} />, role: "ADMIN" },
@@ -1162,6 +1278,182 @@ export default function AdminDashboard() {
                       )}
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ====== KELOLA KEANGGOTAAN TAB ====== */}
+          {activeTab === "membership" && (
+            <div className="space-y-6">
+              {/* Membership Stats Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                {[
+                  { label: "Total Pendaftar", val: membershipStats.total, color: "text-slate-800", bg: "bg-slate-100", filter: "ALL" },
+                  { label: "Menunggu Verifikasi", val: membershipStats.pending, color: "text-amber-600", bg: "bg-amber-50", filter: "PENDING" },
+                  { label: "Disetujui", val: membershipStats.approved, color: "text-sky-600", bg: "bg-sky-50", filter: "APPROVED" },
+                  { label: "Siap Diambil", val: membershipStats.readyForPickup, color: "text-indigo-600", bg: "bg-indigo-50", filter: "READY_FOR_PICKUP" },
+                  { label: "Aktif", val: membershipStats.active, color: "text-emerald-600", bg: "bg-emerald-50", filter: "ACTIVE" },
+                  { label: "Ditolak", val: membershipStats.rejected, color: "text-rose-600", bg: "bg-rose-50", filter: "REJECTED" },
+                ].map((box, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setMembershipFilter(box.filter)}
+                    className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
+                      membershipFilter === box.filter
+                        ? "bg-white border-primary-500 ring-2 ring-primary-500/20 shadow-sm"
+                        : "bg-white border-border-200 hover:border-slate-300"
+                    }`}
+                  >
+                    <div className="text-2xl font-bold font-mono text-heading mb-1">{box.val}</div>
+                    <div className="text-xs text-muted font-navigation">{box.label}</div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Membership Filter Submenu & Search */}
+              <div className="bg-white p-4 rounded-xl border border-border-200 shadow-soft flex flex-col md:flex-row items-center justify-between gap-4">
+                {/* Status Submenu Tabs */}
+                <div className="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
+                  {[
+                    { key: "ALL", label: "Daftar Pendaftaran" },
+                    { key: "PENDING", label: "Menunggu Verifikasi" },
+                    { key: "APPROVED", label: "Disetujui" },
+                    { key: "READY_FOR_PICKUP", label: "Siap Diambil" },
+                    { key: "ACTIVE", label: "Aktif" },
+                    { key: "REJECTED", label: "Ditolak" },
+                  ].map((sub) => (
+                    <button
+                      key={sub.key}
+                      onClick={() => setMembershipFilter(sub.key)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold font-navigation transition-all cursor-pointer ${
+                        membershipFilter === sub.key
+                          ? "bg-primary-500 text-white shadow-soft"
+                          : "bg-surface-100 text-muted hover:text-heading hover:bg-surface-200"
+                      }`}
+                    >
+                      {sub.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Search Box */}
+                <div className="relative w-full md:w-72">
+                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                  <input
+                    type="text"
+                    placeholder="Cari Nama, No. REG/LIB, NIK..."
+                    value={membershipSearch}
+                    onChange={(e) => setMembershipSearch(e.target.value)}
+                    className="lib-input text-xs pl-9 !py-2"
+                  />
+                </div>
+              </div>
+
+              {/* Memberships Data Table */}
+              <div className="bg-white rounded-xl border border-border-200 shadow-soft overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="lib-table">
+                    <thead>
+                      <tr>
+                        <th>No. Registrasi / Anggota</th>
+                        <th>Nama Pendaftar</th>
+                        <th>Kontak & Email</th>
+                        <th>Tanggal Pengajuan</th>
+                        <th>Status</th>
+                        <th className="text-right">Aksi & Keputusan</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {memberships.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="text-center py-8 text-muted font-navigation">
+                            Tidak ada data pendaftaran keanggotaan.
+                          </td>
+                        </tr>
+                      ) : (
+                        memberships.map((item) => (
+                          <tr key={item.id}>
+                            <td>
+                              <span className="font-mono font-bold text-xs text-heading block">{item.registrationNumber}</span>
+                              {item.membershipNumber && (
+                                <span className="font-mono text-[11px] text-primary-600 block font-semibold">{item.membershipNumber}</span>
+                              )}
+                            </td>
+                            <td>
+                              <span className="font-bold text-heading text-sm block">{item.fullName}</span>
+                              <span className="text-[11px] text-muted block">NIK: {item.nik || "-"}</span>
+                            </td>
+                            <td>
+                              <span className="text-xs text-heading block">{item.email}</span>
+                              <span className="text-[11px] text-muted block font-mono">{item.phone}</span>
+                            </td>
+                            <td className="text-xs text-muted">
+                              {new Date(item.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                            </td>
+                            <td>
+                              {item.status === "PENDING" && <span className="badge badge-warning">Menunggu Verifikasi</span>}
+                              {item.status === "APPROVED" && <span className="badge badge-primary">Disetujui</span>}
+                              {item.status === "READY_FOR_PICKUP" && <span className="badge bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold text-[10px]">Siap Diambil</span>}
+                              {item.status === "ACTIVE" && <span className="badge badge-success">Aktif</span>}
+                              {item.status === "REJECTED" && <span className="badge badge-danger">Ditolak</span>}
+                            </td>
+                            <td className="text-right space-x-1.5">
+                              <button
+                                onClick={() => setSelectedMember(item)}
+                                className="px-2.5 py-1 bg-surface-200 hover:bg-surface-300 text-heading rounded-md text-xs font-bold cursor-pointer transition-colors"
+                              >
+                                Detail
+                              </button>
+
+                              {item.status === "PENDING" && (
+                                <>
+                                  <button
+                                    onClick={() => handleApproveMembership(item.id)}
+                                    disabled={membershipActionLoading}
+                                    className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-bold cursor-pointer transition-colors"
+                                  >
+                                    Setujui
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setRejectingMember(item);
+                                      setRejectionReasonInput("");
+                                    }}
+                                    disabled={membershipActionLoading}
+                                    className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-xs font-bold cursor-pointer transition-colors"
+                                  >
+                                    Tolak
+                                  </button>
+                                </>
+                              )}
+
+                              {item.status === "APPROVED" && (
+                                <button
+                                  onClick={() => handleReadyForPickupMembership(item.id)}
+                                  disabled={membershipActionLoading}
+                                  className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-xs font-bold cursor-pointer transition-colors"
+                                >
+                                  Tandai Siap Diambil
+                                </button>
+                              )}
+
+                              {item.status === "READY_FOR_PICKUP" && (
+                                <button
+                                  onClick={() => handleActivateMembership(item.id)}
+                                  disabled={membershipActionLoading}
+                                  className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-bold cursor-pointer transition-colors"
+                                >
+                                  Aktivasi Kartu
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -2688,6 +2980,161 @@ export default function AdminDashboard() {
               <div className="lib-modal-footer pt-3">
                 <button type="button" onClick={() => setShowFooterLinkModal(false)} className="btn-ghost border border-border-200">Batal</button>
                 <button type="submit" className="btn-primary">Simpan Link Footer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== MEMBERSHIP DETAIL MODAL ==================== */}
+      {selectedMember && (
+        <div className="lib-modal-overlay">
+          <div className="lib-modal !max-w-2xl">
+            <div className="lib-modal-header">
+              <div>
+                <h4 className="font-bold text-heading font-navigation text-base">Detail Pendaftaran Keanggotaan</h4>
+                <p className="text-xs text-muted font-mono">{selectedMember.registrationNumber}</p>
+              </div>
+              <button onClick={() => setSelectedMember(null)} className="text-muted hover:text-body cursor-pointer transition-colors"><X size={18} /></button>
+            </div>
+
+            <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-4 bg-surface-100 p-4 rounded-xl text-xs">
+                <div>
+                  <span className="text-muted block font-medium">Nama Lengkap:</span>
+                  <span className="font-bold text-heading text-sm">{selectedMember.fullName}</span>
+                </div>
+                <div>
+                  <span className="text-muted block font-medium">Status Pendaftaran:</span>
+                  <span className="font-bold text-primary-600">{selectedMember.status}</span>
+                </div>
+                <div>
+                  <span className="text-muted block font-medium">Nomor Registrasi:</span>
+                  <span className="font-mono font-bold text-heading">{selectedMember.registrationNumber}</span>
+                </div>
+                <div>
+                  <span className="text-muted block font-medium">Nomor Anggota:</span>
+                  <span className="font-mono font-bold text-sky-600">{selectedMember.membershipNumber || "Belum Diterbitkan"}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                <div><span className="text-muted block">Jenis Kelamin:</span> <strong>{selectedMember.gender}</strong></div>
+                <div><span className="text-muted block">Tempat / Tgl Lahir:</span> <strong>{selectedMember.birthPlace || "-"}, {selectedMember.birthDate ? new Date(selectedMember.birthDate).toLocaleDateString("id-ID") : "-"}</strong></div>
+                <div><span className="text-muted block">NIK:</span> <strong>{selectedMember.nik || "-"}</strong></div>
+                <div><span className="text-muted block">NISN / NIM:</span> <strong>{selectedMember.nisn || "-"}</strong></div>
+                <div><span className="text-muted block">Email:</span> <strong>{selectedMember.email}</strong></div>
+                <div><span className="text-muted block">Telepon / HP:</span> <strong>{selectedMember.phone}</strong></div>
+                <div><span className="text-muted block">Instansi:</span> <strong>{selectedMember.institution || "-"}</strong></div>
+                <div><span className="text-muted block">Pekerjaan:</span> <strong>{selectedMember.occupation || "-"}</strong></div>
+                <div className="col-span-2"><span className="text-muted block">Alamat Lengkap:</span> <strong>{selectedMember.address || "-"}</strong></div>
+              </div>
+
+              {/* Photos / Documents preview */}
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border-200">
+                <div>
+                  <span className="lib-label mb-2 block">Pas Foto Diri</span>
+                  {selectedMember.photoUrl ? (
+                    <img src={getImageUrl(selectedMember.photoUrl)} alt="Foto Diri" className="w-full h-40 object-cover rounded-xl border border-border-200" />
+                  ) : (
+                    <div className="h-40 bg-surface-200 rounded-xl flex items-center justify-center text-xs text-muted">Tidak ada foto</div>
+                  )}
+                </div>
+                <div>
+                  <span className="lib-label mb-2 block">KTP / Kartu Pelajar</span>
+                  {selectedMember.identityCardUrl ? (
+                    <a href={getImageUrl(selectedMember.identityCardUrl)} target="_blank" rel="noreferrer" className="block relative group">
+                      <img src={getImageUrl(selectedMember.identityCardUrl)} alt="KTP" className="w-full h-40 object-cover rounded-xl border border-border-200" />
+                      <span className="absolute inset-0 bg-black/40 text-white text-xs font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">Buka Lampiran</span>
+                    </a>
+                  ) : (
+                    <div className="h-40 bg-surface-200 rounded-xl flex items-center justify-center text-xs text-muted">Tidak ada identitas</div>
+                  )}
+                </div>
+              </div>
+
+              {selectedMember.rejectionReason && (
+                <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700">
+                  <strong>Alasan Penolakan:</strong> {selectedMember.rejectionReason}
+                </div>
+              )}
+            </div>
+
+            <div className="lib-modal-footer">
+              <button type="button" onClick={() => setSelectedMember(null)} className="btn-ghost border border-border-200">Tutup</button>
+              {selectedMember.status === "PENDING" && (
+                <>
+                  <button
+                    onClick={() => handleApproveMembership(selectedMember.id)}
+                    disabled={membershipActionLoading}
+                    className="btn-primary !bg-emerald-600 hover:!bg-emerald-700"
+                  >
+                    Setujui Pendaftaran
+                  </button>
+                  <button
+                    onClick={() => {
+                      setRejectingMember(selectedMember);
+                      setRejectionReasonInput("");
+                    }}
+                    disabled={membershipActionLoading}
+                    className="btn-primary !bg-rose-600 hover:!bg-rose-700"
+                  >
+                    Tolak Pendaftaran
+                  </button>
+                </>
+              )}
+              {selectedMember.status === "APPROVED" && (
+                <button
+                  onClick={() => handleReadyForPickupMembership(selectedMember.id)}
+                  disabled={membershipActionLoading}
+                  className="btn-primary !bg-indigo-600 hover:!bg-indigo-700"
+                >
+                  Tandai Siap Diambil
+                </button>
+              )}
+              {selectedMember.status === "READY_FOR_PICKUP" && (
+                <button
+                  onClick={() => handleActivateMembership(selectedMember.id)}
+                  disabled={membershipActionLoading}
+                  className="btn-primary !bg-emerald-600 hover:!bg-emerald-700"
+                >
+                  Aktivasi Kartu Fisik
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== REJECTION REASON MODAL ==================== */}
+      {rejectingMember && (
+        <div className="lib-modal-overlay">
+          <div className="lib-modal">
+            <div className="lib-modal-header">
+              <h4 className="font-bold text-heading font-navigation">Penolakan Pendaftaran Keanggotaan</h4>
+              <button onClick={() => setRejectingMember(null)} className="text-muted hover:text-body cursor-pointer transition-colors"><X size={18} /></button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleRejectMembership(rejectingMember.id, rejectionReasonInput);
+              }}
+              className="space-y-4 p-6"
+            >
+              <p className="text-xs text-muted">
+                Masukkan alasan penolakan pendaftaran untuk <strong>{rejectingMember.fullName}</strong>. Alasan ini akan dikirimkan melalui email notifikasi kepada pendaftar.
+              </p>
+              <FormTextarea
+                label="Alasan Penolakan (Wajib)"
+                rows={4}
+                required
+                placeholder="Contoh: Foto KTP tidak terbaca dengan jelas. Silakan lakukan pendaftaran ulang dengan mengunggah foto KTP yang lebih terang."
+                value={rejectionReasonInput}
+                onChange={(e) => setRejectionReasonInput(e.target.value)}
+              />
+              <div className="lib-modal-footer pt-3">
+                <button type="button" onClick={() => setRejectingMember(null)} className="btn-ghost border border-border-200">Batal</button>
+                <button type="submit" disabled={membershipActionLoading} className="btn-primary !bg-rose-600 hover:!bg-rose-700">Kirim Penolakan</button>
               </div>
             </form>
           </div>

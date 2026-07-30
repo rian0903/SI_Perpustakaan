@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Kartu Keanggotaan Siap Diambil</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #1e293b; margin: 0; padding: 20px; }
+    .container { max-width: 600px; background: #ffffff; margin: 0 auto; padding: 32px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .header { text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 24px; }
+    .header h1 { color: #0f172a; margin: 0; font-size: 24px; }
+    .badge { display: inline-block; background-color: #e0e7ff; color: #4338ca; padding: 8px 16px; border-radius: 9999px; font-weight: 600; font-size: 14px; margin-top: 12px; }
+    .card { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 20px 0; }
+    .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #cbd5e1; }
+    .info-row:last-child { border-bottom: none; }
+    .notice { background: #fffbebfb; border: 1px solid #fef3c7; border-left: 4px solid #f59e0b; padding: 14px; border-radius: 6px; font-size: 13px; color: #92400e; margin: 20px 0; }
+    .footer { font-size: 12px; color: #64748b; text-align: center; margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Perpustakaan Daerah Kota Buku</h1>
+      <div class="badge">Kartu Siap Diambil</div>
+    </div>
+    <p>Halo <strong>{{fullName}}</strong>,</p>
+    <p>Kabar gembira! Kartu anggota fisik perpustakaan Anda telah selesai dicetak dan **SIAP DIAMBIL** di lokasi perpustakaan.</p>
+
+    <div class="card">
+      <div class="info-row">
+        <span>Nomor Anggota:</span>
+        <strong style="color: #0369a1; font-size: 16px;">{{membershipNumber}}</strong>
+      </div>
+      <div class="info-row">
+        <span>Lokasi Pengambilan:</span>
+        <strong>Perpustakaan Daerah Kota Buku</strong>
+      </div>
+      <div class="info-row">
+        <span>Alamat:</span>
+        <span>Jl. Merdeka Literasi No. 45, Jakarta</span>
+      </div>
+      <div class="info-row">
+        <span>Jam Layanan:</span>
+        <span>Senin - Sabtu: 08.00 - 17.00 WIB</span>
+      </div>
+    </div>
+
+    <div class="notice">
+      📌 <strong>Persyaratan Pengambilan Kartu:</strong>
+      <ol style="margin: 8px 0 0 0; padding-left: 20px;">
+        <li>Membawa Kartu Identitas Asli (KTP / Kartu Pelajar / SIM).</li>
+        <li>Menunjukkan Nomor Registrasi (<strong>{{registrationNumber}}</strong>) atau Nomor Anggota (<strong>{{membershipNumber}}</strong>) kepada petugas meja sirkulasi.</li>
+      </ol>
+      <p style="margin-top: 8px; font-size: 12px; color: #b45309;">
+        <em>Perhatian: Kartu anggota TIDAK dapat diunduh atau dikirim via pos, dan WAJIB diambil langsung di lokasi perpustakaan.</em>
+      </p>
+    </div>
+
+    <div class="footer">
+      <p>&copy; 2026 Perpustakaan Daerah Kota Buku. Hak Cipta Dilindungi.</p>
+    </div>
+  </div>
+</body>
+</html>

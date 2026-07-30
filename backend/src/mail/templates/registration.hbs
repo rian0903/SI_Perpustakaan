@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Pendaftaran Keanggotaan Berhasil Diterima</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #1e293b; margin: 0; padding: 20px; }
+    .container { max-width: 600px; background: #ffffff; margin: 0 auto; padding: 32px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .header { text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 24px; }
+    .header h1 { color: #0f172a; margin: 0; font-size: 24px; }
+    .badge { display: inline-block; background-color: #e0f2fe; color: #0369a1; padding: 8px 16px; border-radius: 9999px; font-weight: 600; font-size: 14px; margin-top: 12px; }
+    .card { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 20px 0; }
+    .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #cbd5e1; }
+    .info-row:last-child { border-bottom: none; }
+    .footer { font-size: 12px; color: #64748b; text-align: center; margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Perpustakaan Daerah Kota Buku</h1>
+      <div class="badge">Pendaftaran Berhasil Diterima</div>
+    </div>
+    <p>Halo <strong>{{fullName}}</strong>,</p>
+    <p>Terima kasih telah melakukan pendaftaran keanggotaan online di Perpustakaan Daerah Kota Buku. Formulir dan berkas pendaftaran Anda telah berhasil kami terima dalam sistem.</p>
+
+    <div class="card">
+      <div class="info-row">
+        <span>Nomor Registrasi:</span>
+        <strong>{{registrationNumber}}</strong>
+      </div>
+      <div class="info-row">
+        <span>Status Pendaftaran:</span>
+        <strong style="color: #d97706;">MENUNGGU VERIFIKASI (PENDING)</strong>
+      </div>
+      <div class="info-row">
+        <span>Tanggal Pengajuan:</span>
+        <span>{{submittedAt}}</span>
+      </div>
+    </div>
+
+    <p>Petugas perpustakaan kami sedang melakukan verifikasi data dan dokumen identitas yang Anda unggah. Anda dapat memantau perkembangan status pendaftaran Anda kapan saja melalui website resmi kami menggunakan nomor registrasi di atas.</p>
+
+    <p style="background: #f1f5f9; padding: 12px; border-left: 4px solid #0284c7; font-size: 13px;">
+      💡 <em>Catatan: Kartu anggota fisik dicetak oleh petugas dan harus diambil langsung di lokasi perpustakaan setelah disetujui. Kartu tidak dapat diunduh secara mandiri.</em>
+    </p>
+
+    <div class="footer">
+      <p>&copy; 2026 Perpustakaan Daerah Kota Buku. Hak Cipta Dilindungi.</p>
+    </div>
+  </div>
+</body>
+</html>
