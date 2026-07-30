@@ -636,7 +636,6 @@ export default function AdminDashboard() {
   const [showFooterLinkModal, setShowFooterLinkModal] = useState(false);
   const [editingFooterLink, setEditingFooterLink] = useState(null);
   const [footerLinkForm, setFooterLinkForm] = useState({ label: "", url: "#" });
-
   const [notif, setNotif] = useState(null);
 
   const showNotification = (msg, type = "success") => {
@@ -649,18 +648,20 @@ export default function AdminDashboard() {
     const headers = { Authorization: `Bearer ${token}` };
 
     try {
+      const safeGet = (url, opts = {}) => axios.get(url, opts).catch(() => ({ data: null }));
+
       const [resNews, resEvents, resFaq, resBanners, resGallery, resContacts, resUsers, resSettings, resSocials, resNavMenu, resContactBtns] = await Promise.all([
-        axios.get(`${apiUrl}/cms/news`),
-        axios.get(`${apiUrl}/cms/events`),
-        axios.get(`${apiUrl}/cms/faq`),
-        axios.get(`${apiUrl}/cms/banners`),
-        axios.get(`${apiUrl}/cms/gallery`),
-        axios.get(`${apiUrl}/cms/contacts`, { headers }),
-        axios.get(`${apiUrl}/cms/users`, { headers }).catch(() => ({ data: INITIAL_USERS })),
-        axios.get(`${apiUrl}/cms/settings`),
-        axios.get(`${apiUrl}/cms/social-media`),
-        axios.get(`${apiUrl}/cms/nav-menu`),
-        axios.get(`${apiUrl}/cms/contact-buttons`)
+        safeGet(`${apiUrl}/cms/news`),
+        safeGet(`${apiUrl}/cms/events`),
+        safeGet(`${apiUrl}/cms/faq`),
+        safeGet(`${apiUrl}/cms/banners`),
+        safeGet(`${apiUrl}/cms/gallery`),
+        safeGet(`${apiUrl}/cms/contacts`, { headers }),
+        safeGet(`${apiUrl}/cms/users`, { headers }),
+        safeGet(`${apiUrl}/cms/settings`),
+        safeGet(`${apiUrl}/cms/social-media`),
+        safeGet(`${apiUrl}/cms/nav-menu`),
+        safeGet(`${apiUrl}/cms/contact-buttons`)
       ]);
 
       if (resNews.data) setNews(resNews.data);
@@ -669,7 +670,7 @@ export default function AdminDashboard() {
       if (resBanners.data) saveBannersState(resBanners.data);
       if (resGallery.data) setGallery(resGallery.data);
       if (resContacts.data) setContacts(resContacts.data);
-      if (resUsers.data) setUsers(resUsers.data);
+      if (resUsers.data && resUsers.data.length > 0) setUsers(resUsers.data);
       if (resSettings.data && resSettings.data.length > 0) {
         saveSettingsState(resSettings.data);
         const lt = resSettings.data.find(s => s.key === "navbar_logo_text");
@@ -698,8 +699,8 @@ export default function AdminDashboard() {
       if (membershipSearch.trim()) params.search = membershipSearch.trim();
 
       const [resList, resStats] = await Promise.all([
-        axios.get(`${apiUrl}/admin/membership`, { headers, params }),
-        axios.get(`${apiUrl}/admin/membership/stats`, { headers }),
+        axios.get(`${apiUrl}/admin/membership`, { headers, params }).catch(() => ({ data: null })),
+        axios.get(`${apiUrl}/admin/membership/stats`, { headers }).catch(() => ({ data: null })),
       ]);
 
       if (resList.data && resList.data.items) {

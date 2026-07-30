@@ -32,19 +32,34 @@ export class MailService {
   }
 
   private compileTemplate(templateName: string, data: Record<string, any>): string {
-    const templatePath = path.join(__dirname, 'templates', `${templateName}.hbs`);
-    let source: string;
-    if (fs.existsSync(templatePath)) {
-      source = fs.readFileSync(templatePath, 'utf8');
-    } else {
-      // Fallback relative to src/mail/templates if dist directory path varies
-      const altPath = path.join(process.cwd(), 'src', 'mail', 'templates', `${templateName}.hbs`);
-      if (fs.existsSync(altPath)) {
-        source = fs.readFileSync(altPath, 'utf8');
-      } else {
-        source = `<p>Notifikasi Perpustakaan: {{fullName}} - {{registrationNumber}}</p>`;
+    let source = '';
+
+    const possiblePaths = [
+      path.join(__dirname, 'templates', `${templateName}.hbs`),
+      path.join(__dirname, '..', 'mail', 'templates', `${templateName}.hbs`),
+      path.join(process.cwd(), 'backend', 'src', 'mail', 'templates', `${templateName}.hbs`),
+      path.join(process.cwd(), 'src', 'mail', 'templates', `${templateName}.hbs`),
+    ];
+
+    for (const p of possiblePaths) {
+      if (fs.existsSync(p)) {
+        source = fs.readFileSync(p, 'utf8');
+        break;
       }
     }
+
+    if (!source) {
+      source = `
+        <div style="font-family: sans-serif; padding: 20px;">
+          <h2>Perpustakaan Daerah Kota Buku</h2>
+          <p>Halo <strong>{{fullName}}</strong>,</p>
+          <p>Nomor Registrasi: <strong>{{registrationNumber}}</strong></p>
+          {{#if membershipNumber}}<p>Nomor Anggota: <strong>{{membershipNumber}}</strong></p>{{/if}}
+          {{#if rejectionReason}}<p>Alasan Penolakan: {{rejectionReason}}</p>{{/if}}
+        </div>
+      `;
+    }
+
     const template = handlebars.compile(source);
     return template(data);
   }
