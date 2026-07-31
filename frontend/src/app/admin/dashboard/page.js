@@ -21,8 +21,8 @@ const INITIAL_NEWS = [
 ];
 
 const INITIAL_EVENTS = [
-  { id: "event-1", title: "Bedah Buku: 'Dunia di Dalam Lembaran Kertas'", date: "2026-07-25", time: "10:00 - 12:00 WIB", location: "Ruang Aula Utama, Lantai 2", speaker: "Rian Pratama", capacity: 50, registeredCount: 38, thumbnail: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=600&auto=format&fit=crop" },
-  { id: "event-2", title: "Workshop Menulis Kreatif Untuk Remaja: Menemukan Suara Tulisanmu", date: "2026-08-02", time: "13:00 - 16:00 WIB", location: "Ruang Diskusi Kreatif 2", speaker: "Sinta Aulia", capacity: 30, registeredCount: 29, thumbnail: "https://images.unsplash.com/photo-1455390582262-044cdead277a?q=80&w=600&auto=format&fit=crop" }
+  { id: "event-1", title: "Bedah Buku: 'Dunia di Dalam Lembaran Kertas'", date: "2026-07-25", time: "10:00 - 12:00 WIB", location: "Ruang Aula Utama, Lantai 2", speaker: "Rian Pratama", capacity: 50, registeredCount: 38, thumbnail: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=600&auto=format&fit=crop", status: "UPCOMING", isAnnual: true },
+  { id: "event-2", title: "Workshop Menulis Kreatif Untuk Remaja: Menemukan Suara Tulisanmu", date: "2026-08-02", time: "13:00 - 16:00 WIB", location: "Ruang Diskusi Kreatif 2", speaker: "Sinta Aulia", capacity: 30, registeredCount: 29, thumbnail: "https://images.unsplash.com/photo-1455390582262-044cdead277a?q=80&w=600&auto=format&fit=crop", status: "ONGOING", isAnnual: false }
 ];
 
 const INITIAL_FAQS = [
@@ -519,6 +519,7 @@ export default function AdminDashboard() {
   // Dynamic Form Fields state
   const [newsForm, setNewsForm] = useState({ title: "", category: "Berita", content: "", published: true, thumbnail: "" });
   const [eventForm, setEventForm] = useState({ title: "", description: "", date: "", time: "", location: "", speaker: "", capacity: 50, thumbnail: "", status: "UPCOMING", isAnnual: false });
+  const [adminEventFilter, setAdminEventFilter] = useState("ALL");
   const [faqForm, setFaqForm] = useState({ question: "", answer: "", order: 1 });
   const [bannerForm, setBannerForm] = useState({ title: "", subtitle: "", imageUrl: "", linkUrl: "", order: 1, active: true });
   const [galleryForm, setGalleryForm] = useState({ title: "", description: "", thumbnail: "" });
@@ -949,6 +950,27 @@ export default function AdminDashboard() {
       fetchBackendData(token);
     } catch (err) {
       showNotification("Gagal memperbarui status aduan: " + err.message, "error");
+    }
+  };
+
+  const handleQuickEventStatusChange = async (eventItem, newStatus) => {
+    const updatedEvents = events.map(ev => ev.id === eventItem.id ? { ...ev, status: newStatus } : ev);
+    setEvents(updatedEvents);
+
+    if (offline) {
+      showNotification("Status event berhasil diperbarui! (Offline)");
+      return;
+    }
+
+    const token = localStorage.getItem("admin_token");
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+    const headers = { Authorization: `Bearer ${token}` };
+
+    try {
+      await axios.put(`${apiUrl}/cms/events/${eventItem.id}`, { status: newStatus }, { headers });
+      showNotification(`Status event "${eventItem.title}" berhasil diubah!`);
+    } catch (err) {
+      showNotification("Gagal memperbarui status event: " + (err.response?.data?.message || err.message), "error");
     }
   };
 
@@ -1882,53 +1904,106 @@ export default function AdminDashboard() {
 
           {/* ====== EVENTS TAB ====== */}
           {activeTab === "events" && (
-            <div className="bg-white rounded-xl border border-border-200 shadow-soft overflow-hidden">
-              <div className="px-6 py-4 border-b border-border-200 flex items-center justify-between">
-                <h3 className="font-bold text-heading font-navigation">Daftar Agenda Kegiatan</h3>
-                <button onClick={handleOpenAddModal} className="btn-primary !py-2 !px-4">
+            <div className="bg-white rounded-xl border border-border-200 shadow-soft overflow-hidden space-y-0">
+              <div className="px-6 py-4 border-b border-border-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                  <h3 className="font-bold text-heading font-navigation">Daftar Agenda Kegiatan</h3>
+                  <p className="text-xs text-muted mt-0.5">Kelola jadwal event, ubah status pelaksanaan langsung, atau tandai event tahunan.</p>
+                </div>
+                <button onClick={handleOpenAddModal} className="btn-primary !py-2 !px-4 shrink-0">
                   <Plus size={14} />
                   <span>Tambah Event</span>
                 </button>
               </div>
+
+              {/* Admin Event Filter Tabs */}
+              <div className="px-6 py-3 border-b border-border-200 bg-surface-50 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-navigation font-bold text-muted mr-1">Filter:</span>
+                {[
+                  { id: "ALL", label: `Semua (${events.length})` },
+                  { id: "UPCOMING", label: "Akan Datang" },
+                  { id: "ONGOING", label: "Berlangsung" },
+                  { id: "COMPLETED", label: "Sudah Dilakukan" },
+                  { id: "CANCELLED", label: "Dibatalkan" },
+                  { id: "ANNUAL", label: "⭐ Event Tahunan" }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setAdminEventFilter(tab.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-navigation font-bold transition-all cursor-pointer ${
+                      adminEventFilter === tab.id
+                        ? "bg-primary-500 text-white shadow-sm"
+                        : "bg-white text-muted hover:text-heading border border-border-200"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
               <div className="overflow-x-auto">
                 <table className="lib-table">
                   <thead><tr>
                     <th>Nama Event</th>
                     <th>Tanggal & Waktu</th>
-                    <th>Status Pelaksanaan</th>
+                    <th>Status Pelaksanaan (Klik untuk Mengubah)</th>
                     <th>Pembicara</th>
                     <th>Kapasitas</th>
                     <th className="text-right">Aksi</th>
                   </tr></thead>
                   <tbody>
-                    {events.map((item) => (
-                      <tr key={item.id}>
-                        <td className="font-semibold text-heading max-w-[220px]">
-                          <div className="flex flex-col">
-                            <span className="truncate">{item.title}</span>
-                            {item.isAnnual && (
-                              <span className="badge badge-gold !text-[9px] w-max mt-0.5">⭐ Agenda Tahunan</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="text-muted text-xs">
-                          <div>{item.date ? new Date(item.date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "-"}</div>
-                          <div className="text-[11px] opacity-75">{item.time || "-"}</div>
-                        </td>
-                        <td>
-                          {(!item.status || item.status === "UPCOMING") && <span className="badge badge-primary">Akan Datang</span>}
-                          {item.status === "ONGOING" && <span className="badge bg-amber-50 text-amber-700 border border-amber-200">Berlangsung</span>}
-                          {item.status === "COMPLETED" && <span className="badge badge-success">Sudah Dilakukan</span>}
-                          {item.status === "CANCELLED" && <span className="badge badge-danger">Dibatalkan</span>}
-                        </td>
-                        <td className="font-semibold text-primary-600 text-xs">{item.speaker || "-"}</td>
-                        <td className="text-muted text-xs">{item.registeredCount || 0} / {item.capacity || "-"}</td>
-                        <td className="text-right space-x-1.5">
-                          <ActionEdit onClick={() => handleOpenEditModal(item)} />
-                          <ActionDelete onClick={() => handleDelete(item.id)} />
-                        </td>
-                      </tr>
-                    ))}
+                    {events
+                      .filter((item) => {
+                        if (adminEventFilter === "UPCOMING") return !item.status || item.status === "UPCOMING";
+                        if (adminEventFilter === "ONGOING") return item.status === "ONGOING";
+                        if (adminEventFilter === "COMPLETED") return item.status === "COMPLETED";
+                        if (adminEventFilter === "CANCELLED") return item.status === "CANCELLED";
+                        if (adminEventFilter === "ANNUAL") return !!item.isAnnual;
+                        return true;
+                      })
+                      .map((item) => (
+                        <tr key={item.id}>
+                          <td className="font-semibold text-heading max-w-[220px]">
+                            <div className="flex flex-col">
+                              <span className="truncate font-bold">{item.title}</span>
+                              {item.isAnnual && (
+                                <span className="badge badge-gold !text-[9px] w-max mt-0.5">⭐ Agenda Tahunan</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="text-muted text-xs">
+                            <div className="font-medium text-heading">{item.date ? new Date(item.date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "-"}</div>
+                            <div className="text-[11px] text-muted">{item.time || "-"}</div>
+                          </td>
+                          <td>
+                            <select
+                              value={item.status || "UPCOMING"}
+                              onChange={(e) => handleQuickEventStatusChange(item, e.target.value)}
+                              className={`text-xs font-bold font-navigation px-2.5 py-1.5 rounded-lg border cursor-pointer outline-none transition-all ${
+                                (!item.status || item.status === "UPCOMING")
+                                  ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+                                  : item.status === "ONGOING"
+                                  ? "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+                                  : item.status === "COMPLETED"
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                                  : "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100"
+                              }`}
+                            >
+                              <option value="UPCOMING">🔵 Akan Datang</option>
+                              <option value="ONGOING">🟡 Sedang Berlangsung</option>
+                              <option value="COMPLETED">🟢 Sudah Dilakukan</option>
+                              <option value="CANCELLED">🔴 Dibatalkan</option>
+                            </select>
+                          </td>
+                          <td className="font-semibold text-primary-600 text-xs">{item.speaker || "-"}</td>
+                          <td className="text-muted text-xs font-mono">{item.registeredCount || 0} / {item.capacity || "-"}</td>
+                          <td className="text-right space-x-1.5">
+                            <ActionEdit onClick={() => handleOpenEditModal(item)} />
+                            <ActionDelete onClick={() => handleDelete(item.id)} />
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>

@@ -68,7 +68,9 @@ const MOCK_EVENTS = [
     speaker: "Rian Pratama (Penulis & Kritikus Sastra)",
     capacity: 50,
     registered: 38,
-    thumbnail: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=600&auto=format&fit=crop"
+    thumbnail: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=600&auto=format&fit=crop",
+    status: "UPCOMING",
+    isAnnual: true
   },
   {
     id: "event-2",
@@ -79,7 +81,9 @@ const MOCK_EVENTS = [
     speaker: "Sinta Aulia (Novelis & Penulis Skenario)",
     capacity: 30,
     registered: 29,
-    thumbnail: "https://images.unsplash.com/photo-1455390582262-044cdead277a?q=80&w=600&auto=format&fit=crop"
+    thumbnail: "https://images.unsplash.com/photo-1455390582262-044cdead277a?q=80&w=600&auto=format&fit=crop",
+    status: "ONGOING",
+    isAnnual: false
   },
   {
     id: "event-3",
@@ -90,7 +94,9 @@ const MOCK_EVENTS = [
     speaker: "Dr. Ahmad Subagyo & Tim Ahli Tata Kota",
     capacity: 100,
     registered: 45,
-    thumbnail: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?q=80&w=600&auto=format&fit=crop"
+    thumbnail: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?q=80&w=600&auto=format&fit=crop",
+    status: "COMPLETED",
+    isAnnual: true
   }
 ];
 
