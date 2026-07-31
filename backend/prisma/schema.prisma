@@ -62,20 +62,29 @@ model News {
   @@map("news")
 }
 
+enum EventStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
 // 4. Events / Agenda Model
 model Event {
-  id              String   @id @default(uuid())
+  id              String      @id @default(uuid())
   title           String
-  slug            String   @unique
+  slug            String      @unique
   description     String
   date            DateTime
   location        String
   speaker         String?
   thumbnail       String?
   capacity        Int?
-  registeredCount Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  registeredCount Int         @default(0)
+  status          EventStatus @default(UPCOMING)
+  isAnnual        Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   @@map("events")
 }

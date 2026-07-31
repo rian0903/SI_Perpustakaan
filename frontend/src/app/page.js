@@ -187,6 +187,14 @@ export default function Home() {
     }
     return MOCK_EVENTS;
   });
+  const [eventFilter, setEventFilter] = useState("ALL");
+
+  const filteredEvents = (eventsList || []).filter((event) => {
+    if (eventFilter === "UPCOMING") return !event.status || event.status === "UPCOMING" || event.status === "ONGOING";
+    if (eventFilter === "COMPLETED") return event.status === "COMPLETED";
+    if (eventFilter === "ANNUAL") return !!event.isAnnual;
+    return true;
+  });
 
   const [openStatus, setOpenStatus] = useState({ isOpen: true, text: "Buka Sekarang", dotColor: "bg-emerald-500" });
   const [banners, setBanners] = useState(() => {
@@ -1157,36 +1165,74 @@ export default function Home() {
 
           {/* ===== EVENTS ===== */}
           <section id="events" className="py-24 bg-surface-100 border-y border-border-200">
-            <div className="chapter-container space-y-12">
-              <div className="max-w-2xl space-y-2">
-                <span className="section-eyebrow">Kegiatan Komunitas</span>
-                <h2 className="text-3xl md:text-4xl font-bold text-heading font-navigation">
-                  Agenda Literasi Kreatif
-                </h2>
-                <p className="text-sm text-muted">Segera daftarkan diri Anda pada program lokakarya dan diskusi gratis di bawah ini.</p>
+            <div className="chapter-container space-y-8">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="max-w-2xl space-y-2">
+                  <span className="section-eyebrow">Kegiatan Komunitas</span>
+                  <h2 className="text-3xl md:text-4xl font-bold text-heading font-navigation">
+                    Agenda Literasi Kreatif
+                  </h2>
+                  <p className="text-sm text-muted">Daftar agenda kegiatan, lokakarya, dan diskusi tahunan di perpustakaan kota.</p>
+                </div>
+
+                {/* Filter Status Tabs */}
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { id: "ALL", label: "Semua Event" },
+                    { id: "UPCOMING", label: "Akan Datang" },
+                    { id: "COMPLETED", label: "Sudah Selesai" },
+                    { id: "ANNUAL", label: "⭐ Event Tahunan" }
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setEventFilter(tab.id)}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-navigation font-bold transition-all cursor-pointer ${
+                        eventFilter === tab.id
+                          ? "bg-primary-500 text-white shadow-md"
+                          : "bg-white text-muted hover:text-heading border border-border-200"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="space-y-5">
-                {MOCK_EVENTS.map((event) => (
-                  <div
-                    key={event.id}
-                    className="bg-white rounded-2xl border border-border-200 shadow-soft overflow-hidden grid grid-cols-1 lg:grid-cols-12 hover:shadow-medium transition-shadow duration-200"
-                  >
-                    {/* Image */}
-                    <div className="lg:col-span-4 h-52 lg:h-full relative min-h-48">
-                      <img
-                        src={getImageUrl(event.thumbnail)}
-                        alt={event.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
+                {filteredEvents.length === 0 ? (
+                  <div className="bg-white rounded-2xl border border-border-200 p-12 text-center text-muted">
+                    <Calendar size={36} className="mx-auto mb-3 opacity-30" />
+                    <p className="font-navigation font-semibold text-base text-heading">Tidak ada agenda event ditemukan</p>
+                    <p className="text-xs text-muted mt-1">Coba ganti filter status atau kategori event lainnya.</p>
+                  </div>
+                ) : (
+                  filteredEvents.map((event) => (
+                    <div
+                      key={event.id}
+                      className="bg-white rounded-2xl border border-border-200 shadow-soft overflow-hidden grid grid-cols-1 lg:grid-cols-12 hover:shadow-medium transition-shadow duration-200"
+                    >
+                      {/* Image */}
+                      <div className="lg:col-span-4 h-52 lg:h-full relative min-h-48">
+                        <img
+                          src={getImageUrl(event.thumbnail)}
+                          alt={event.title}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
 
-                    {/* Content */}
-                    <div className="lg:col-span-8 p-6 md:p-8 flex flex-col justify-between space-y-5">
-                      <div className="space-y-3">
-                        <span className="badge badge-primary">Agenda Mendatang</span>
-                        <h4 className="text-lg font-bold text-heading font-navigation leading-snug">{event.title}</h4>
+                      {/* Content */}
+                      <div className="lg:col-span-8 p-6 md:p-8 flex flex-col justify-between space-y-5">
+                        <div className="space-y-3">
+                          <div className="flex flex-wrap items-center gap-2">
+                            {(!event.status || event.status === "UPCOMING") && <span className="badge badge-primary">Akan Datang</span>}
+                            {event.status === "ONGOING" && <span className="badge bg-amber-50 text-amber-700 border border-amber-200 font-bold">Sedang Berlangsung</span>}
+                            {event.status === "COMPLETED" && <span className="badge badge-success font-bold">Sudah Selesai</span>}
+                            {event.status === "CANCELLED" && <span className="badge badge-danger font-bold">Dibatalkan</span>}
+                            {event.isAnnual && <span className="badge badge-gold font-bold">⭐ Agenda Event Tahunan</span>}
+                          </div>
+                          <h4 className="text-lg font-bold text-heading font-navigation leading-snug">{event.title}</h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div className="flex items-center gap-2 text-sm text-body">
                             <Calendar size={14} className="text-primary-500 shrink-0" />
@@ -1249,7 +1295,8 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-                ))}
+                ))
+              )}
               </div>
             </div>
           </section>

@@ -518,7 +518,7 @@ export default function AdminDashboard() {
   
   // Dynamic Form Fields state
   const [newsForm, setNewsForm] = useState({ title: "", category: "Berita", content: "", published: true, thumbnail: "" });
-  const [eventForm, setEventForm] = useState({ title: "", description: "", date: "", time: "", location: "", speaker: "", capacity: 50, thumbnail: "" });
+  const [eventForm, setEventForm] = useState({ title: "", description: "", date: "", time: "", location: "", speaker: "", capacity: 50, thumbnail: "", status: "UPCOMING", isAnnual: false });
   const [faqForm, setFaqForm] = useState({ question: "", answer: "", order: 1 });
   const [bannerForm, setBannerForm] = useState({ title: "", subtitle: "", imageUrl: "", linkUrl: "", order: 1, active: true });
   const [galleryForm, setGalleryForm] = useState({ title: "", description: "", thumbnail: "" });
@@ -799,7 +799,7 @@ export default function AdminDashboard() {
   const handleOpenAddModal = () => {
     setEditingItem(null);
     setNewsForm({ title: "", category: "Berita", content: "", published: true, thumbnail: "" });
-    setEventForm({ title: "", description: "", date: "", time: "09:00 - 12:00 WIB", location: "Gedung Ruang Multi-Media", speaker: "", capacity: 50, thumbnail: "" });
+    setEventForm({ title: "", description: "", date: "", time: "09:00 - 12:00 WIB", location: "Gedung Ruang Multi-Media", speaker: "", capacity: 50, thumbnail: "", status: "UPCOMING", isAnnual: false });
     setFaqForm({ question: "", answer: "", order: faqs.length + 1 });
     setBannerForm({ title: "", subtitle: "", imageUrl: "", linkUrl: "#", order: banners.length + 1, active: true });
     setGalleryForm({ title: "", description: "", thumbnail: "" });
@@ -812,7 +812,7 @@ export default function AdminDashboard() {
     if (activeTab === "news") {
       setNewsForm({ title: item.title, category: item.category?.name || item.category, content: item.content, published: item.published, thumbnail: item.thumbnail });
     } else if (activeTab === "events") {
-      setEventForm({ title: item.title, description: item.description, date: item.date?.split("T")[0] || item.date, time: item.time, location: item.location, speaker: item.speaker, capacity: item.capacity, thumbnail: item.thumbnail });
+      setEventForm({ title: item.title, description: item.description, date: item.date?.split("T")[0] || item.date, time: item.time, location: item.location, speaker: item.speaker, capacity: item.capacity, thumbnail: item.thumbnail, status: item.status || "UPCOMING", isAnnual: item.isAnnual || false });
     } else if (activeTab === "faq") {
       setFaqForm({ question: item.question, answer: item.answer, order: item.order });
     } else if (activeTab === "banner") {
@@ -1895,7 +1895,7 @@ export default function AdminDashboard() {
                   <thead><tr>
                     <th>Nama Event</th>
                     <th>Tanggal & Waktu</th>
-                    <th>Lokasi</th>
+                    <th>Status Pelaksanaan</th>
                     <th>Pembicara</th>
                     <th>Kapasitas</th>
                     <th className="text-right">Aksi</th>
@@ -1903,11 +1903,26 @@ export default function AdminDashboard() {
                   <tbody>
                     {events.map((item) => (
                       <tr key={item.id}>
-                        <td className="font-semibold text-heading max-w-[200px] truncate">{item.title}</td>
-                        <td className="text-muted">{item.date} ({item.time})</td>
-                        <td className="text-muted max-w-[120px] truncate">{item.location}</td>
-                        <td className="font-semibold text-primary-600">{item.speaker}</td>
-                        <td className="text-muted">{item.registeredCount} / {item.capacity}</td>
+                        <td className="font-semibold text-heading max-w-[220px]">
+                          <div className="flex flex-col">
+                            <span className="truncate">{item.title}</span>
+                            {item.isAnnual && (
+                              <span className="badge badge-gold !text-[9px] w-max mt-0.5">⭐ Agenda Tahunan</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="text-muted text-xs">
+                          <div>{item.date ? new Date(item.date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "-"}</div>
+                          <div className="text-[11px] opacity-75">{item.time || "-"}</div>
+                        </td>
+                        <td>
+                          {(!item.status || item.status === "UPCOMING") && <span className="badge badge-primary">Akan Datang</span>}
+                          {item.status === "ONGOING" && <span className="badge bg-amber-50 text-amber-700 border border-amber-200">Berlangsung</span>}
+                          {item.status === "COMPLETED" && <span className="badge badge-success">Sudah Dilakukan</span>}
+                          {item.status === "CANCELLED" && <span className="badge badge-danger">Dibatalkan</span>}
+                        </td>
+                        <td className="font-semibold text-primary-600 text-xs">{item.speaker || "-"}</td>
+                        <td className="text-muted text-xs">{item.registeredCount || 0} / {item.capacity || "-"}</td>
                         <td className="text-right space-x-1.5">
                           <ActionEdit onClick={() => handleOpenEditModal(item)} />
                           <ActionDelete onClick={() => handleDelete(item.id)} />
@@ -2717,6 +2732,24 @@ export default function AdminDashboard() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5"><label className="lib-label">Lokasi Gedung</label><input type="text" required value={eventForm.location} onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })} className="lib-input" /></div>
                       <div className="space-y-1.5"><label className="lib-label">Kapasitas Kursi</label><input type="number" required value={eventForm.capacity} onChange={(e) => setEventForm({ ...eventForm, capacity: parseInt(e.target.value, 10) })} className="lib-input" /></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="lib-label">Status Pelaksanaan Event</label>
+                        <select value={eventForm.status || "UPCOMING"} onChange={(e) => setEventForm({ ...eventForm, status: e.target.value })} className="lib-input">
+                          <option value="UPCOMING">Akan Datang (Belum Dilakukan)</option>
+                          <option value="ONGOING">Sedang Berlangsung</option>
+                          <option value="COMPLETED">Selesai (Sudah Dilakukan)</option>
+                          <option value="CANCELLED">Dibatalkan</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="lib-label">Jenis Agenda</label>
+                        <label className="flex items-center gap-2 pt-2 cursor-pointer">
+                          <input type="checkbox" checked={!!eventForm.isAnnual} onChange={(e) => setEventForm({ ...eventForm, isAnnual: e.target.checked })} className="w-4 h-4 rounded text-primary-600 focus:ring-primary-500" />
+                          <span className="text-xs font-semibold text-heading">Agenda Event Tahunan Rutin</span>
+                        </label>
+                      </div>
                     </div>
                     <div className="space-y-1.5"><label className="lib-label">Pembicara / Speaker</label><input type="text" value={eventForm.speaker} onChange={(e) => setEventForm({ ...eventForm, speaker: e.target.value })} className="lib-input" /></div>
                     <FileUploadInput label="Thumbnail Gambar Agenda/Event" value={eventForm.thumbnail} onChange={(val) => setEventForm({ ...eventForm, thumbnail: val })} onError={(msg) => showNotification(msg, "error")} />

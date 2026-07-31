@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Role } from '@prisma/client';
+import { Role, EventStatus, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -213,14 +213,37 @@ export class CmsService {
   // ==========================================
   // EVENTS CRUD (ADMIN / SUPER_ADMIN)
   // ==========================================
-  async listEvents() {
+  async listEvents(status?: string, year?: string | number, isAnnual?: boolean | string) {
+    const where: Prisma.EventWhereInput = {};
+
+    if (status && Object.values(EventStatus).includes(status as EventStatus)) {
+      where.status = status as EventStatus;
+    }
+
+    if (isAnnual !== undefined && isAnnual !== '') {
+      where.isAnnual = isAnnual === 'true' || isAnnual === true;
+    }
+
+    if (year) {
+      const yearNum = typeof year === 'string' ? parseInt(year, 10) : year;
+      if (!isNaN(yearNum)) {
+        const startDate = new Date(`${yearNum}-01-01T00:00:00.000Z`);
+        const endDate = new Date(`${yearNum}-12-31T23:59:59.999Z`);
+        where.date = {
+          gte: startDate,
+          lte: endDate,
+        };
+      }
+    }
+
     return this.prisma.event.findMany({
+      where,
       orderBy: { date: 'asc' },
     });
   }
 
   async createEvent(dto: Record<string, unknown>) {
-    const { title, description, date, location, speaker, thumbnail, capacity } =
+    const { title, description, date, location, speaker, thumbnail, capacity, status, isAnnual } =
       dto as {
         title?: string;
         description?: string;
@@ -229,6 +252,8 @@ export class CmsService {
         speaker?: string;
         thumbnail?: string;
         capacity?: string | number;
+        status?: EventStatus;
+        isAnnual?: boolean | string;
       };
     if (!title || !description || !date || !location) {
       throw new BadRequestException('Form data event tidak lengkap.');
@@ -243,6 +268,9 @@ export class CmsService {
     const capacityVal =
       typeof capacity === 'string' ? parseInt(capacity, 10) : capacity;
 
+    const eventStatus = status && Object.values(EventStatus).includes(status) ? status : EventStatus.UPCOMING;
+    const isAnnualVal = isAnnual === true || isAnnual === 'true';
+
     return this.prisma.event.create({
       data: {
         title,
@@ -253,6 +281,8 @@ export class CmsService {
         speaker,
         thumbnail,
         capacity: capacityVal ?? null,
+        status: eventStatus,
+        isAnnual: isAnnualVal,
       },
     });
   }
@@ -261,7 +291,7 @@ export class CmsService {
     const event = await this.prisma.event.findUnique({ where: { id } });
     if (!event) throw new NotFoundException('Kegiatan tidak ditemukan.');
 
-    const { title, description, date, location, speaker, thumbnail, capacity } =
+    const { title, description, date, location, speaker, thumbnail, capacity, status, isAnnual } =
       dto as {
         title?: string;
         description?: string;
@@ -270,6 +300,8 @@ export class CmsService {
         speaker?: string;
         thumbnail?: string;
         capacity?: string | number;
+        status?: EventStatus;
+        isAnnual?: boolean | string;
       };
     const updateData: {
       title?: string;
@@ -280,6 +312,8 @@ export class CmsService {
       speaker?: string;
       thumbnail?: string;
       capacity?: number | null;
+      status?: EventStatus;
+      isAnnual?: boolean;
     } = {};
 
     if (title) {
@@ -302,6 +336,12 @@ export class CmsService {
     if (capacity !== undefined) {
       updateData.capacity =
         typeof capacity === 'string' ? parseInt(capacity, 10) : capacity;
+    }
+    if (status && Object.values(EventStatus).includes(status)) {
+      updateData.status = status;
+    }
+    if (isAnnual !== undefined) {
+      updateData.isAnnual = isAnnual === true || isAnnual === 'true';
     }
 
     return this.prisma.event.update({

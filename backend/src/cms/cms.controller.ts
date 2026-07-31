@@ -155,8 +155,12 @@ export class CmsController {
   // EVENTS CRUD (ADMIN / SUPER_ADMIN)
   // ==========================================
   @Get('events')
-  async listEvents() {
-    return this.cmsService.listEvents();
+  async listEvents(
+    @Query('status') status?: string,
+    @Query('year') year?: string,
+    @Query('isAnnual') isAnnual?: string,
+  ) {
+    return this.cmsService.listEvents(status, year, isAnnual);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
