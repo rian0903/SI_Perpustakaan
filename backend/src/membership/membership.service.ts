@@ -54,12 +54,16 @@ export class MembershipService {
     });
 
     // Email 1: Send registration confirmation
-    await this.mailService.sendRegistrationConfirmation({
-      email: membership.email,
-      fullName: membership.fullName,
-      registrationNumber: membership.registrationNumber,
-      createdAt: membership.createdAt,
-    });
+    try {
+      await this.mailService.sendRegistrationConfirmation({
+        email: membership.email,
+        fullName: membership.fullName,
+        registrationNumber: membership.registrationNumber,
+        createdAt: membership.createdAt,
+      });
+    } catch (err) {
+      console.warn('Failed to send registration confirmation email:', err);
+    }
 
     return membership;
   }
@@ -118,12 +122,16 @@ export class MembershipService {
     });
 
     // Email 2: Send approval notification
-    await this.mailService.sendApprovalNotification({
-      email: updated.email,
-      fullName: updated.fullName,
-      registrationNumber: updated.registrationNumber,
-      membershipNumber: updated.membershipNumber!,
-    });
+    try {
+      await this.mailService.sendApprovalNotification({
+        email: updated.email,
+        fullName: updated.fullName,
+        registrationNumber: updated.registrationNumber,
+        membershipNumber: updated.membershipNumber!,
+      });
+    } catch (err) {
+      console.warn('Failed to send approval notification email:', err);
+    }
 
     return updated;
   }
@@ -140,12 +148,16 @@ export class MembershipService {
     });
 
     // Email 3: Send rejection notification
-    await this.mailService.sendRejectionNotification({
-      email: updated.email,
-      fullName: updated.fullName,
-      registrationNumber: updated.registrationNumber,
-      rejectionReason,
-    });
+    try {
+      await this.mailService.sendRejectionNotification({
+        email: updated.email,
+        fullName: updated.fullName,
+        registrationNumber: updated.registrationNumber,
+        rejectionReason,
+      });
+    } catch (err) {
+      console.warn('Failed to send rejection notification email:', err);
+    }
 
     return updated;
   }
@@ -162,12 +174,16 @@ export class MembershipService {
     });
 
     // Email 4: Send ready-for-pickup notification
-    await this.mailService.sendReadyForPickupNotification({
-      email: updated.email,
-      fullName: updated.fullName,
-      registrationNumber: updated.registrationNumber,
-      membershipNumber: updated.membershipNumber!,
-    });
+    try {
+      await this.mailService.sendReadyForPickupNotification({
+        email: updated.email,
+        fullName: updated.fullName,
+        registrationNumber: updated.registrationNumber,
+        membershipNumber: updated.membershipNumber!,
+      });
+    } catch (err) {
+      console.warn('Failed to send ready for pickup notification email:', err);
+    }
 
     return updated;
   }

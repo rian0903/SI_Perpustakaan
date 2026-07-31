@@ -59,7 +59,8 @@ export class MembershipController {
       fileFilter: (req: any, file: any, callback: any) => {
         const allowedExtensions = /jpeg|jpg|png|webp|pdf|doc|docx/;
         const extName = allowedExtensions.test(extname(file.originalname).toLowerCase());
-        if (extName || file.mimetype) {
+        const mimeType = allowedExtensions.test(file.mimetype.toLowerCase());
+        if (extName || mimeType) {
           return callback(null, true);
         }
         callback(

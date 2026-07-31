@@ -1,4 +1,5 @@
 import { IsString, IsNotEmpty, IsEmail, IsOptional, IsDateString } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateMembershipDto {
   @IsString()
@@ -9,22 +10,27 @@ export class CreateMembershipDto {
   @IsNotEmpty({ message: 'Jenis kelamin wajib diisi.' })
   gender!: string;
 
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsString()
   @IsOptional()
   birthPlace?: string;
 
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsDateString({}, { message: 'Format tanggal lahir tidak valid.' })
   @IsOptional()
   birthDate?: string;
 
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsString()
   @IsOptional()
   nik?: string;
 
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsString()
   @IsOptional()
   nisn?: string;
 
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsString()
   @IsOptional()
   address?: string;
@@ -37,18 +43,22 @@ export class CreateMembershipDto {
   @IsNotEmpty({ message: 'Email wajib diisi.' })
   email!: string;
 
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsString()
   @IsOptional()
   institution?: string;
 
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsString()
   @IsOptional()
   occupation?: string;
 
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsString()
   @IsOptional()
   photoUrl?: string;
 
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsString()
   @IsOptional()
   identityCardUrl?: string;

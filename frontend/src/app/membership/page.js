@@ -152,9 +152,9 @@ export default function MembershipPage() {
       const payload = {
         fullName: data.fullName,
         gender: data.gender,
-        birthPlace: data.birthPlace,
-        birthDate: data.birthDate,
-        address: data.address,
+        birthPlace: data.birthPlace || undefined,
+        birthDate: data.birthDate || undefined,
+        address: data.address || undefined,
         phone: data.phone,
         email: data.email,
         nik: data.nik || undefined,
