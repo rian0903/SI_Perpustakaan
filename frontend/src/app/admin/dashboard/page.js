@@ -431,6 +431,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [user, setUser] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLandingGroupOpen, setIsLandingGroupOpen] = useState(true);
   // Membership States
   const [memberships, setMemberships] = useState([]);
   const [membershipStats, setMembershipStats] = useState({ total: 0, pending: 0, approved: 0, readyForPickup: 0, active: 0, rejected: 0 });
@@ -1309,22 +1310,38 @@ export default function AdminDashboard() {
     settings: "Konfigurasi Kesekretariatan"
   };
 
-  const SIDEBAR_MENU = [
-    { id: "overview", label: "Ringkasan", icon: <LayoutDashboard size={16} />, role: "ADMIN" },
-    { id: "books", label: "Koleksi Buku", icon: <BookOpen size={16} />, role: "ADMIN" },
-    { id: "membership", label: "Keanggotaan", icon: <IdCard size={16} />, role: "ADMIN" },
-    { id: "hero", label: "Kelola Hero", icon: <Compass size={16} />, role: "ADMIN" },
-    { id: "about", label: "Kelola Tentang", icon: <Info size={16} />, role: "ADMIN" },
-    { id: "stats", label: "Kelola Statistik", icon: <Activity size={16} />, role: "ADMIN" },
-    { id: "news", label: "Kelola Berita", icon: <FileText size={16} />, role: "ADMIN" },
-    { id: "events", label: "Kelola Event", icon: <Calendar size={16} />, role: "ADMIN" },
-    { id: "gallery", label: "Kelola Galeri", icon: <ImageIcon size={16} />, role: "ADMIN" },
-    { id: "banner", label: "Kelola Banner", icon: <Sliders size={16} />, role: "ADMIN" },
-    { id: "faq", label: "Kelola FAQ", icon: <HelpCircle size={16} />, role: "ADMIN" },
-    { id: "user", label: "Kelola User", icon: <Users size={16} />, role: "SUPER_ADMIN" },
-    { id: "navbar", label: "Pengaturan Navbar", icon: <Navigation size={16} />, role: "SUPER_ADMIN" },
-    { id: "footer", label: "Kelola Footer", icon: <BookOpen size={16} />, role: "ADMIN" },
-    { id: "settings", label: "Pengaturan & Medsos", icon: <Settings size={16} />, role: "ADMIN" }
+  const SIDEBAR_SECTIONS = [
+    {
+      group: null,
+      items: [
+        { id: "overview", label: "Ringkasan", icon: <LayoutDashboard size={16} />, role: "ADMIN" },
+        { id: "books", label: "Koleksi Buku", icon: <BookOpen size={16} />, role: "ADMIN" },
+        { id: "membership", label: "Keanggotaan", icon: <IdCard size={16} />, role: "ADMIN" },
+        { id: "events", label: "Kelola Event", icon: <Calendar size={16} />, role: "ADMIN" },
+      ]
+    },
+    {
+      group: "Landing",
+      groupIcon: <Globe size={15} />,
+      items: [
+        { id: "hero", label: "Kelola Hero", icon: <Compass size={15} />, role: "ADMIN" },
+        { id: "about", label: "Kelola Tentang", icon: <Info size={15} />, role: "ADMIN" },
+        { id: "stats", label: "Kelola Statistik", icon: <Activity size={15} />, role: "ADMIN" },
+        { id: "news", label: "Kelola Berita", icon: <FileText size={15} />, role: "ADMIN" },
+        { id: "gallery", label: "Kelola Galeri", icon: <ImageIcon size={15} />, role: "ADMIN" },
+        { id: "banner", label: "Kelola Banner", icon: <Sliders size={15} />, role: "ADMIN" },
+        { id: "faq", label: "Kelola FAQ", icon: <HelpCircle size={15} />, role: "ADMIN" },
+        { id: "navbar", label: "Pengaturan Navbar", icon: <Navigation size={15} />, role: "SUPER_ADMIN" },
+        { id: "footer", label: "Kelola Footer", icon: <BookOpen size={15} />, role: "ADMIN" },
+      ]
+    },
+    {
+      group: null,
+      items: [
+        { id: "user", label: "Kelola User", icon: <Users size={16} />, role: "SUPER_ADMIN" },
+        { id: "settings", label: "Pengaturan & Medsos", icon: <Settings size={16} />, role: "ADMIN" },
+      ]
+    }
   ];
 
   return (
@@ -1430,26 +1447,73 @@ export default function AdminDashboard() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto" aria-label="Menu admin">
-          {SIDEBAR_MENU.map((menu) => {
-            const isLocked = menu.role === "SUPER_ADMIN" && user.role !== "SUPER_ADMIN";
-            const isActive = activeTab === menu.id;
-            return (
-              <button
-                key={menu.id}
-                disabled={isLocked}
-                onClick={() => { setActiveTab(menu.id); setIsMobileMenuOpen(false); }}
-                className={`sidebar-item ${isActive ? "active" : ""} ${isLocked ? "locked" : ""}`}
-              >
-                <div className="flex items-center gap-2.5 flex-1">
-                  {menu.icon}
-                  <span>{menu.label}</span>
+        <nav className="flex-1 p-3 space-y-2 overflow-y-auto" aria-label="Menu admin">
+          {SIDEBAR_SECTIONS.map((sec, secIdx) => (
+            <div key={secIdx} className="space-y-0.5">
+              {sec.group ? (
+                <div className="space-y-0.5 pt-1 pb-1">
+                  {/* Group Header Button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsLandingGroupOpen(!isLandingGroupOpen)}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-white font-navigation font-bold text-xs uppercase tracking-wider hover:bg-white/10 transition-all cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      {sec.groupIcon}
+                      <span>{sec.group}</span>
+                    </div>
+                    {isLandingGroupOpen ? <ChevronDown size={14} className="text-white/80" /> : <ChevronRight size={14} className="text-white/80" />}
+                  </button>
+
+                  {/* Group Sub-items (Indented with '-' as shown in user image) */}
+                  {isLandingGroupOpen && (
+                    <div className="pl-2 space-y-0.5 border-l-2 border-white/20 ml-3 my-1">
+                      {sec.items.map((menu) => {
+                        const isLocked = menu.role === "SUPER_ADMIN" && user.role !== "SUPER_ADMIN";
+                        const isActive = activeTab === menu.id;
+                        return (
+                          <button
+                            key={menu.id}
+                            disabled={isLocked}
+                            onClick={() => { setActiveTab(menu.id); setIsMobileMenuOpen(false); }}
+                            className={`sidebar-item !py-2 ${isActive ? "active" : ""} ${isLocked ? "locked" : ""}`}
+                          >
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <span className="text-white/40 text-xs font-mono font-bold">-</span>
+                              {menu.icon}
+                              <span className="truncate">{menu.label}</span>
+                            </div>
+                            {isLocked && <ShieldAlert size={12} className="text-white/30" />}
+                            {isActive && <ChevronRight size={14} className="text-white" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-                {isLocked && <ShieldAlert size={12} className="text-white/30" />}
-                {isActive && <ChevronRight size={14} className="text-white" />}
-              </button>
-            );
-          })}
+              ) : (
+                sec.items.map((menu) => {
+                  const isLocked = menu.role === "SUPER_ADMIN" && user.role !== "SUPER_ADMIN";
+                  const isActive = activeTab === menu.id;
+                  return (
+                    <button
+                      key={menu.id}
+                      disabled={isLocked}
+                      onClick={() => { setActiveTab(menu.id); setIsMobileMenuOpen(false); }}
+                      className={`sidebar-item ${isActive ? "active" : ""} ${isLocked ? "locked" : ""}`}
+                    >
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        {menu.icon}
+                        <span className="truncate">{menu.label}</span>
+                      </div>
+                      {isLocked && <ShieldAlert size={12} className="text-white/30" />}
+                      {isActive && <ChevronRight size={14} className="text-white" />}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          ))}
         </nav>
 
         {/* Logout */}
