@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { 
   BookOpen, ArrowRight, Compass, Calendar, Image as ImageIcon, 
   MapPin, User, ChevronDown, ChevronLeft, ChevronRight, X, Mail, Phone, Clock, Search, 
@@ -229,7 +230,7 @@ export default function Home() {
   const [navMenu, setNavMenu] = useState([
     { id: 1, label: "Tentang", target: "#about", order: 1, active: true },
     { id: 2, label: "Statistik", target: "#stats", order: 2, active: true },
-    { id: 9, label: "Koleksi Buku", target: "#books", order: 2.5, active: true },
+    { id: 9, label: "Koleksi Buku", target: "/books", order: 2.5, active: true },
     { id: 3, label: "Berita", target: "#news", order: 3, active: true },
     { id: 4, label: "Kegiatan", target: "#events", order: 4, active: true },
     { id: 5, label: "Galeri", target: "#gallery", order: 5, active: true },
@@ -820,12 +821,12 @@ export default function Home() {
               </div>
 
               {/* Desktop Navigation */}
-              <nav className="hidden md:flex items-center gap-1" aria-label="Navigasi utama">
+              <nav className="hidden md:flex items-center gap-1 overflow-x-auto" aria-label="Navigasi utama">
                 {navMenu.map((item) => (
                   <a
                     key={item.id}
                     href={item.target}
-                    className="px-4 py-2 rounded-lg text-sm font-navigation font-medium text-body hover:text-primary-500 hover:bg-primary-50 transition-all"
+                    className="px-2.5 lg:px-3 py-1.5 rounded-lg text-xs lg:text-sm font-navigation font-medium text-body hover:text-primary-500 hover:bg-primary-50 transition-all whitespace-nowrap shrink-0 cursor-pointer"
                   >
                     {item.label}
                   </a>
@@ -1183,140 +1184,136 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ===== KOLEKSI BUKU SECTION ===== */}
-          <section id="books" className="py-24 bg-surface-100 border-y border-border-200">
-            <div className="chapter-container space-y-12">
-              {/* Header */}
+          {/* ===== KOLEKSI BUKU SECTION PREVIEW ===== */}
+          <section id="books" className="py-16 md:py-24 bg-slate-50/80 border-y border-border-200">
+            <div className="chapter-container space-y-10">
+              {/* Section Header */}
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="max-w-2xl space-y-2">
                   <span className="section-eyebrow">Katalog Perpustakaan</span>
                   <h2 className="text-3xl md:text-4xl font-bold text-heading font-navigation">
-                    Koleksi Buku & Jurnal
+                    Koleksi Buku & Jurnal Pilihan
                   </h2>
-                  <p className="text-sm text-muted">Jelajahi ketersediaan koleksi cetak dan digital di perpustakaan kami.</p>
+                  <p className="text-sm text-muted">Akses ribuan judul koleksi cetak dan digital resmi perpustakaan kota.</p>
                 </div>
-                <div className="flex items-center gap-2 text-xs font-navigation text-body bg-white px-4 py-2.5 rounded-xl border border-border-200 shadow-soft">
-                  <Library size={16} className="text-primary-500" />
-                  <span>Total Koleksi: <strong>{(booksList || []).length} Judul Buku</strong></span>
+
+                <div className="flex items-center gap-3">
+                  <Link
+                    href="/books"
+                    className="btn-primary !py-3 !px-6 text-xs sm:text-sm font-bold font-navigation flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
+                  >
+                    <span>Lihat Seluruh Katalog Buku</span>
+                    <ArrowRight size={16} />
+                  </Link>
                 </div>
               </div>
 
-              {/* Search & Category Filter Bar */}
-              <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl border border-border-200 shadow-soft">
-                {/* Search input */}
-                <div className="lib-search w-full lg:w-96">
-                  <Search size={16} className="search-icon" />
-                  <input
-                    type="text"
-                    placeholder="Cari judul, pengarang, ISBN..."
-                    value={bookSearch}
-                    onChange={(e) => setBookSearch(e.target.value)}
-                    className="w-full"
-                  />
-                </div>
+              {/* Book Cards Grid Preview (4 items) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {(booksList || []).slice(0, 4).map((book) => (
+                  <Link
+                    key={book.id}
+                    href="/books"
+                    className="group bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-primary-200 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer"
+                  >
+                    <div>
+                      {/* Portrait Cover Frame Container */}
+                      <div className="relative pt-6 pb-4 px-4 bg-gradient-to-b from-slate-100 via-slate-50 to-white border-b border-slate-100 flex items-center justify-center min-h-[240px]">
+                        {/* Category Badge */}
+                        <div className="absolute top-3 left-3 z-10">
+                          <span className="px-2.5 py-1 rounded-full bg-white/90 backdrop-blur text-primary-700 font-navigation font-bold text-[10px] tracking-wider uppercase border border-primary-100 shadow-sm">
+                            {book.category || "Umum"}
+                          </span>
+                        </div>
 
-                {/* Category Pills */}
-                <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-                  {["Semua", "Fiksi", "Sains & Teknologi", "Sejarah & Budaya", "Pengembangan Diri", "Referensi"].map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedBookCategory(cat)}
-                      className={`px-3.5 py-1.5 rounded-full text-xs font-navigation font-semibold transition-all cursor-pointer ${
-                        selectedBookCategory === cat
-                          ? "bg-primary-500 text-white shadow-soft"
-                          : "bg-surface-100 text-body hover:bg-primary-50 hover:text-primary-500 border border-border-200"
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                        {/* Recommended Badge */}
+                        {book.isFeatured && (
+                          <div className="absolute top-3 right-3 z-10">
+                            <span className="px-2 py-0.5 rounded-full bg-amber-400 text-amber-950 font-navigation font-extrabold text-[10px] uppercase shadow-sm flex items-center gap-0.5">
+                              ⭐ Featured
+                            </span>
+                          </div>
+                        )}
 
-              {/* Book Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredBooks.length === 0 ? (
-                  <div className="col-span-full bg-white rounded-2xl border border-border-200 p-12 text-center text-muted">
-                    <BookOpen size={40} className="mx-auto mb-3 opacity-30 text-primary-500" />
-                    <p className="font-navigation font-bold text-base text-heading">Buku tidak ditemukan</p>
-                    <p className="text-xs text-muted mt-1">Coba sesuaikan kata kunci pencarian atau kategori yang dipilih.</p>
-                  </div>
-                ) : (
-                  filteredBooks.map((book) => (
-                    <div
-                      key={book.id}
-                      onClick={() => setSelectedBookDetail(book)}
-                      className="bg-white rounded-2xl border border-border-200 shadow-soft overflow-hidden flex flex-col justify-between hover:shadow-medium hover:-translate-y-1 transition-all duration-300 cursor-pointer group"
-                    >
-                      <div>
-                        {/* Cover Image & Category Pill */}
-                        <div className="relative h-60 w-full overflow-hidden bg-surface-200">
+                        {/* Realistic Portrait 3D Book Cover Frame */}
+                        <div className="relative w-36 h-52 rounded-r-lg rounded-l-xs overflow-hidden shadow-md group-hover:shadow-2xl group-hover:scale-105 transition-all duration-300 bg-slate-900 border border-slate-200/60 flex shrink-0">
+                          {/* 3D Spine Shadow Overlay */}
+                          <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-r from-black/40 via-black/10 to-transparent z-10 pointer-events-none" />
+                          <div className="absolute left-2.5 top-0 bottom-0 w-[1px] bg-white/20 z-10 pointer-events-none" />
+
                           {book.coverUrl ? (
                             <img
                               src={getImageUrl(book.coverUrl)}
                               alt={book.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              className="w-full h-full object-cover"
                               loading="lazy"
                             />
                           ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-primary-800 to-primary-950 flex flex-col items-center justify-center p-4 text-center">
-                              <BookOpen size={48} className="text-white/40 mb-2" />
-                              <span className="text-xs font-navigation text-white/70 line-clamp-2">{book.title}</span>
-                            </div>
-                          )}
-                          <div className="absolute top-3 left-3">
-                            <span className="px-2.5 py-1 rounded-md bg-slate-900/80 backdrop-blur-md text-white font-navigation font-bold text-[10px] tracking-wide border border-white/20">
-                              {book.category || "Umum"}
-                            </span>
-                          </div>
-                          {book.isFeatured && (
-                            <div className="absolute top-3 right-3">
-                              <span className="px-2 py-0.5 rounded bg-gold-500 text-slate-950 font-navigation font-extrabold text-[10px] uppercase shadow-md">
-                                Recommended
+                            <div className="w-full h-full bg-gradient-to-br from-primary-900 via-primary-800 to-slate-900 p-3 flex flex-col justify-between text-white text-center">
+                              <div className="pt-2 flex justify-center">
+                                <BookOpen size={28} className="text-white/40" />
+                              </div>
+                              <span className="text-xs font-navigation font-bold line-clamp-3 leading-snug text-white/90">
+                                {book.title}
+                              </span>
+                              <span className="text-[10px] font-mono text-white/60 pb-1">
+                                {book.author}
                               </span>
                             </div>
                           )}
                         </div>
-
-                        {/* Text details */}
-                        <div className="p-5 space-y-2">
-                          <h3 className="font-navigation font-bold text-base text-heading line-clamp-2 group-hover:text-primary-500 transition-colors">
-                            {book.title}
-                          </h3>
-                          <p className="text-xs text-muted font-navigation">
-                            Oleh: <strong className="text-body">{book.author}</strong>
-                          </p>
-                          {book.publisher && (
-                            <p className="text-[11px] text-muted line-clamp-1">
-                              {book.publisher} {book.year ? `(${book.year})` : ""}
-                            </p>
-                          )}
-                          {book.description && (
-                            <p className="text-xs text-body/80 line-clamp-2 pt-1 leading-relaxed">
-                              {book.description}
-                            </p>
-                          )}
-                        </div>
                       </div>
 
-                      {/* Footer Badge & Location */}
-                      <div className="px-5 pb-5 pt-2 border-t border-border-100 flex items-center justify-between gap-2">
-                        <span className={`text-[11px] font-navigation font-bold px-2.5 py-1 rounded-lg ${
-                          (book.available ?? book.stock ?? 1) > 0
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                            : "bg-red-50 text-red-700 border border-red-200"
-                        }`}>
-                          {(book.available ?? book.stock ?? 1) > 0 ? `Tersedia: ${book.available ?? book.stock}` : "Dipinjam"}
-                        </span>
-                        {book.location && (
-                          <span className="text-[11px] font-navigation font-medium text-muted truncate max-w-[120px]" title={book.location}>
-                            📍 {book.location}
-                          </span>
+                      {/* Book Content */}
+                      <div className="p-4 space-y-1.5">
+                        <h3 className="font-navigation font-bold text-sm sm:text-base text-slate-900 line-clamp-2 leading-snug group-hover:text-primary-600 transition-colors">
+                          {book.title}
+                        </h3>
+
+                        <div className="flex items-center gap-1 text-xs text-slate-500 font-navigation font-medium">
+                          <span>Oleh:</span>
+                          <strong className="text-slate-700 truncate">{book.author}</strong>
+                        </div>
+
+                        {book.publisher && (
+                          <p className="text-[11px] text-slate-400 font-navigation truncate">
+                            {book.publisher} {book.year ? `(${book.year})` : ""}
+                          </p>
                         )}
                       </div>
                     </div>
-                  ))
-                )}
+
+                    {/* Card Footer */}
+                    <div className="p-4 pt-2 border-t border-slate-100 flex items-center justify-between gap-2 mt-auto">
+                      <span className={`text-[11px] font-navigation font-bold px-2.5 py-0.5 rounded-md ${
+                        (book.available ?? book.stock ?? 1) > 0
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : "bg-red-50 text-red-700 border border-red-200"
+                      }`}>
+                        {(book.available ?? book.stock ?? 1) > 0 ? `Tersedia: ${book.available ?? book.stock}` : "Dipinjam"}
+                      </span>
+
+                      <span className="text-xs font-navigation font-bold text-primary-600 group-hover:underline flex items-center gap-0.5">
+                        Detail →
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Bottom CTA Banner */}
+              <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+                <div className="space-y-1">
+                  <h4 className="font-navigation font-bold text-lg text-slate-900">Mencari Judul Buku atau Jurnal Spesifik?</h4>
+                  <p className="text-xs sm:text-sm text-slate-600">Buka halaman katalog lengkap untuk menggunakan fitur pencarian dan filter lokasi rak.</p>
+                </div>
+                <Link
+                  href="/books"
+                  className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-navigation font-bold text-xs sm:text-sm rounded-xl transition-all shadow-md shrink-0 flex items-center gap-2"
+                >
+                  <span>Buka Halaman Katalog Buku</span>
+                  <ArrowRight size={16} />
+                </Link>
               </div>
             </div>
           </section>
@@ -1335,8 +1332,12 @@ export default function Home() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 p-6 sm:p-8">
                   {/* Left Cover */}
-                  <div className="sm:col-span-5 flex flex-col items-center">
-                    <div className="w-full h-72 rounded-2xl overflow-hidden shadow-medium border border-border-200 bg-surface-200 relative">
+                  <div className="sm:col-span-5 flex flex-col items-center justify-center">
+                    <div className="relative w-48 h-72 sm:w-52 sm:h-76 rounded-r-xl rounded-l-xs overflow-hidden shadow-2xl border border-slate-200/80 bg-slate-900 flex shrink-0">
+                      {/* 3D Spine Shadow Overlay */}
+                      <div className="absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-black/40 via-black/10 to-transparent z-10 pointer-events-none" />
+                      <div className="absolute left-3 top-0 bottom-0 w-[1px] bg-white/20 z-10 pointer-events-none" />
+
                       {selectedBookDetail.coverUrl ? (
                         <img
                           src={getImageUrl(selectedBookDetail.coverUrl)}
@@ -1344,9 +1345,12 @@ export default function Home() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-primary-800 to-primary-950 flex flex-col items-center justify-center p-4 text-center">
-                          <BookOpen size={64} className="text-white/30 mb-3" />
-                          <span className="text-sm font-navigation text-white/80 font-bold">{selectedBookDetail.title}</span>
+                        <div className="w-full h-full bg-gradient-to-br from-primary-900 to-slate-900 p-4 flex flex-col justify-between text-white text-center">
+                          <div className="pt-4 flex justify-center">
+                            <BookOpen size={48} className="text-white/30" />
+                          </div>
+                          <span className="text-sm font-navigation font-bold leading-snug">{selectedBookDetail.title}</span>
+                          <span className="text-xs text-white/60 font-mono pb-2">{selectedBookDetail.author}</span>
                         </div>
                       )}
                     </div>

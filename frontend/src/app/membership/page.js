@@ -219,13 +219,20 @@ export default function MembershipPage() {
             </div>
           </Link>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all"
+            >
+              <ArrowLeft className="w-4 h-4 text-slate-500" />
+              Kembali ke Beranda
+            </Link>
             <Link
               href="/membership/status"
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all"
             >
               <Search className="w-4 h-4 text-slate-500" />
-              Cek Status Pendaftaran
+              Cek Status
             </Link>
             <a
               href="#form-section"
