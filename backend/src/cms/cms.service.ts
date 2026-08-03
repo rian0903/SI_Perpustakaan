@@ -765,4 +765,247 @@ export class CmsService {
     await this.prisma.contactButton.delete({ where: { id } });
     return { success: true };
   }
+
+  // ==========================================
+  // BOOK COLLECTION CRUD & IMPORT/EXPORT (ADMIN / SUPER_ADMIN / PUBLIC)
+  // ==========================================
+  async listBooks(search?: string, category?: string, isFeatured?: string) {
+    const where: Prisma.BookWhereInput = {};
+
+    if (category && category !== 'Semua') {
+      where.category = category;
+    }
+
+    if (isFeatured === 'true') {
+      where.isFeatured = true;
+    }
+
+    if (search && search.trim() !== '') {
+      const q = search.trim();
+      where.OR = [
+        { title: { contains: q } },
+        { author: { contains: q } },
+        { isbn: { contains: q } },
+        { publisher: { contains: q } },
+      ];
+    }
+
+    return this.prisma.book.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getBookById(id: string) {
+    const book = await this.prisma.book.findFirst({
+      where: {
+        OR: [{ id }, { slug: id }],
+      },
+    });
+    if (!book) throw new NotFoundException('Buku tidak ditemukan.');
+    return book;
+  }
+
+  async createBook(dto: Record<string, unknown>) {
+    const {
+      title,
+      author,
+      publisher,
+      year,
+      isbn,
+      category,
+      description,
+      coverUrl,
+      stock,
+      available,
+      location,
+      isFeatured,
+    } = dto as {
+      title?: string;
+      author?: string;
+      publisher?: string;
+      year?: number | string;
+      isbn?: string;
+      category?: string;
+      description?: string;
+      coverUrl?: string;
+      stock?: number | string;
+      available?: number | string;
+      location?: string;
+      isFeatured?: boolean;
+    };
+
+    if (!title || !author) {
+      throw new BadRequestException('Judul dan pengarang buku wajib diisi.');
+    }
+
+    let slug = this.generateSlug(title);
+    const existingSlug = await this.prisma.book.findUnique({ where: { slug } });
+    if (existingSlug) {
+      slug = `${slug}-${Date.now().toString().slice(-4)}`;
+    }
+
+    const numStock = stock !== undefined ? Number(stock) : 1;
+    const numAvailable = available !== undefined ? Number(available) : numStock;
+    const numYear = year !== undefined && year !== null && year !== '' ? Number(year) : null;
+
+    return this.prisma.book.create({
+      data: {
+        title,
+        slug,
+        author,
+        publisher: publisher || null,
+        year: numYear,
+        isbn: isbn || null,
+        category: category || 'Umum',
+        description: description || null,
+        coverUrl: coverUrl || null,
+        stock: isNaN(numStock) ? 1 : numStock,
+        available: isNaN(numAvailable) ? 1 : numAvailable,
+        location: location || null,
+        isFeatured: Boolean(isFeatured),
+      },
+    });
+  }
+
+  async updateBook(id: string, dto: Record<string, unknown>) {
+    const book = await this.prisma.book.findUnique({ where: { id } });
+    if (!book) throw new NotFoundException('Buku tidak ditemukan.');
+
+    const {
+      title,
+      author,
+      publisher,
+      year,
+      isbn,
+      category,
+      description,
+      coverUrl,
+      stock,
+      available,
+      location,
+      isFeatured,
+    } = dto as {
+      title?: string;
+      author?: string;
+      publisher?: string;
+      year?: number | string;
+      isbn?: string;
+      category?: string;
+      description?: string;
+      coverUrl?: string;
+      stock?: number | string;
+      available?: number | string;
+      location?: string;
+      isFeatured?: boolean;
+    };
+
+    const updateData: Prisma.BookUpdateInput = {};
+
+    if (title !== undefined) {
+      updateData.title = title;
+      if (title !== book.title) {
+        let newSlug = this.generateSlug(title);
+        const existingSlug = await this.prisma.book.findFirst({
+          where: { slug: newSlug, NOT: { id } },
+        });
+        if (existingSlug) {
+          newSlug = `${newSlug}-${Date.now().toString().slice(-4)}`;
+        }
+        updateData.slug = newSlug;
+      }
+    }
+
+    if (author !== undefined) updateData.author = author;
+    if (publisher !== undefined) updateData.publisher = publisher || null;
+    if (year !== undefined) {
+      const numYear = year !== null && year !== '' ? Number(year) : null;
+      updateData.year = numYear;
+    }
+    if (isbn !== undefined) updateData.isbn = isbn || null;
+    if (category !== undefined) updateData.category = category || 'Umum';
+    if (description !== undefined) updateData.description = description || null;
+    if (coverUrl !== undefined) updateData.coverUrl = coverUrl || null;
+    if (stock !== undefined) updateData.stock = Number(stock);
+    if (available !== undefined) updateData.available = Number(available);
+    if (location !== undefined) updateData.location = location || null;
+    if (isFeatured !== undefined) updateData.isFeatured = Boolean(isFeatured);
+
+    return this.prisma.book.update({
+      where: { id },
+      data: updateData,
+    });
+  }
+
+  async deleteBook(id: string) {
+    const book = await this.prisma.book.findUnique({ where: { id } });
+    if (!book) throw new NotFoundException('Buku tidak ditemukan.');
+
+    await this.prisma.book.delete({ where: { id } });
+    return { message: 'Buku berhasil dihapus.', id };
+  }
+
+  async importBooks(items: any[]) {
+    if (!Array.isArray(items) || items.length === 0) {
+      throw new BadRequestException('Data import tidak valid atau kosong.');
+    }
+
+    let createdCount = 0;
+    const errors: string[] = [];
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (!item.title || !item.author) {
+        errors.push(`Baris ${i + 1}: Judul atau Pengarang tidak ada.`);
+        continue;
+      }
+
+      let slug = this.generateSlug(item.title);
+      const existingSlug = await this.prisma.book.findUnique({ where: { slug } });
+      if (existingSlug) {
+        slug = `${slug}-${Date.now().toString().slice(-4)}-${i}`;
+      }
+
+      const numStock = item.stock !== undefined ? Number(item.stock) : 1;
+      const numAvailable = item.available !== undefined ? Number(item.available) : numStock;
+      const numYear = item.year ? Number(item.year) : null;
+
+      try {
+        await this.prisma.book.create({
+          data: {
+            title: String(item.title).trim(),
+            slug,
+            author: String(item.author).trim(),
+            publisher: item.publisher ? String(item.publisher).trim() : null,
+            year: isNaN(numYear as number) ? null : numYear,
+            isbn: item.isbn ? String(item.isbn).trim() : null,
+            category: item.category ? String(item.category).trim() : 'Umum',
+            description: item.description ? String(item.description).trim() : null,
+            coverUrl: item.coverUrl ? String(item.coverUrl).trim() : null,
+            stock: isNaN(numStock) ? 1 : numStock,
+            available: isNaN(numAvailable) ? 1 : numAvailable,
+            location: item.location ? String(item.location).trim() : null,
+            isFeatured: Boolean(item.isFeatured),
+          },
+        });
+        createdCount++;
+      } catch (err: any) {
+        errors.push(`Baris ${i + 1} (${item.title}): ${err.message || 'Gagal menyimpan'}`);
+      }
+    }
+
+    return {
+      message: `Berhasil mengimport ${createdCount} dari ${items.length} buku.`,
+      total: items.length,
+      successCount: createdCount,
+      errors,
+    };
+  }
+
+  async exportBooks() {
+    const books = await this.prisma.book.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    return books;
+  }
 }

@@ -126,6 +126,89 @@ const FAQS = [
 
 
 
+const MOCK_BOOKS = [
+  {
+    id: "b1",
+    title: "Laskar Pelangi",
+    slug: "laskar-pelangi",
+    author: "Andrea Hirata",
+    publisher: "Bentang Pustaka",
+    year: 2005,
+    isbn: "978-979-3062-79-2",
+    category: "Fiksi",
+    description: "Kisah inspiratif tentang perjuangan 10 anak di Belitung dalam mengejar mimpi dan pendidikan di tengah keterbatasan.",
+    coverUrl: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=600&auto=format&fit=crop",
+    stock: 5,
+    available: 3,
+    location: "Rak Fiksi - A01",
+    isFeatured: true
+  },
+  {
+    id: "b2",
+    title: "Bumi Manusia",
+    slug: "bumi-manusia",
+    author: "Pramoedya Ananta Toer",
+    publisher: "Lentera Dipantara",
+    year: 1980,
+    isbn: "978-979-97312-3-4",
+    category: "Sejarah & Budaya",
+    description: "Novel sejarah mahakarya berlatar era kolonial Hindia Belanda yang menceritakan perjuangan dan kisah cinta Minke.",
+    coverUrl: "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=600&auto=format&fit=crop",
+    stock: 4,
+    available: 2,
+    location: "Rak Sejarah - B03",
+    isFeatured: true
+  },
+  {
+    id: "b3",
+    title: "Filosofi Teras",
+    slug: "filosofi-teras",
+    author: "Henry Manampiring",
+    publisher: "Kompas Gramedia",
+    year: 2018,
+    isbn: "978-602-424-694-5",
+    category: "Pengembangan Diri",
+    description: "Penerapan filsafat Stoisisme dalam kehidupan sehari-hari untuk mengatasi kecemasan dan mengendalikan emosi negatif.",
+    coverUrl: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=600&auto=format&fit=crop",
+    stock: 6,
+    available: 4,
+    location: "Rak Mandiri - C02",
+    isFeatured: true
+  },
+  {
+    id: "b4",
+    title: "Pemrograman Web Modern dengan React & NestJS",
+    slug: "pemrograman-web-modern-react-nestjs",
+    author: "Rian Pratama",
+    publisher: "Informatika Press",
+    year: 2024,
+    isbn: "978-623-01-1234-5",
+    category: "Sains & Teknologi",
+    description: "Panduan praktis dan komprehensif membangun aplikasi web fullstack berskala enterprise dari awal sampai deployment.",
+    coverUrl: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=600&auto=format&fit=crop",
+    stock: 3,
+    available: 3,
+    location: "Rak IT - D05",
+    isFeatured: true
+  },
+  {
+    id: "b5",
+    title: "Sejarah Nusantara & Kerajaan Besar Aceh",
+    slug: "sejarah-nusantara-kerajaan-aceh",
+    author: "Dr. Iskandar Muda",
+    publisher: "Pustaka Serambi",
+    year: 2021,
+    isbn: "978-602-00-9876-1",
+    category: "Sejarah & Budaya",
+    description: "Dokumentasi komprehensif kebudayaan, diplomasi, dan jalur perdagangan rempah di Selat Malaka.",
+    coverUrl: "https://images.unsplash.com/photo-1461360370896-922624d12aa1?q=80&w=600&auto=format&fit=crop",
+    stock: 2,
+    available: 1,
+    location: "Rak Referensi - E01",
+    isFeatured: false
+  }
+];
+
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [activeFaq, setActiveFaq] = useState(null);
@@ -133,6 +216,10 @@ export default function Home() {
   // Search & Forms States
   const [newsSearch, setNewsSearch] = useState("");
   const [selectedNewsCategory, setSelectedNewsCategory] = useState("Semua");
+  const [bookSearch, setBookSearch] = useState("");
+  const [selectedBookCategory, setSelectedBookCategory] = useState("Semua");
+  const [selectedBookDetail, setSelectedBookDetail] = useState(null);
+  const [booksList, setBooksList] = useState(MOCK_BOOKS);
   const [contactForm, setContactForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [contactSuccess, setContactSuccess] = useState(false);
   const [registeredEventId, setRegisteredEventId] = useState(null);
@@ -142,6 +229,7 @@ export default function Home() {
   const [navMenu, setNavMenu] = useState([
     { id: 1, label: "Tentang", target: "#about", order: 1, active: true },
     { id: 2, label: "Statistik", target: "#stats", order: 2, active: true },
+    { id: 9, label: "Koleksi Buku", target: "#books", order: 2.5, active: true },
     { id: 3, label: "Berita", target: "#news", order: 3, active: true },
     { id: 4, label: "Kegiatan", target: "#events", order: 4, active: true },
     { id: 5, label: "Galeri", target: "#gallery", order: 5, active: true },
@@ -526,8 +614,9 @@ export default function Home() {
       axios.get(`${apiUrl}/cms/settings`).catch(() => null),
       axios.get(`${apiUrl}/cms/banners`).catch(() => null),
       axios.get(`${apiUrl}/cms/news`).catch(() => null),
-      axios.get(`${apiUrl}/cms/events`).catch(() => null)
-    ]).then(([menuRes, btnRes, settingsRes, bannerRes, newsRes, eventRes]) => {
+      axios.get(`${apiUrl}/cms/events`).catch(() => null),
+      axios.get(`${apiUrl}/cms/books`).catch(() => null)
+    ]).then(([menuRes, btnRes, settingsRes, bannerRes, newsRes, eventRes, bookRes]) => {
       if (menuRes?.data?.length) {
         setNavMenu(menuRes.data.filter(m => m.active).sort((a, b) => a.order - b.order));
       }
@@ -558,6 +647,9 @@ export default function Home() {
       }
       if (eventRes?.data?.length) {
         setEventsList(eventRes.data);
+      }
+      if (bookRes?.data?.length) {
+        setBooksList(bookRes.data);
       }
     }).catch(() => { /* silently use defaults */ });
 
@@ -684,6 +776,18 @@ export default function Home() {
     const matchesSearch = item.title.toLowerCase().includes(newsSearch.toLowerCase()) || 
                           item.content.toLowerCase().includes(newsSearch.toLowerCase());
     const matchesCategory = selectedNewsCategory === "Semua" || item.category === selectedNewsCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  // Filter Books
+  const filteredBooks = (booksList || []).filter(item => {
+    const q = bookSearch.toLowerCase();
+    const matchesSearch = !q || 
+      (item.title && item.title.toLowerCase().includes(q)) || 
+      (item.author && item.author.toLowerCase().includes(q)) ||
+      (item.isbn && item.isbn.toLowerCase().includes(q)) ||
+      (item.publisher && item.publisher.toLowerCase().includes(q));
+    const matchesCategory = selectedBookCategory === "Semua" || item.category === selectedBookCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -1078,6 +1182,246 @@ export default function Home() {
               </div>
             </div>
           </section>
+
+          {/* ===== KOLEKSI BUKU SECTION ===== */}
+          <section id="books" className="py-24 bg-surface-100 border-y border-border-200">
+            <div className="chapter-container space-y-12">
+              {/* Header */}
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="max-w-2xl space-y-2">
+                  <span className="section-eyebrow">Katalog Perpustakaan</span>
+                  <h2 className="text-3xl md:text-4xl font-bold text-heading font-navigation">
+                    Koleksi Buku & Jurnal
+                  </h2>
+                  <p className="text-sm text-muted">Jelajahi ketersediaan koleksi cetak dan digital di perpustakaan kami.</p>
+                </div>
+                <div className="flex items-center gap-2 text-xs font-navigation text-body bg-white px-4 py-2.5 rounded-xl border border-border-200 shadow-soft">
+                  <Library size={16} className="text-primary-500" />
+                  <span>Total Koleksi: <strong>{(booksList || []).length} Judul Buku</strong></span>
+                </div>
+              </div>
+
+              {/* Search & Category Filter Bar */}
+              <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl border border-border-200 shadow-soft">
+                {/* Search input */}
+                <div className="lib-search w-full lg:w-96">
+                  <Search size={16} className="search-icon" />
+                  <input
+                    type="text"
+                    placeholder="Cari judul, pengarang, ISBN..."
+                    value={bookSearch}
+                    onChange={(e) => setBookSearch(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Category Pills */}
+                <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+                  {["Semua", "Fiksi", "Sains & Teknologi", "Sejarah & Budaya", "Pengembangan Diri", "Referensi"].map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedBookCategory(cat)}
+                      className={`px-3.5 py-1.5 rounded-full text-xs font-navigation font-semibold transition-all cursor-pointer ${
+                        selectedBookCategory === cat
+                          ? "bg-primary-500 text-white shadow-soft"
+                          : "bg-surface-100 text-body hover:bg-primary-50 hover:text-primary-500 border border-border-200"
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Book Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredBooks.length === 0 ? (
+                  <div className="col-span-full bg-white rounded-2xl border border-border-200 p-12 text-center text-muted">
+                    <BookOpen size={40} className="mx-auto mb-3 opacity-30 text-primary-500" />
+                    <p className="font-navigation font-bold text-base text-heading">Buku tidak ditemukan</p>
+                    <p className="text-xs text-muted mt-1">Coba sesuaikan kata kunci pencarian atau kategori yang dipilih.</p>
+                  </div>
+                ) : (
+                  filteredBooks.map((book) => (
+                    <div
+                      key={book.id}
+                      onClick={() => setSelectedBookDetail(book)}
+                      className="bg-white rounded-2xl border border-border-200 shadow-soft overflow-hidden flex flex-col justify-between hover:shadow-medium hover:-translate-y-1 transition-all duration-300 cursor-pointer group"
+                    >
+                      <div>
+                        {/* Cover Image & Category Pill */}
+                        <div className="relative h-60 w-full overflow-hidden bg-surface-200">
+                          {book.coverUrl ? (
+                            <img
+                              src={getImageUrl(book.coverUrl)}
+                              alt={book.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-primary-800 to-primary-950 flex flex-col items-center justify-center p-4 text-center">
+                              <BookOpen size={48} className="text-white/40 mb-2" />
+                              <span className="text-xs font-navigation text-white/70 line-clamp-2">{book.title}</span>
+                            </div>
+                          )}
+                          <div className="absolute top-3 left-3">
+                            <span className="px-2.5 py-1 rounded-md bg-slate-900/80 backdrop-blur-md text-white font-navigation font-bold text-[10px] tracking-wide border border-white/20">
+                              {book.category || "Umum"}
+                            </span>
+                          </div>
+                          {book.isFeatured && (
+                            <div className="absolute top-3 right-3">
+                              <span className="px-2 py-0.5 rounded bg-gold-500 text-slate-950 font-navigation font-extrabold text-[10px] uppercase shadow-md">
+                                Recommended
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Text details */}
+                        <div className="p-5 space-y-2">
+                          <h3 className="font-navigation font-bold text-base text-heading line-clamp-2 group-hover:text-primary-500 transition-colors">
+                            {book.title}
+                          </h3>
+                          <p className="text-xs text-muted font-navigation">
+                            Oleh: <strong className="text-body">{book.author}</strong>
+                          </p>
+                          {book.publisher && (
+                            <p className="text-[11px] text-muted line-clamp-1">
+                              {book.publisher} {book.year ? `(${book.year})` : ""}
+                            </p>
+                          )}
+                          {book.description && (
+                            <p className="text-xs text-body/80 line-clamp-2 pt-1 leading-relaxed">
+                              {book.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Footer Badge & Location */}
+                      <div className="px-5 pb-5 pt-2 border-t border-border-100 flex items-center justify-between gap-2">
+                        <span className={`text-[11px] font-navigation font-bold px-2.5 py-1 rounded-lg ${
+                          (book.available ?? book.stock ?? 1) > 0
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : "bg-red-50 text-red-700 border border-red-200"
+                        }`}>
+                          {(book.available ?? book.stock ?? 1) > 0 ? `Tersedia: ${book.available ?? book.stock}` : "Dipinjam"}
+                        </span>
+                        {book.location && (
+                          <span className="text-[11px] font-navigation font-medium text-muted truncate max-w-[120px]" title={book.location}>
+                            📍 {book.location}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* ===== MODAL DETAIL BUKU ===== */}
+          {selectedBookDetail && (
+            <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-border-200 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+                {/* Close button */}
+                <button
+                  onClick={() => setSelectedBookDetail(null)}
+                  className="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-all cursor-pointer z-10"
+                >
+                  <X size={18} />
+                </button>
+
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 p-6 sm:p-8">
+                  {/* Left Cover */}
+                  <div className="sm:col-span-5 flex flex-col items-center">
+                    <div className="w-full h-72 rounded-2xl overflow-hidden shadow-medium border border-border-200 bg-surface-200 relative">
+                      {selectedBookDetail.coverUrl ? (
+                        <img
+                          src={getImageUrl(selectedBookDetail.coverUrl)}
+                          alt={selectedBookDetail.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-primary-800 to-primary-950 flex flex-col items-center justify-center p-4 text-center">
+                          <BookOpen size={64} className="text-white/30 mb-3" />
+                          <span className="text-sm font-navigation text-white/80 font-bold">{selectedBookDetail.title}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-4 w-full text-center">
+                      <span className={`inline-block px-3 py-1.5 rounded-xl text-xs font-navigation font-bold ${
+                        (selectedBookDetail.available ?? selectedBookDetail.stock ?? 1) > 0
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : "bg-red-50 text-red-700 border border-red-200"
+                      }`}>
+                        Stok: {selectedBookDetail.available ?? selectedBookDetail.stock ?? 0} dari {selectedBookDetail.stock ?? 1} Eksemplar
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right Information */}
+                  <div className="sm:col-span-7 space-y-4">
+                    <div>
+                      <span className="px-2.5 py-1 rounded-md bg-primary-50 text-primary-700 border border-primary-200 font-navigation font-bold text-xs uppercase tracking-wide">
+                        {selectedBookDetail.category || "Umum"}
+                      </span>
+                      <h3 className="text-2xl font-bold font-navigation text-heading mt-2 leading-snug">
+                        {selectedBookDetail.title}
+                      </h3>
+                      <p className="text-sm font-semibold text-primary-600 font-navigation mt-1">
+                        Penulis: {selectedBookDetail.author}
+                      </p>
+                    </div>
+
+                    <div className="bg-surface-100 p-4 rounded-xl border border-border-200 space-y-2 text-xs">
+                      {selectedBookDetail.publisher && (
+                        <div className="flex justify-between">
+                          <span className="text-muted">Penerbit:</span>
+                          <span className="font-semibold text-heading">{selectedBookDetail.publisher}</span>
+                        </div>
+                      )}
+                      {selectedBookDetail.year && (
+                        <div className="flex justify-between">
+                          <span className="text-muted">Tahun Terbit:</span>
+                          <span className="font-semibold text-heading">{selectedBookDetail.year}</span>
+                        </div>
+                      )}
+                      {selectedBookDetail.isbn && (
+                        <div className="flex justify-between">
+                          <span className="text-muted">ISBN:</span>
+                          <span className="font-mono text-heading">{selectedBookDetail.isbn}</span>
+                        </div>
+                      )}
+                      {selectedBookDetail.location && (
+                        <div className="flex justify-between">
+                          <span className="text-muted">Lokasi Rak:</span>
+                          <span className="font-bold text-primary-600">📍 {selectedBookDetail.location}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-muted font-navigation mb-1.5">Ringkasan / Sinopsis</h4>
+                      <p className="text-sm text-body leading-relaxed max-h-36 overflow-y-auto pr-2">
+                        {selectedBookDetail.description || "Belum ada ringkasan atau sinopsis deskripsi untuk buku ini."}
+                      </p>
+                    </div>
+
+                    <div className="pt-2 flex justify-end">
+                      <button
+                        onClick={() => setSelectedBookDetail(null)}
+                        className="btn-primary !py-2.5 !px-6 text-xs font-navigation font-bold"
+                      >
+                        Tutup Modal
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ===== BERITA ===== */}
           <section id="news" className="py-24 bg-white">

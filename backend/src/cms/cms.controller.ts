@@ -394,4 +394,60 @@ export class CmsController {
   async deleteContactButton(@Param('id', ParseIntPipe) id: number) {
     return this.cmsService.deleteContactButton(id);
   }
+
+  // ==========================================
+  // BOOK COLLECTION CRUD & IMPORT/EXPORT
+  // ==========================================
+  @Get('books')
+  async listBooks(
+    @Query('search') search?: string,
+    @Query('category') category?: string,
+    @Query('isFeatured') isFeatured?: string,
+  ) {
+    return this.cmsService.listBooks(search, category, isFeatured);
+  }
+
+  @Get('books/export')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  async exportBooks() {
+    return this.cmsService.exportBooks();
+  }
+
+  @Get('books/:id')
+  async getBookById(@Param('id') id: string) {
+    return this.cmsService.getBookById(id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Post('books')
+  async createBook(@Body() dto: Record<string, unknown>) {
+    return this.cmsService.createBook(dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Put('books/:id')
+  async updateBook(
+    @Param('id') id: string,
+    @Body() dto: Record<string, unknown>,
+  ) {
+    return this.cmsService.updateBook(id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Delete('books/:id')
+  async deleteBook(@Param('id') id: string) {
+    return this.cmsService.deleteBook(id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Post('books/import')
+  async importBooks(@Body() body: { items?: any[] } | any[]) {
+    const items = Array.isArray(body) ? body : body?.items || [];
+    return this.cmsService.importBooks(items);
+  }
 }

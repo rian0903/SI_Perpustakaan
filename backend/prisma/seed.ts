@@ -62,6 +62,7 @@ async function main() {
   const menuItemsData = [
     { label: 'Beranda', target: '/', order: 1, active: true },
     { label: 'Profil', target: '/#about', order: 2, active: true },
+    { label: 'Koleksi Buku', target: '/#books', order: 2.5, active: true },
     { label: 'Berita', target: '/#news', order: 3, active: true },
     { label: 'Agenda', target: '/#events', order: 4, active: true },
     { label: 'Galeri', target: '/#gallery', order: 5, active: true },
@@ -141,6 +142,91 @@ async function main() {
       ],
     });
     console.log(`✅ Sample FAQs seeded`);
+  }
+
+  // 8. Seed Sample Books
+  const existingBooks = await prisma.book.count();
+  if (existingBooks === 0) {
+    await prisma.book.createMany({
+      data: [
+        {
+          title: "Laskar Pelangi",
+          slug: "laskar-pelangi",
+          author: "Andrea Hirata",
+          publisher: "Bentang Pustaka",
+          year: 2005,
+          isbn: "978-979-3062-79-2",
+          category: "Fiksi",
+          description: "Kisah perjuangan 10 anak di Belitung dalam mengejar mimpi dan pendidikan di tengah keterbatasan.",
+          coverUrl: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=600&auto=format&fit=crop",
+          stock: 5,
+          available: 3,
+          location: "Rak Fiksi - A01",
+          isFeatured: true
+        },
+        {
+          title: "Bumi Manusia",
+          slug: "bumi-manusia",
+          author: "Pramoedya Ananta Toer",
+          publisher: "Lentera Dipantara",
+          year: 1980,
+          isbn: "978-979-97312-3-4",
+          category: "Sejarah & Budaya",
+          description: "Novel sejarah berlatar era kolonial Hindia Belanda yang menceritakan pergerakan dan kisah cinta Minke.",
+          coverUrl: "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=600&auto=format&fit=crop",
+          stock: 4,
+          available: 2,
+          location: "Rak Sejarah - B03",
+          isFeatured: true
+        },
+        {
+          title: "Filosfi Teras",
+          slug: "filosofi-teras",
+          author: "Henry Manampiring",
+          publisher: "Kompik Media",
+          year: 2018,
+          isbn: "978-602-424-694-5",
+          category: "Pengembangan Diri",
+          description: "Penerapan filsafat Stoisisme dalam kehidupan sehari-hari untuk mengatasi kecemasan dan stres emosional.",
+          coverUrl: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=600&auto=format&fit=crop",
+          stock: 6,
+          available: 4,
+          location: "Rak Mandiri - C02",
+          isFeatured: true
+        },
+        {
+          title: "Pemrograman Web Modern dengan React & NestJS",
+          slug: "pemrograman-web-modern-react-nestjs",
+          author: "Rian Pratama",
+          publisher: "Informatika Press",
+          year: 2024,
+          isbn: "978-623-01-1234-5",
+          category: "Sains & Teknologi",
+          description: "Panduan praktis membangun aplikasi web fullstack berskala enterprise dari awal sampai deployment.",
+          coverUrl: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=600&auto=format&fit=crop",
+          stock: 3,
+          available: 3,
+          location: "Rak IT - D05",
+          isFeatured: true
+        },
+        {
+          title: "Sejarah Nusantara & Kerajaan Besar Aceh",
+          slug: "sejarah-nusantara-kerajaan-aceh",
+          author: "Dr. Iskandar Muda",
+          publisher: "Pustaka Serambi",
+          year: 2021,
+          isbn: "978-602-00-9876-1",
+          category: "Sejarah & Budaya",
+          description: "Dokumentasi komprehensif kebudayaan dan jalur perdagangan rempah di Selat Malaka.",
+          coverUrl: "https://images.unsplash.com/photo-1461360370896-922624d12aa1?q=80&w=600&auto=format&fit=crop",
+          stock: 2,
+          available: 1,
+          location: "Rak Referensi - E01",
+          isFeatured: false
+        }
+      ]
+    });
+    console.log(`✅ Sample Books seeded`);
   }
 
   console.log('🎉 Seeding completed successfully!');

@@ -20,6 +20,89 @@ const INITIAL_NEWS = [
   { id: "news-3", title: "Donasi 1.500 Buku Langka dari Yayasan Indonesia Membaca Resmi Diterima", content: "Koleksi sejarah dan manuskrip kuno abad ke-18 telah disumbangkan...", category: "Berita", date: "15 Juni 2026", published: false, thumbnail: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=600&auto=format&fit=crop" }
 ];
 
+const INITIAL_BOOKS = [
+  {
+    id: "b1",
+    title: "Laskar Pelangi",
+    slug: "laskar-pelangi",
+    author: "Andrea Hirata",
+    publisher: "Bentang Pustaka",
+    year: 2005,
+    isbn: "978-979-3062-79-2",
+    category: "Fiksi",
+    description: "Kisah inspiratif tentang perjuangan 10 anak di Belitung dalam mengejar mimpi dan pendidikan di tengah keterbatasan.",
+    coverUrl: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=600&auto=format&fit=crop",
+    stock: 5,
+    available: 3,
+    location: "Rak Fiksi - A01",
+    isFeatured: true
+  },
+  {
+    id: "b2",
+    title: "Bumi Manusia",
+    slug: "bumi-manusia",
+    author: "Pramoedya Ananta Toer",
+    publisher: "Lentera Dipantara",
+    year: 1980,
+    isbn: "978-979-97312-3-4",
+    category: "Sejarah & Budaya",
+    description: "Novel sejarah mahakarya berlatar era kolonial Hindia Belanda yang menceritakan perjuangan dan kisah cinta Minke.",
+    coverUrl: "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=600&auto=format&fit=crop",
+    stock: 4,
+    available: 2,
+    location: "Rak Sejarah - B03",
+    isFeatured: true
+  },
+  {
+    id: "b3",
+    title: "Filosofi Teras",
+    slug: "filosofi-teras",
+    author: "Henry Manampiring",
+    publisher: "Kompas Gramedia",
+    year: 2018,
+    isbn: "978-602-424-694-5",
+    category: "Pengembangan Diri",
+    description: "Penerapan filsafat Stoisisme dalam kehidupan sehari-hari untuk mengatasi kecemasan dan mengendalikan emosi negatif.",
+    coverUrl: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=600&auto=format&fit=crop",
+    stock: 6,
+    available: 4,
+    location: "Rak Mandiri - C02",
+    isFeatured: true
+  },
+  {
+    id: "b4",
+    title: "Pemrograman Web Modern dengan React & NestJS",
+    slug: "pemrograman-web-modern-react-nestjs",
+    author: "Rian Pratama",
+    publisher: "Informatika Press",
+    year: 2024,
+    isbn: "978-623-01-1234-5",
+    category: "Sains & Teknologi",
+    description: "Panduan praktis dan komprehensif membangun aplikasi web fullstack berskala enterprise dari awal sampai deployment.",
+    coverUrl: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=600&auto=format&fit=crop",
+    stock: 3,
+    available: 3,
+    location: "Rak IT - D05",
+    isFeatured: true
+  },
+  {
+    id: "b5",
+    title: "Sejarah Nusantara & Kerajaan Besar Aceh",
+    slug: "sejarah-nusantara-kerajaan-aceh",
+    author: "Dr. Iskandar Muda",
+    publisher: "Pustaka Serambi",
+    year: 2021,
+    isbn: "978-602-00-9876-1",
+    category: "Sejarah & Budaya",
+    description: "Dokumentasi komprehensif kebudayaan, diplomasi, dan jalur perdagangan rempah di Selat Malaka.",
+    coverUrl: "https://images.unsplash.com/photo-1461360370896-922624d12aa1?q=80&w=600&auto=format&fit=crop",
+    stock: 2,
+    available: 1,
+    location: "Rak Referensi - E01",
+    isFeatured: false
+  }
+];
+
 const INITIAL_EVENTS = [
   { id: "event-1", title: "Bedah Buku: 'Dunia di Dalam Lembaran Kertas'", date: "2026-07-25", time: "10:00 - 12:00 WIB", location: "Ruang Aula Utama, Lantai 2", speaker: "Rian Pratama", capacity: 50, registeredCount: 38, thumbnail: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=600&auto=format&fit=crop", status: "UPCOMING", isAnnual: true },
   { id: "event-2", title: "Workshop Menulis Kreatif Untuk Remaja: Menemukan Suara Tulisanmu", date: "2026-08-02", time: "13:00 - 16:00 WIB", location: "Ruang Diskusi Kreatif 2", speaker: "Sinta Aulia", capacity: 30, registeredCount: 29, thumbnail: "https://images.unsplash.com/photo-1455390582262-044cdead277a?q=80&w=600&auto=format&fit=crop", status: "ONGOING", isAnnual: false }
@@ -359,6 +442,26 @@ export default function AdminDashboard() {
   const [membershipActionLoading, setMembershipActionLoading] = useState(false);
 
   // CMS Content States
+  const [books, setBooks] = useState(INITIAL_BOOKS);
+  const [bookFilterCategory, setBookFilterCategory] = useState("Semua");
+  const [bookAdminSearch, setBookAdminSearch] = useState("");
+  const [bookForm, setBookForm] = useState({
+    title: "",
+    author: "",
+    publisher: "",
+    year: new Date().getFullYear(),
+    isbn: "",
+    category: "Fiksi",
+    description: "",
+    coverUrl: "",
+    stock: 1,
+    available: 1,
+    location: "Rak Fiksi - A01",
+    isFeatured: false
+  });
+  const [showBookImportModal, setShowBookImportModal] = useState(false);
+  const [bookImportText, setBookImportText] = useState("");
+
   const [news, setNews] = useState(INITIAL_NEWS);
   const [events, setEvents] = useState(INITIAL_EVENTS);
   const [faqs, setFaqs] = useState(INITIAL_FAQS);
@@ -570,7 +673,7 @@ export default function AdminDashboard() {
     try {
       const safeGet = (url, opts = {}) => axios.get(url, opts).catch(() => ({ data: null }));
 
-      const [resNews, resEvents, resFaq, resBanners, resGallery, resContacts, resUsers, resSettings, resSocials, resNavMenu, resContactBtns] = await Promise.all([
+      const [resNews, resEvents, resFaq, resBanners, resGallery, resContacts, resUsers, resSettings, resSocials, resNavMenu, resContactBtns, resBooks] = await Promise.all([
         safeGet(`${apiUrl}/cms/news`),
         safeGet(`${apiUrl}/cms/events`),
         safeGet(`${apiUrl}/cms/faq`),
@@ -581,7 +684,8 @@ export default function AdminDashboard() {
         safeGet(`${apiUrl}/cms/settings`),
         safeGet(`${apiUrl}/cms/social-media`),
         safeGet(`${apiUrl}/cms/nav-menu`),
-        safeGet(`${apiUrl}/cms/contact-buttons`)
+        safeGet(`${apiUrl}/cms/contact-buttons`),
+        safeGet(`${apiUrl}/cms/books`)
       ]);
 
       if (resNews.data) setNews(resNews.data);
@@ -591,6 +695,7 @@ export default function AdminDashboard() {
       if (resGallery.data) setGallery(resGallery.data);
       if (resContacts.data) setContacts(resContacts.data);
       if (resUsers.data && resUsers.data.length > 0) setUsers(resUsers.data);
+      if (resBooks.data && resBooks.data.length > 0) setBooks(resBooks.data);
       if (resSettings.data && resSettings.data.length > 0) {
         saveSettingsState(resSettings.data);
         const lt = resSettings.data.find(s => s.key === "navbar_logo_text");
@@ -805,6 +910,20 @@ export default function AdminDashboard() {
     setBannerForm({ title: "", subtitle: "", imageUrl: "", linkUrl: "#", order: banners.length + 1, active: true });
     setGalleryForm({ title: "", description: "", thumbnail: "" });
     setUserForm({ name: "", email: "", password: "", role: "ADMIN" });
+    setBookForm({
+      title: "",
+      author: "",
+      publisher: "",
+      year: new Date().getFullYear(),
+      isbn: "",
+      category: "Fiksi",
+      description: "",
+      coverUrl: "",
+      stock: 1,
+      available: 1,
+      location: "Rak Fiksi - A01",
+      isFeatured: false
+    });
     setShowModal(true);
   };
 
@@ -818,6 +937,21 @@ export default function AdminDashboard() {
       setFaqForm({ question: item.question, answer: item.answer, order: item.order });
     } else if (activeTab === "banner") {
       setBannerForm({ title: item.title, subtitle: item.subtitle, imageUrl: item.imageUrl, linkUrl: item.linkUrl, order: item.order, active: item.active });
+    } else if (activeTab === "books") {
+      setBookForm({
+        title: item.title || "",
+        author: item.author || "",
+        publisher: item.publisher || "",
+        year: item.year || "",
+        isbn: item.isbn || "",
+        category: item.category || "Fiksi",
+        description: item.description || "",
+        coverUrl: item.coverUrl || "",
+        stock: item.stock ?? 1,
+        available: item.available ?? 1,
+        location: item.location || "",
+        isFeatured: Boolean(item.isFeatured)
+      });
     }
     setShowModal(true);
   };
@@ -832,6 +966,7 @@ export default function AdminDashboard() {
       else if (activeTab === "banner") saveBannersState(banners.filter(b => b.id !== id));
       else if (activeTab === "gallery") setGallery(gallery.filter(g => g.id !== id));
       else if (activeTab === "user") setUsers(users.filter(u => u.id !== id));
+      else if (activeTab === "books") setBooks(books.filter(b => b.id !== id));
       showNotification("Data berhasil dihapus (Offline)");
       return;
     }
@@ -841,7 +976,8 @@ export default function AdminDashboard() {
     const headers = { Authorization: `Bearer ${token}` };
 
     try {
-      await axios.delete(`${apiUrl}/cms/${activeTab === "banner" || activeTab === "faq" ? `${activeTab}s` : activeTab === "user" ? "users" : activeTab}/${id}`, { headers });
+      const endpoint = activeTab === "banner" || activeTab === "faq" ? `${activeTab}s` : activeTab === "user" ? "users" : activeTab === "books" ? "books" : activeTab;
+      await axios.delete(`${apiUrl}/cms/${endpoint}/${id}`, { headers });
       showNotification("Data berhasil dihapus dari database.");
       fetchBackendData(token);
     } catch (err) {
@@ -894,6 +1030,14 @@ export default function AdminDashboard() {
       } else if (activeTab === "user") {
         setUsers([...users, { id: `usr-${Date.now()}`, name: userForm.name, email: userForm.email, role: userForm.role }]);
         showNotification("Admin baru berhasil ditambahkan (Offline)");
+      } else if (activeTab === "books") {
+        if (editingItem) {
+          setBooks(books.map(b => b.id === editingItem.id ? { ...b, ...bookForm } : b));
+          showNotification("Buku berhasil diperbarui (Offline)");
+        } else {
+          setBooks([{ id: `b-${Date.now()}`, ...bookForm }, ...books]);
+          showNotification("Buku baru berhasil ditambahkan (Offline)");
+        }
       }
       return;
     }
@@ -916,9 +1060,11 @@ export default function AdminDashboard() {
         payload = galleryForm;
       } else if (activeTab === "user") {
         payload = userForm;
+      } else if (activeTab === "books") {
+        payload = bookForm;
       }
 
-      const endpoint = activeTab === "banner" || activeTab === "faq" ? `${activeTab}s` : activeTab === "user" ? "users" : activeTab;
+      const endpoint = activeTab === "banner" || activeTab === "faq" ? `${activeTab}s` : activeTab === "user" ? "users" : activeTab === "books" ? "books" : activeTab;
 
       if (editingItem) {
         await axios.put(`${apiUrl}/cms/${endpoint}/${editingItem.id}`, payload, { headers });
@@ -929,7 +1075,131 @@ export default function AdminDashboard() {
       }
       fetchBackendData(token);
     } catch (err) {
-      showNotification("Gagal menyimpan data ke API: " + err.message, "error");
+      showNotification("Gagal menyimpan data: " + (err.response?.data?.message || err.message), "error");
+    }
+  };
+
+  // Export Books to CSV
+  const handleExportBooksCSV = () => {
+    if (books.length === 0) {
+      showNotification("Tidak ada data buku untuk diexport.", "error");
+      return;
+    }
+    const headers = ["ID", "Judul", "Pengarang", "Penerbit", "Tahun", "ISBN", "Kategori", "Stok", "Tersedia", "Lokasi", "Diunggulkan"];
+    const rows = books.map(b => [
+      `"${b.id || ''}"`,
+      `"${(b.title || '').replace(/"/g, '""')}"`,
+      `"${(b.author || '').replace(/"/g, '""')}"`,
+      `"${(b.publisher || '').replace(/"/g, '""')}"`,
+      b.year || '',
+      `"${b.isbn || ''}"`,
+      `"${b.category || ''}"`,
+      b.stock ?? 1,
+      b.available ?? 1,
+      `"${(b.location || '').replace(/"/g, '""')}"`,
+      b.isFeatured ? "Ya" : "Tidak"
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Koleksi_Buku_Perpustakaan_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showNotification(`Berhasil mengunduh file CSV (${books.length} buku)`);
+  };
+
+  // Export Books to JSON
+  const handleExportBooksJSON = () => {
+    if (books.length === 0) {
+      showNotification("Tidak ada data buku untuk diexport.", "error");
+      return;
+    }
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(books, null, 2));
+    const link = document.createElement("a");
+    link.setAttribute("href", dataStr);
+    link.setAttribute("download", `Koleksi_Buku_Perpustakaan_${new Date().toISOString().slice(0, 10)}.json`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showNotification(`Berhasil mengunduh file JSON (${books.length} buku)`);
+  };
+
+  // Import Books Submit
+  const handleImportBooksSubmit = async (e) => {
+    e.preventDefault();
+    if (!bookImportText.trim()) {
+      showNotification("Masukkan data JSON atau CSV terlebih dahulu.", "error");
+      return;
+    }
+
+    try {
+      let parsedItems = [];
+      const trimmed = bookImportText.trim();
+      if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
+        const json = JSON.parse(trimmed);
+        parsedItems = Array.isArray(json) ? json : (json.items || [json]);
+      } else {
+        const lines = trimmed.split("\n").filter(l => l.trim());
+        const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+        parsedItems = lines.slice(1).map(line => {
+          const vals = line.split(",").map(v => v.trim().replace(/^"|"$/g, ''));
+          const item = {};
+          headers.forEach((h, i) => {
+            if (h.includes("judul") || h.includes("title")) item.title = vals[i];
+            else if (h.includes("pengarang") || h.includes("author")) item.author = vals[i];
+            else if (h.includes("penerbit") || h.includes("publisher")) item.publisher = vals[i];
+            else if (h.includes("tahun") || h.includes("year")) item.year = parseInt(vals[i], 10);
+            else if (h.includes("isbn")) item.isbn = vals[i];
+            else if (h.includes("kategori") || h.includes("category")) item.category = vals[i];
+            else if (h.includes("stok") || h.includes("stock")) item.stock = parseInt(vals[i], 10);
+            else if (h.includes("lokasi") || h.includes("location")) item.location = vals[i];
+          });
+          return item;
+        });
+      }
+
+      if (parsedItems.length === 0) {
+        showNotification("Format data tidak valid.", "error");
+        return;
+      }
+
+      if (offline) {
+        const newBooks = parsedItems.map((item, idx) => ({
+          id: `imp-${Date.now()}-${idx}`,
+          title: item.title || "Judul Buku",
+          author: item.author || "Penulis",
+          publisher: item.publisher || "Penerbit",
+          year: item.year || new Date().getFullYear(),
+          isbn: item.isbn || "",
+          category: item.category || "Umum",
+          description: item.description || "",
+          coverUrl: item.coverUrl || "",
+          stock: item.stock || 1,
+          available: item.available || item.stock || 1,
+          location: item.location || "Rak Umum",
+          isFeatured: Boolean(item.isFeatured)
+        }));
+        setBooks([...newBooks, ...books]);
+        setShowBookImportModal(false);
+        setBookImportText("");
+        showNotification(`Berhasil mengimport ${newBooks.length} buku (Offline)`);
+        return;
+      }
+
+      const token = localStorage.getItem("admin_token");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const res = await axios.post(`${apiUrl}/cms/books/import`, { items: parsedItems }, { headers });
+      setShowBookImportModal(false);
+      setBookImportText("");
+      showNotification(res.data?.message || "Import buku berhasil!");
+      fetchBackendData(token);
+    } catch (err) {
+      showNotification("Gagal import data: " + (err.response?.data?.message || err.message), "error");
     }
   };
 
@@ -1023,6 +1293,7 @@ export default function AdminDashboard() {
   // Tab page title map
   const TAB_TITLES = {
     overview: "Ringkasan Dashboard",
+    books: "Kelola Koleksi Buku Perpustakaan",
     membership: "Manajemen Keanggotaan Perpustakaan",
     hero: "Kelola Teks & Banner Hero Halaman Utama",
     about: "Kelola Section Tentang Kami",
@@ -1040,6 +1311,7 @@ export default function AdminDashboard() {
 
   const SIDEBAR_MENU = [
     { id: "overview", label: "Ringkasan", icon: <LayoutDashboard size={16} />, role: "ADMIN" },
+    { id: "books", label: "Koleksi Buku", icon: <BookOpen size={16} />, role: "ADMIN" },
     { id: "membership", label: "Keanggotaan", icon: <IdCard size={16} />, role: "ADMIN" },
     { id: "hero", label: "Kelola Hero", icon: <Compass size={16} />, role: "ADMIN" },
     { id: "about", label: "Kelola Tentang", icon: <Info size={16} />, role: "ADMIN" },
@@ -1271,6 +1543,220 @@ export default function AdminDashboard() {
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* ====== KOLEKSI BUKU TAB ====== */}
+          {activeTab === "books" && (
+            <div className="space-y-6">
+              {/* Stat Summary Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <div className="stat-card flex items-center justify-between">
+                  <div>
+                    <div className="stat-value">{books.length}</div>
+                    <div className="stat-label">Total Judul Buku</div>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center">
+                    <BookOpen size={22} />
+                  </div>
+                </div>
+
+                <div className="stat-card flex items-center justify-between">
+                  <div>
+                    <div className="stat-value">{books.reduce((acc, b) => acc + (Number(b.stock) || 1), 0)}</div>
+                    <div className="stat-label">Total Stok Eksemplar</div>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <Database size={22} />
+                  </div>
+                </div>
+
+                <div className="stat-card flex items-center justify-between">
+                  <div>
+                    <div className="stat-value">{books.filter(b => b.isFeatured).length}</div>
+                    <div className="stat-label">Buku Direkomendasikan</div>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <Compass size={22} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Toolbar */}
+              <div className="bg-white p-4 rounded-xl border border-border-200 shadow-soft flex flex-col md:flex-row items-center justify-between gap-4">
+                {/* Search & Filter */}
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                  <div className="relative w-full sm:w-64">
+                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                    <input
+                      type="text"
+                      placeholder="Cari Judul, Pengarang, ISBN..."
+                      value={bookAdminSearch}
+                      onChange={(e) => setBookAdminSearch(e.target.value)}
+                      className="lib-input text-xs pl-9 !py-2"
+                    />
+                  </div>
+
+                  <select
+                    value={bookFilterCategory}
+                    onChange={(e) => setBookFilterCategory(e.target.value)}
+                    className="lib-input text-xs !py-2 w-full sm:w-44"
+                  >
+                    <option value="Semua">Semua Kategori</option>
+                    <option value="Fiksi">Fiksi</option>
+                    <option value="Sains & Teknologi">Sains & Teknologi</option>
+                    <option value="Sejarah & Budaya">Sejarah & Budaya</option>
+                    <option value="Pengembangan Diri">Pengembangan Diri</option>
+                    <option value="Referensi">Referensi</option>
+                  </select>
+                </div>
+
+                {/* Right Action Buttons */}
+                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+                  <button
+                    onClick={handleExportBooksCSV}
+                    className="px-3 py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center gap-1.5 border border-emerald-200 transition-all cursor-pointer"
+                    title="Export CSV"
+                  >
+                    <FileSpreadsheet size={14} />
+                    <span>Export CSV</span>
+                  </button>
+
+                  <button
+                    onClick={handleExportBooksJSON}
+                    className="px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs flex items-center gap-1.5 border border-blue-200 transition-all cursor-pointer"
+                    title="Export JSON"
+                  >
+                    <Code size={14} />
+                    <span>Export JSON</span>
+                  </button>
+
+                  <button
+                    onClick={() => setShowBookImportModal(true)}
+                    className="px-3 py-2 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs flex items-center gap-1.5 border border-purple-200 transition-all cursor-pointer"
+                  >
+                    <Upload size={14} />
+                    <span>Import Buku</span>
+                  </button>
+
+                  <button
+                    onClick={handleOpenAddModal}
+                    className="btn-primary !py-2 !px-4 text-xs font-bold"
+                  >
+                    <Plus size={15} />
+                    <span>Tambah Buku Baru</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Books Data Table */}
+              <div className="bg-white rounded-xl border border-border-200 shadow-soft overflow-hidden">
+                {books.length === 0 ? (
+                  <div className="text-center py-16 p-6 space-y-3">
+                    <BookOpen size={48} className="mx-auto text-muted/40" />
+                    <h3 className="font-bold text-base text-heading font-navigation">Belum ada koleksi buku</h3>
+                    <p className="text-xs text-muted max-w-sm mx-auto">
+                      Tambahkan buku baru atau import data koleksi untuk memunculkannya di katalog landing page.
+                    </p>
+                    <div className="pt-2 flex justify-center gap-3">
+                      <button onClick={handleOpenAddModal} className="btn-primary !py-2 !px-4 text-xs font-bold">
+                        <Plus size={14} /> Tambah Buku Baru
+                      </button>
+                      <button onClick={() => setShowBookImportModal(true)} className="btn-secondary !py-2 !px-4 text-xs font-bold">
+                        <Upload size={14} /> Import File
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="lib-table">
+                      <thead>
+                        <tr>
+                          <th>Sampul</th>
+                          <th>Judul & Pengarang</th>
+                          <th>Kategori</th>
+                          <th>Penerbit & Tahun</th>
+                          <th>ISBN</th>
+                          <th>Stok / Tersedia</th>
+                          <th>Lokasi Rak</th>
+                          <th>Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {books
+                          .filter(b => {
+                            const q = bookAdminSearch.toLowerCase();
+                            const matchQ = !q ||
+                              (b.title && b.title.toLowerCase().includes(q)) ||
+                              (b.author && b.author.toLowerCase().includes(q)) ||
+                              (b.isbn && b.isbn.toLowerCase().includes(q));
+                            const matchCat = bookFilterCategory === "Semua" || b.category === bookFilterCategory;
+                            return matchQ && matchCat;
+                          })
+                          .map((b) => (
+                            <tr key={b.id}>
+                              <td>
+                                <div className="w-10 h-12 rounded-lg bg-surface-200 overflow-hidden border border-border-200 shrink-0">
+                                  {b.coverUrl ? (
+                                    <img src={getImageUrl(b.coverUrl)} alt={b.title} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="w-full h-full bg-primary-900 flex items-center justify-center text-white/50">
+                                      <BookOpen size={16} />
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="max-w-[220px]">
+                                <div className="font-bold text-heading font-navigation text-sm line-clamp-1">{b.title}</div>
+                                <div className="text-xs text-primary-600 font-navigation font-medium">Oleh: {b.author}</div>
+                                {b.isFeatured && (
+                                  <span className="inline-block text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 uppercase mt-0.5">
+                                    ⭐ Rekomendasi
+                                  </span>
+                                )}
+                              </td>
+                              <td>
+                                <span className="px-2.5 py-1 rounded-full bg-primary-50 text-primary-700 border border-primary-200 font-navigation font-bold text-[11px]">
+                                  {b.category || "Umum"}
+                                </span>
+                              </td>
+                              <td>
+                                <div className="text-xs font-medium text-heading">{b.publisher || "-"}</div>
+                                <div className="text-[11px] text-muted">{b.year ? `Tahun ${b.year}` : ""}</div>
+                              </td>
+                              <td>
+                                <code className="text-xs font-mono bg-surface-100 px-2 py-0.5 rounded text-body border border-border-200">
+                                  {b.isbn || "-"}
+                                </code>
+                              </td>
+                              <td>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-bold text-xs font-mono text-heading">
+                                    {b.available ?? b.stock ?? 1} / {b.stock ?? 1}
+                                  </span>
+                                  <span className={`w-2 h-2 rounded-full ${
+                                    (b.available ?? b.stock ?? 1) > 0 ? "bg-emerald-500" : "bg-red-500"
+                                  }`} />
+                                </div>
+                              </td>
+                              <td>
+                                <span className="text-xs font-medium text-body">
+                                  {b.location || "-"}
+                                </span>
+                              </td>
+                              <td>
+                                <div className="flex items-center gap-1.5">
+                                  <ActionEdit onClick={() => handleOpenEditModal(b)} />
+                                  <ActionDelete onClick={() => handleDelete(b.id)} />
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -2887,10 +3373,152 @@ export default function AdminDashboard() {
                   </>
                 )}
 
+                {/* BOOKS form */}
+                {activeTab === "books" && (
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="lib-label">Judul Buku</label>
+                      <input type="text" required value={bookForm.title} onChange={(e) => setBookForm({ ...bookForm, title: e.target.value })} className="lib-input" placeholder="misal: Laskar Pelangi" />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="lib-label">Penulis / Pengarang</label>
+                        <input type="text" required value={bookForm.author} onChange={(e) => setBookForm({ ...bookForm, author: e.target.value })} className="lib-input" placeholder="misal: Andrea Hirata" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="lib-label">Kategori</label>
+                        <select value={bookForm.category} onChange={(e) => setBookForm({ ...bookForm, category: e.target.value })} className="lib-input">
+                          <option value="Fiksi">Fiksi</option>
+                          <option value="Sains & Teknologi">Sains & Teknologi</option>
+                          <option value="Sejarah & Budaya">Sejarah & Budaya</option>
+                          <option value="Pengembangan Diri">Pengembangan Diri</option>
+                          <option value="Referensi">Referensi</option>
+                          <option value="Agama">Agama</option>
+                          <option value="Umum">Umum</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="lib-label">Penerbit</label>
+                        <input type="text" value={bookForm.publisher} onChange={(e) => setBookForm({ ...bookForm, publisher: e.target.value })} className="lib-input" placeholder="Bentang Pustaka" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="lib-label">Tahun Terbit</label>
+                        <input type="number" value={bookForm.year} onChange={(e) => setBookForm({ ...bookForm, year: e.target.value })} className="lib-input" placeholder="2024" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="lib-label">ISBN</label>
+                        <input type="text" value={bookForm.isbn} onChange={(e) => setBookForm({ ...bookForm, isbn: e.target.value })} className="lib-input" placeholder="978-979-xxx" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="lib-label">Total Stok Eksemplar</label>
+                        <input type="number" required min={0} value={bookForm.stock} onChange={(e) => setBookForm({ ...bookForm, stock: parseInt(e.target.value, 10) || 0, available: parseInt(e.target.value, 10) || 0 })} className="lib-input" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="lib-label">Stok Tersedia</label>
+                        <input type="number" required min={0} value={bookForm.available} onChange={(e) => setBookForm({ ...bookForm, available: parseInt(e.target.value, 10) || 0 })} className="lib-input" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="lib-label">Lokasi Rak / No. DDC</label>
+                        <input type="text" value={bookForm.location} onChange={(e) => setBookForm({ ...bookForm, location: e.target.value })} className="lib-input" placeholder="Rak Fiksi - A01" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="flex items-center gap-2 pt-1 cursor-pointer">
+                        <input type="checkbox" checked={!!bookForm.isFeatured} onChange={(e) => setBookForm({ ...bookForm, isFeatured: e.target.checked })} className="w-4 h-4 rounded text-primary-600 focus:ring-primary-500" />
+                        <span className="text-xs font-bold text-heading">⭐ Rekomendasikan Buku Ini (Sorotan Utama)</span>
+                      </label>
+                    </div>
+
+                    <FileUploadInput label="Gambar Cover / Sampul Buku" value={bookForm.coverUrl} onChange={(val) => setBookForm({ ...bookForm, coverUrl: val })} onError={(msg) => showNotification(msg, "error")} />
+
+                    <div className="space-y-1.5">
+                      <label className="lib-label">Sinopsis / Ringkasan Deskripsi</label>
+                      <textarea rows={3} value={bookForm.description} onChange={(e) => setBookForm({ ...bookForm, description: e.target.value })} className="lib-input resize-none text-xs" placeholder="Tuliskan ringkasan cerita atau deskripsi isi buku..." />
+                    </div>
+                  </>
+                )}
+
               </div>
               <div className="lib-modal-footer">
                 <button type="button" onClick={() => setShowModal(false)} className="btn-ghost border border-border-200">Batal</button>
                 <button type="submit" className="btn-primary">Simpan Data</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== IMPORT BOOKS MODAL ==================== */}
+      {showBookImportModal && (
+        <div className="lib-modal-overlay">
+          <div className="lib-modal max-w-xl w-full">
+            <div className="lib-modal-header">
+              <div className="flex items-center gap-2">
+                <Upload size={18} className="text-purple-600" />
+                <h4 className="font-bold text-heading font-navigation">Import Koleksi Buku</h4>
+              </div>
+              <button onClick={() => setShowBookImportModal(false)} className="text-muted hover:text-body cursor-pointer transition-colors"><X size={18} /></button>
+            </div>
+            <form onSubmit={handleImportBooksSubmit} className="space-y-4 p-6">
+              <div className="bg-purple-50 border border-purple-200 p-4 rounded-xl space-y-2">
+                <p className="text-xs text-purple-900 font-semibold">Format Yang Didukung:</p>
+                <ul className="text-xs text-purple-800 space-y-1 list-disc list-inside">
+                  <li><strong>Format JSON Array:</strong> Salin format JSON array berisi data buku.</li>
+                  <li><strong>Format CSV:</strong> Baris pertama `Judul,Pengarang,Penerbit,Tahun,ISBN,Kategori,Stok,Lokasi`.</li>
+                </ul>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="lib-label">Unggah File (JSON/CSV) atau Tempel Teks Data</label>
+                  <button
+                    type="button"
+                    onClick={() => setBookImportText(JSON.stringify([
+                      { title: "Buku Contoh Import", author: "Penulis Contoh", publisher: "Pustaka Jaya", year: 2024, isbn: "978-123456", category: "Fiksi", stock: 5, location: "Rak A-01" }
+                    ], null, 2))}
+                    className="text-[11px] font-bold text-primary-600 hover:underline cursor-pointer"
+                  >
+                    Gunakan Templat Sampel JSON
+                  </button>
+                </div>
+
+                <div className="mb-2">
+                  <input
+                    type="file"
+                    accept=".json,.csv,.txt"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = (evt) => {
+                        if (evt.target?.result) setBookImportText(evt.target.result);
+                      };
+                      reader.readAsText(file);
+                    }}
+                    className="text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 cursor-pointer"
+                  />
+                </div>
+
+                <textarea
+                  rows={8}
+                  value={bookImportText}
+                  onChange={(e) => setBookImportText(e.target.value)}
+                  placeholder={`Salin dan tempel JSON array di sini...\n[\n  {\n    "title": "Buku A",\n    "author": "Penulis A",\n    "category": "Fiksi",\n    "stock": 3\n  }\n]`}
+                  className="lib-input font-mono text-xs resize-none"
+                />
+              </div>
+
+              <div className="lib-modal-footer pt-2">
+                <button type="button" onClick={() => setShowBookImportModal(false)} className="btn-ghost border border-border-200">Batal</button>
+                <button type="submit" className="btn-primary !bg-purple-600 hover:!bg-purple-700">Proses Import Data</button>
               </div>
             </form>
           </div>
