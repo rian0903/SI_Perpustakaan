@@ -127,12 +127,20 @@ function StatusContent() {
             </div>
           </Link>
 
-          <Link
-            href="/membership"
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all"
-          >
-            <ArrowLeft className="w-4 h-4" /> Formulir Pendaftaran
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all"
+            >
+              <ArrowLeft className="w-4 h-4" /> Kembali ke Beranda
+            </Link>
+            <Link
+              href="/membership"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all"
+            >
+              Formulir Pendaftaran
+            </Link>
+          </div>
         </div>
       </header>
 
