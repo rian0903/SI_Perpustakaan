@@ -799,8 +799,8 @@ export default function Home() {
       {/* ===== HEADER / NAVBAR ===== */}
       <header
         className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled
-          ? "bg-white border-b border-border-200 shadow-soft"
-          : "bg-white border-b border-border-200"
+            ? "bg-white border-b border-border-200 shadow-soft"
+            : "bg-white border-b border-border-200"
           }`}
         style={{ height: "72px" }}
       >
@@ -1284,8 +1284,8 @@ export default function Home() {
                 {/* Card Footer */}
                 <div className="p-4 pt-2 border-t border-slate-100 flex items-center justify-between gap-2 mt-auto">
                   <span className={`text-[11px] font-navigation font-bold px-2.5 py-0.5 rounded-md ${(book.available ?? book.stock ?? 1) > 0
-                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                    : "bg-red-50 text-red-700 border border-red-200"
+                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                      : "bg-red-50 text-red-700 border border-red-200"
                     }`}>
                     {(book.available ?? book.stock ?? 1) > 0 ? `Tersedia: ${book.available ?? book.stock}` : "Dipinjam"}
                   </span>
@@ -1353,8 +1353,8 @@ export default function Home() {
                 </div>
                 <div className="mt-4 w-full text-center">
                   <span className={`inline-block px-3 py-1.5 rounded-xl text-xs font-navigation font-bold ${(selectedBookDetail.available ?? selectedBookDetail.stock ?? 1) > 0
-                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                    : "bg-red-50 text-red-700 border border-red-200"
+                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                      : "bg-red-50 text-red-700 border border-red-200"
                     }`}>
                     Stok: {selectedBookDetail.available ?? selectedBookDetail.stock ?? 0} dari {selectedBookDetail.stock ?? 1} Eksemplar
                   </span>
@@ -1453,8 +1453,8 @@ export default function Home() {
                   key={cat}
                   onClick={() => setSelectedNewsCategory(cat)}
                   className={`px-4 py-2 rounded-lg text-xs font-navigation font-semibold whitespace-nowrap transition-all cursor-pointer ${selectedNewsCategory === cat
-                    ? "bg-primary-500 text-white shadow-soft"
-                    : "bg-white text-body border border-border-200 hover:border-primary-300 hover:text-primary-500"
+                      ? "bg-primary-500 text-white shadow-soft"
+                      : "bg-white text-body border border-border-200 hover:border-primary-300 hover:text-primary-500"
                     }`}
                 >
                   {cat}
@@ -1537,8 +1537,8 @@ export default function Home() {
                   type="button"
                   onClick={() => setEventFilter(tab.id)}
                   className={`px-3.5 py-2 rounded-xl text-xs font-navigation font-bold transition-all cursor-pointer ${eventFilter === tab.id
-                    ? "bg-primary-500 text-white shadow-md"
-                    : "bg-white text-muted hover:text-heading border border-border-200"
+                      ? "bg-primary-500 text-white shadow-md"
+                      : "bg-white text-muted hover:text-heading border border-border-200"
                     }`}
                 >
                   {tab.label}
@@ -1650,17 +1650,17 @@ export default function Home() {
       </section>
 
       {/* ===== KEANGGOTAAN PERPUSTAKAAN SECTION ===== */}
-      <section id="membership" className="py-20 bg-slate-900 text-white relative overflow-hidden">
+      <section id="membership" className="py-20 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 text-white relative overflow-hidden">
         <div className="chapter-container relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-8 space-y-4">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-primary-500/20 text-primary-300 border border-primary-500/30">
-                Pendaftaran Online 100% Gratis
+              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-navigation font-bold uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/40 backdrop-blur">
+                ⭐ PENDAFTARAN ONLINE 100% GRATIS
               </span>
-              <h2 className="text-3xl md:text-4xl font-bold font-navigation leading-tight ! text-white">
+              <h2 className="text-3xl md:text-4xl font-bold font-navigation text-white leading-tight">
                 Bergabung Jadi Anggota Resmi Perpustakaan
               </h2>
-              <p className="text-slate-300 text-sm md:text-base leading-relaxed max-w-2xl">
+              <p className="text-slate-200 text-sm md:text-base leading-relaxed max-w-2xl font-sans">
                 Dapatkan akses peminjaman ribuan koleksi buku fisik, fasilitas kartu anggota cetak eksklusif, serta perpanjangan peminjaman secara online.
               </p>
             </div>
