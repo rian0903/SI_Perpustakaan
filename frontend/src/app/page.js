@@ -1657,7 +1657,7 @@ export default function Home() {
               <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-navigation font-bold uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/40 backdrop-blur">
                 ⭐ PENDAFTARAN ONLINE 100% GRATIS
               </span>
-              <h2 className="text-3xl md:text-4xl font-bold font-navigation text-white leading-tight">
+              <h2 className="text-3xl md:text-4xl font-bold font-navigation !text-white leading-tight" style={{ color: "#ffffff" }}>
                 Bergabung Jadi Anggota Resmi Perpustakaan
               </h2>
               <p className="text-slate-200 text-sm md:text-base leading-relaxed max-w-2xl font-sans">
