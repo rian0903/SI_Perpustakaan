@@ -12,7 +12,7 @@ export class MailService {
 
   constructor(private configService: ConfigService) {
     const host = this.configService.get<string>('SMTP_HOST');
-    const port = this.configService.get<number>('SMTP_PORT', 587);
+    const port = Number(this.configService.get('SMTP_PORT')) || 587;
     const user = this.configService.get<string>('SMTP_USER');
     const pass = this.configService.get<string>('SMTP_PASS');
 
@@ -23,7 +23,7 @@ export class MailService {
         secure: port === 465,
         auth: { user, pass },
       });
-      this.logger.log(`SMTP Mailer initialized successfully targeting host: ${host}`);
+      this.logger.log(`SMTP Mailer initialized successfully targeting host: ${host}:${port}`);
     } else {
       this.logger.warn(
         `SMTP environment variables (SMTP_HOST, SMTP_USER, SMTP_PASS) not fully set. Email notifications will be logged to console in mock mode.`,
