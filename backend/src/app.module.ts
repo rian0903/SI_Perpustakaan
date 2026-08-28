@@ -12,6 +12,7 @@ import { MembershipModule } from './membership/membership.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: ['.env', 'backend/.env', '../.env'],
     }),
     PrismaModule,
     AuthModule,
