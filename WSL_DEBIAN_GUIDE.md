@@ -32,7 +32,32 @@ npm -v
 
 ---
 
-## 2. Cara Otomatis (Menggunakan Script Setup)
+## 2. Konfigurasi File Environment (.env) di WSL
+
+> ⚠️ **PENTING DITERAPKAN:**
+> File `.env` masuk ke dalam `.gitignore` sehingga **TIDAK AKAN ikut ter-pull dari GitHub**.
+> Ketika Anda melakukan `git pull` di WSL, file `.env` di WSL tidak akan terisi otomatis dengan password SMTP Gmail Anda!
+
+Jika file `.env` di WSL belum ada atau masih berisi data default, fitur pengiriman email akan otomatis masuk ke **Mock Mode** (email hanya dicetak di log terminal WSL, tidak terkirim sungguhan).
+
+### Langkah Konfigurasi `.env` di WSL:
+1. Buat/salin file `.env` di direktori utama project WSL:
+   ```bash
+   cp .env.example .env
+   ```
+2. Edit file `.env` di terminal WSL (menggunakan `nano .env` atau VS Code WSL):
+   ```env
+   SMTP_HOST="smtp.gmail.com"
+   SMTP_PORT=587
+   SMTP_USER="nandariansyah54321@gmail.com"
+   SMTP_PASS="dhwvkfwbhodlngwr"
+   MAIL_FROM='"Perpustakaan Daerah Kota Buku" <nandariansyah54321@gmail.com>'
+   ```
+3. Simpan file dan **restart server backend NestJS** di WSL (`npm run dev:backend`).
+
+---
+
+## 3. Cara Otomatis (Menggunakan Script Setup)
 
 Telah disediakan script otomatis `scripts/wsl-setup.sh` untuk menyiapkan dependensi, menghasilkan Prisma Client untuk Linux/Debian, menjalankan migrasi, dan mengisi data awal (seeding).
 

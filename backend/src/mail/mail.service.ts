@@ -22,6 +22,10 @@ export class MailService {
         port,
         secure: port === 465,
         auth: { user, pass },
+        tls: {
+          rejectUnauthorized: false,
+        },
+        family: 4,
       });
       this.logger.log(`SMTP Mailer initialized successfully targeting host: ${host}:${port}`);
     } else {
