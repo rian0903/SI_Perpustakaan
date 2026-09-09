@@ -5,6 +5,8 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.backend
     restart: always
+    env_file:
+      - .env
     environment:
       DATABASE_URL: "file:./db/dev.db"
       PORT: 3001

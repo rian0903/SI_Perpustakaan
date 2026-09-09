@@ -16,7 +16,7 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}=== [1/5] Memeriksa & Menginstal Dependensi Sistem (WSL Debian) ===${NC}"
+echo -e "${BLUE}=== [1/6] Memeriksa & Menginstal Dependensi Sistem (WSL Debian) ===${NC}"
 if command -v apt-get &> /dev/null; then
     echo -e "${YELLOW}Mengunduh update paket Debian & menginstal openssl, sqlite3, curl, ca-certificates...${NC}"
     sudo apt-get update -qq
@@ -25,7 +25,7 @@ else
     echo -e "${YELLOW}Bukan lingkungan apt (Debian). Melewati tahap apt-get.${NC}"
 fi
 
-echo -e "\n${BLUE}=== [2/5] Memeriksa Instalasi Node.js & npm ===${NC}"
+echo -e "\n${BLUE}=== [2/6] Memeriksa Instalasi Node.js & npm ===${NC}"
 if ! command -v node &> /dev/null; then
     echo -e "${RED}Node.js belum terinstal di WSL Debian!${NC}"
     echo -e "${YELLOW}Mengunduh Node.js LTS via NodeSource...${NC}"
@@ -38,13 +38,25 @@ NPM_VER=$(npm -v)
 echo -e "${GREEN}✓ Node.js versi: ${NODE_VER}${NC}"
 echo -e "${GREEN}✓ npm versi: ${NPM_VER}${NC}"
 
-echo -e "\n${BLUE}=== [3/5] Menginstal Dependensi Project & Prisma Engine ===${NC}"
+echo -e "\n${BLUE}=== [3/6] Memeriksa File Konfigurasi Lingkungan (.env) ===${NC}"
+if [ ! -f ".env" ]; then
+    echo -e "${YELLOW}File .env tidak ditemukan di WSL (karena .env di-ignore oleh Git). Membuat .env dari .env.example...${NC}"
+    cp .env.example .env
+fi
+
+if grep -q "your-email@gmail.com" .env 2>/dev/null || ! grep -q "SMTP_PASS=" .env 2>/dev/null; then
+    echo -e "${RED}⚠️  PERHATIAN: File .env di WSL belum memiliki kredensial SMTP_USER / SMTP_PASS yang asli!${NC}"
+    echo -e "${YELLOW}Email tidak akan terkirim (Mock Mode) jika .env di WSL masih berisi nilai placeholder.${NC}"
+    echo -e "${YELLOW}Pastikan mengedit file .env di WSL dan memasukkan SMTP_USER & SMTP_PASS (App Password) akun Gmail Anda.${NC}"
+fi
+
+echo -e "\n${BLUE}=== [4/6] Menginstal Dependensi Project & Prisma Engine ===${NC}"
 npm install
 
-echo -e "\n${BLUE}=== [4/5] Generasi Prisma Client untuk Linux/Debian ===${NC}"
+echo -e "\n${BLUE}=== [5/6] Generasi Prisma Client untuk Linux/Debian ===${NC}"
 npx prisma generate --schema=backend/prisma/schema.prisma
 
-echo -e "\n${BLUE}=== [5/5] Migrasi Database & Seeding Data ===${NC}"
+echo -e "\n${BLUE}=== [6/6] Migrasi Database & Seeding Data ===${NC}"
 npx prisma db push --schema=backend/prisma/schema.prisma
 npm run db:seed --workspace=backend
 

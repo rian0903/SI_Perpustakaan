@@ -12,6 +12,7 @@ import { MembershipModule } from './membership/membership.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: ['.env', 'backend/.env', '../.env'],
     }),
     PrismaModule,
     AuthModule,
@@ -22,4 +23,4 @@ import { MembershipModule } from './membership/membership.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
